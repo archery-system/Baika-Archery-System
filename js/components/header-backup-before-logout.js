@@ -7,8 +7,6 @@
 (function () {
     "use strict";
 
-    const LOGIN_STORAGE_KEY = "baikaArcheryVer4Login";
-
     const HEADER_ITEMS = [
         {
             route: "home",
@@ -61,74 +59,6 @@
         return link;
     }
 
-    function getLoggedInMember() {
-        if (
-            window.V4Session &&
-            typeof window.V4Session.getLoggedInMember === "function"
-        ) {
-            return window.V4Session.getLoggedInMember();
-        }
-
-        try {
-            const savedData = localStorage.getItem(LOGIN_STORAGE_KEY);
-
-            if (!savedData) {
-                return "";
-            }
-
-            const loginData = JSON.parse(savedData);
-
-            return (
-                loginData &&
-                typeof loginData.member === "string"
-                    ? loginData.member.trim()
-                    : ""
-            );
-        } catch (error) {
-            console.warn(
-                "[Baika Header] ログイン情報を取得できませんでした:",
-                error
-            );
-
-            localStorage.removeItem(LOGIN_STORAGE_KEY);
-
-            return "";
-        }
-    }
-
-    function logout() {
-        localStorage.removeItem(LOGIN_STORAGE_KEY);
-        window.location.href = "index.html";
-    }
-
-    function createAccountArea() {
-        const accountArea = document.createElement("div");
-
-        accountArea.className = "bas-header__account";
-
-        const memberName = document.createElement("span");
-
-        memberName.className = "bas-header__member";
-
-        const loggedInMember = getLoggedInMember();
-
-        memberName.textContent = loggedInMember
-            ? `👤 ${loggedInMember}`
-            : "👤 未ログイン";
-
-        const logoutButton = document.createElement("button");
-
-        logoutButton.className = "bas-header__logout";
-        logoutButton.type = "button";
-        logoutButton.textContent = "ログアウト";
-        logoutButton.setAttribute("aria-label", "ログアウト");
-        logoutButton.addEventListener("click", logout);
-
-        accountArea.append(memberName, logoutButton);
-
-        return accountArea;
-    }
-
     function createHeader(currentRoute) {
         const header = document.createElement("header");
 
@@ -178,15 +108,7 @@
             );
         });
 
-        const rightArea = document.createElement("div");
-
-        rightArea.className = "bas-header__right";
-        rightArea.append(
-            navigation,
-            createAccountArea()
-        );
-
-        inner.append(brand, rightArea);
+        inner.append(brand, navigation);
         header.append(inner);
 
         return header;
@@ -220,8 +142,6 @@
     }
 
     window.BAS_HEADER = {
-        render: renderHeader,
-        getLoggedInMember: getLoggedInMember,
-        logout: logout
+        render: renderHeader
     };
 })();

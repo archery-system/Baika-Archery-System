@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-<script src="js/v4-session.js?v=3"></script>
+ <script src="js/v4-session.js?v=1"></script>
 <head>
     <meta charset="UTF-8">
     <meta
@@ -9,6 +9,10 @@
     >
 
     <title>記録入力 | Baika Archery System Ver4</title>
+
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+    <link rel="stylesheet" href="css/foundation/base.css">
+    <link rel="stylesheet" href="css/components/header.css">
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/v4.css?v=3021">
@@ -32,7 +36,7 @@
         </div>
 
         <nav class="v4-nav">
-            <a href="project-zero-home.html">🏠 ホーム</a>
+            <a href="index.html">🏠 ホーム</a>
             <a href="input.html" class="active">📝 記録入力</a>
             <a href="analysis.html">📊 分析</a>
         </nav>
@@ -163,14 +167,8 @@
             <div class="v4-camera-launch-area v4-camera-launch-area-bottom">
                 <div class="v4-camera-launch-buttons">
                     <button type="button" id="v4OpenCameraButton" class="v4-camera-launch-button">📷 撮影専用モードを開く</button>
-                   <button
-    type="button"
-    id="v4OpenPhotoListButton"
-    class="v4-photo-list-button"
->
-    🖼️ 写真を選ぶ
-</button>
-             </div>
+                    <button type="button" id="v4OpenPhotoListButton" class="v4-photo-list-button">🗂 写真一覧を開く・選択</button>
+                </div>
                 <div class="v4-camera-local-status" aria-live="polite">
                     この端末に保存済み：<strong id="v4LocalPhotoCount">0</strong>枚
                 </div>
@@ -441,57 +439,27 @@
     </button>
 </div>
 
-<div class="v4-clear-actions">
-    <button
-        type="button"
-        id="v4UndoLastArrow"
-        class="v4-end-action v4-end-action-clear"
-        disabled
-    >
-        ↩ 1射戻す
-    </button>
-
+<div class="v4-end-actions">
     <button
         type="button"
         id="v4ClearCurrentEnd"
         class="v4-end-action v4-end-action-clear"
         onclick="clearCurrentEnd()"
-        disabled
     >
-        🗑 エンド消去
+        🗑 クリア
     </button>
 
-    <button
-        type="button"
-        id="v4ClearAllArrows"
-        class="v4-end-action v4-end-action-clear"
-        disabled
-    >
-        ⚠ 全消去
-    </button>
-</div>
-
-<div class="v4-end-actions">
     <button
         type="button"
         id="v4RegisterCurrentEnd"
         class="v4-end-action v4-end-action-register"
         disabled
     >
-        📍 現在の着弾を登録
-    </button>
-
-    <button
-        type="button"
-        id="v4SaveCurrentEnd"
-        class="v4-end-action v4-end-action-register"
-        disabled
-    >
-        💾 6射を記録
+        💾 登録
     </button>
 </div>
 
-
+    </div>
 </section>
 
             <section class="v4-card v4-card-half">
@@ -510,7 +478,7 @@
             </section>
 
             <section class="v4-card">
-                <a href="project-zero-home.html" class="v4-action">
+                <a href="index.html" class="v4-action">
                     ← ホームへ戻る
                 </a>
             </section>
@@ -575,18 +543,6 @@
     }
 
     function getStoredLoggedInMember() {
-
-        if (
-    window.V4Session &&
-    typeof window.V4Session.getLoggedInMember === "function"
-    ) {
-    const member = window.V4Session.getLoggedInMember();
-
-    if (member) {
-        return member;
-    }
-    }
-
         if (
             typeof window.loggedInMember === "string" &&
             window.loggedInMember.trim()
@@ -769,7 +725,6 @@
     </div>
 </div>
 
-<script src="js/core/state.js"></script>
 <script src="js/v4-input.js?v=671"></script>
 <script src="js/v4-photo-engine.js?v=630"></script>
 <script src="js/v4-layout.js?v=29b4"></script>

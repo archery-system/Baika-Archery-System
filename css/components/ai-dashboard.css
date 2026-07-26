@@ -1,0 +1,80 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * AI Dashboard Component
+ */
+
+.bas-ai-dashboard__header {
+    align-items: center;
+}
+
+.bas-ai-dashboard__eyebrow {
+    margin: 0 0 var(--bas-space-1);
+    color: var(--bas-color-primary);
+    font-size: var(--bas-font-size-xs);
+    font-weight: var(--bas-font-weight-bold);
+    letter-spacing: 0.08em;
+}
+
+.bas-ai-dashboard__icon {
+    background:
+        linear-gradient(
+            135deg,
+            var(--bas-color-primary-light),
+            var(--bas-color-accent-100)
+        );
+}
+
+.bas-ai-dashboard__status {
+    color: var(--bas-color-primary-dark);
+    background: var(--bas-color-primary-light);
+}
+
+.bas-ai-dashboard__body {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-ai-dashboard__metrics {
+    margin-top: var(--bas-space-1);
+}
+
+.bas-ai-dashboard__metric {
+    transition:
+        transform var(--bas-transition-fast),
+        border-color var(--bas-transition-fast),
+        background-color var(--bas-transition-fast);
+}
+
+.bas-ai-dashboard__metric-value {
+    color: var(--bas-color-primary-dark);
+}
+
+.bas-ai-dashboard__message-area {
+    margin-top: 0;
+}
+
+.bas-ai-dashboard__message {
+    border-left: 4px solid var(--bas-color-primary);
+}
+
+.bas-ai-dashboard__message p {
+    margin: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .bas-ai-dashboard__metric:hover {
+        transform: translateY(-2px);
+        border-color: var(--bas-color-primary-light);
+    }
+}
+
+@media (max-width: 600px) {
+    .bas-ai-dashboard__header {
+        align-items: flex-start;
+    }
+
+    .bas-ai-dashboard__status {
+        align-self: flex-start;
+    }
+}

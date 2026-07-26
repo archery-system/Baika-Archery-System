@@ -78,7 +78,7 @@
     padding: var(--bas-space-2) var(--bas-space-3);
     border-radius: 999px;
     background: var(--bas-color-primary);
-    color: var(--bas-color-text-inverse);
+    color: #ffffff;
     font-weight: var(--bas-font-weight-bold);
 }
 
@@ -93,7 +93,7 @@
     min-width: 0;
     padding: var(--bas-space-3);
     border-radius: var(--bas-radius-md);
-    background: var(--bas-color-surface);
+    background: #ffffff;
     text-align: center;
 }
 
@@ -190,8 +190,8 @@
     min-width: 64px !important;
     padding: 8px 12px !important;
     border-radius: 999px !important;
-    background: var(--bas-color-primary) !important;
-    color: var(--bas-color-text-inverse) !important;
+    background: #7b2cbf !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
     line-height: 1 !important;
     visibility: visible !important;
@@ -218,7 +218,7 @@ border:1px solid var(--bas-color-border);
 
 border-radius:var(--bas-radius-lg);
 
-background:var(--bas-color-surface);
+background:#fff;
 
 }
 

@@ -63,7 +63,50 @@
         el.finish.addEventListener("click", closeCamera);
         el.capture.addEventListener("click", capturePhoto);
         el.deleteLast.addEventListener("click", deleteLastCapture);
-        if (el.openList) el.openList.addEventListener("click", function () { openPhotoList(true); });
+       if (el.openList) {
+    el.openList.addEventListener(
+        "click",
+        function () {
+            const isMobileDevice =
+                /Android|iPhone|iPad|iPod/i.test(
+                    navigator.userAgent
+                );
+
+            if (isMobileDevice) {
+                /*
+                 * スマートフォンでは、
+                 * アプリの撮影専用モードで保存した
+                 * ガイド撮影済み写真だけを表示する。
+                 */
+                openPhotoList(true);
+                return;
+            }
+
+            /*
+             * PCでは、端末内に保存されている
+             * JPG・PNGなどの写真を選択する。
+             */
+            const photoInput =
+                document.getElementById(
+                    "v4TargetPhotoInput"
+                );
+
+            if (!photoInput) {
+                window.alert(
+                    "写真選択機能を開けませんでした。"
+                );
+                return;
+            }
+
+            /*
+             * 同じ写真を続けて選択した場合も
+             * changeイベントが発生するようにする。
+             */
+            photoInput.value = "";
+            photoInput.click();
+        }
+    );
+}
         if (el.closeList) el.closeList.addEventListener("click", closePhotoList);
         if (el.closePreview) el.closePreview.addEventListener("click", closePhotoPreview);
 

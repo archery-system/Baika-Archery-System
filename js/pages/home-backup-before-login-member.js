@@ -59,27 +59,18 @@
 
     const organizationNameElement =
         document.getElementById("homeOrganizationName");
-    const loggedInMember =
-        window.V4Session &&
-        typeof window.V4Session.getLoggedInMember === "function"
-            ? window.V4Session.getLoggedInMember()
-            : "";
 
     const currentUser =
         typeof BAS_STATE !== "undefined"
             ? BAS_STATE.currentUser
             : null;
 
-    const stateUserName =
-        currentUser &&
-        typeof currentUser.name === "string"
-            ? currentUser.name.trim()
-            : "";
-
     const userName =
-        loggedInMember ||
-        stateUserName ||
-        "ゲストユーザー";
+        currentUser &&
+        typeof currentUser.name === "string" &&
+        currentUser.name.trim() !== ""
+            ? currentUser.name.trim()
+            : "ゲストユーザー";
 
     if (userNameElement) {
         userNameElement.textContent = userName;
@@ -149,4 +140,3 @@ if (greetingElement) {
         initialize
     };
 })();
-

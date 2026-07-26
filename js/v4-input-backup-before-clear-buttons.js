@@ -1359,36 +1359,17 @@ async function registerPhotoPracticeEnd(photoPins) {
         await saveResponse.text();
 
         syncPracticeToProjectZero(
-    practiceData,
-    record
-);
+            practiceData,
+            record
+        );
 
-/*
- * 保存した6射を登録済みグルーピングへ残す
- */
-registeredGroupingArrows =
-    registeredGroupingArrows.concat(
-        photoPins.map(function (arrow) {
-            return {
-                ...arrow
-            };
-        })
-    );
+        currentArrows = [];
+        resetTargetZoom();
+        updateCurrentEndDisplay();
+        updateScoreInputState();
+        syncCurrentPracticeInputToProjectZero();
 
-/*
- * 現在入力中のデータだけを消去する
- */
-currentArrows = [];
-photoGroupingArrows = [];
-
-resetTargetZoom();
-updateCurrentEndDisplay();
-renderTargetPins();
-renderGroupingPins();
-updateScoreInputState();
-syncCurrentPracticeInputToProjectZero();
-
-return true;
+        return true;
     } catch (error) {
         console.error(
             "Photo practice save failed:",
@@ -1561,92 +1542,6 @@ function clearCurrentEnd() {
 }
 
 /**
- * 現在入力中の最後の1射だけを削除する
- */
-function undoLastArrow() {
-    const arrows =
-        getActiveInputArrows();
-
-    if (
-        !Array.isArray(arrows) ||
-        arrows.length === 0
-    ) {
-        return false;
-    }
-
-    arrows.pop();
-
-    if (
-        window.baikaTargetGesture &&
-        typeof window.baikaTargetGesture.clearPinSelection ===
-            "function"
-    ) {
-        window.baikaTargetGesture.clearPinSelection();
-    }
-
-    resetTargetZoom();
-    renderTargetPins();
-    renderGroupingPins();
-    updateCurrentEndDisplay();
-    updateScoreInputState();
-    syncCurrentPracticeInputToProjectZero();
-
-    return true;
-}
-
-/**
- * 現在入力とグルーピング追加済みの矢をすべて削除する
- */
-function clearAllArrows() {
-    const activeArrows =
-        getActiveInputArrows();
-
-    const totalArrowCount =
-        activeArrows.length +
-        registeredGroupingArrows.length;
-
-    if (totalArrowCount === 0) {
-        return false;
-    }
-
-    const shouldClear =
-        window.confirm(
-            `入力中とグルーピング追加済みの合計${totalArrowCount}射をすべてクリアしますか？`
-        );
-
-    if (!shouldClear) {
-        return false;
-    }
-
-    currentArrows = [];
-    photoGroupingArrows = [];
-    registeredGroupingArrows = [];
-
-    if (
-        window.baikaTargetGesture &&
-        typeof window.baikaTargetGesture.clearPinSelection ===
-            "function"
-    ) {
-        window.baikaTargetGesture.clearPinSelection();
-    }
-
-    resetTargetZoom();
-    renderTargetPins();
-    renderGroupingPins();
-    updateCurrentEndDisplay();
-    updateScoreInputState();
-    syncCurrentPracticeInputToProjectZero();
-
-    return true;
-}
-
-window.undoLastArrow =
-    undoLastArrow;
-
-window.clearAllArrows =
-    clearAllArrows;
-
-/**
  * 入力の有無に応じて、
  * キーパッドと登録ボタンの状態を更新する
  */
@@ -1688,16 +1583,6 @@ if (saveButton) {
         arrows.length !== 6;
 }
 
-const undoButton =
-    document.getElementById(
-        "v4UndoLastArrow"
-    );
-
-if (undoButton) {
-    undoButton.disabled =
-        !hasArrows;
-}
-
 const clearButton =
     document.getElementById(
         "v4ClearCurrentEnd"
@@ -1706,17 +1591,6 @@ const clearButton =
 if (clearButton) {
     clearButton.disabled =
         !hasArrows;
-}
-
-const clearAllButton =
-    document.getElementById(
-        "v4ClearAllArrows"
-    );
-
-if (clearAllButton) {
-    clearAllButton.disabled =
-        !hasArrows &&
-        registeredGroupingArrows.length === 0;
 }
 }
 
@@ -1772,50 +1646,6 @@ function bindUnlimitedGroupingRegistration() {
 
 document.addEventListener("DOMContentLoaded", bindUnlimitedGroupingRegistration);
 window.registerCurrentGrouping = registerCurrentGrouping;
-
-function bindClearActionButtons() {
-    const undoButton =
-        document.getElementById(
-            "v4UndoLastArrow"
-        );
-
-    if (
-        undoButton &&
-        undoButton.dataset.undoBound !== "true"
-    ) {
-        undoButton.dataset.undoBound =
-            "true";
-
-        undoButton.addEventListener(
-            "click",
-            undoLastArrow
-        );
-    }
-
-    const clearAllButton =
-        document.getElementById(
-            "v4ClearAllArrows"
-        );
-
-    if (
-        clearAllButton &&
-        clearAllButton.dataset.clearAllBound !==
-            "true"
-    ) {
-        clearAllButton.dataset.clearAllBound =
-            "true";
-
-        clearAllButton.addEventListener(
-            "click",
-            clearAllArrows
-        );
-    }
-}
-
-document.addEventListener(
-    "DOMContentLoaded",
-    bindClearActionButtons
-);
 
 function bindCurrentPracticeSave() {
     const saveButton =

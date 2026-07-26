@@ -192,8 +192,6 @@ const V4Auth = {
 
         this.showMessage(`${member}さん、ログインしました。`, "success");
         this.updateScreen();
-
-        window.location.href = "project-zero-home.html";
     },
 
     /**
@@ -313,7 +311,7 @@ function requireV4Login() {
     const member = getV4LoggedInMember();
 
     if (!member) {
-        window.location.href = "index.html";
+        window.location.href = "project-zero-home.html";
         return false;
     }
 
@@ -323,6 +321,3 @@ function requireV4Login() {
 document.addEventListener("DOMContentLoaded", () => {
     V4Auth.init();
 });
-
-
-

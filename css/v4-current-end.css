@@ -226,7 +226,7 @@
 
 .v4-end-actions {
     display: grid;
-    grid-template-columns: minmax(120px, 1fr) minmax(180px, 2fr);
+    grid-template-columns: 1fr;
     gap: 10px;
 }
 
@@ -288,9 +288,9 @@
     }
 
     .v4-end-actions {
-        grid-template-columns: 1fr 2fr;
-        gap: 8px;
-    }
+    grid-template-columns: 1fr;
+    gap: 8px;
+　　}
 
     .v4-end-action {
         min-height: 52px;

@@ -23,39 +23,6 @@ let zoomCenter = {
 const V4_GAS_API_URL =
     "https://script.google.com/macros/s/AKfycbwGlg88mq5G4fR0_H9BlQ8VmdloL8oBPOBeIBQKWrK_XunDTPalvpo1tLu4I0qA2f16/exec";
 
-/**
- * 現在入力中の着弾をProject ZeroのStateへ同期する
- */
-function syncCurrentPracticeInputToProjectZero() {
-    if (typeof setState !== "function") {
-        return;
-    }
-
-    const previousPractice =
-        typeof getState === "function" &&
-        getState("practice") &&
-        typeof getState("practice") === "object"
-            ? getState("practice")
-            : {};
-
-    const activeArrows =
-        photoGroupingArrows.length > 0
-            ? photoGroupingArrows
-            : currentArrows;
-
-    setState("practice", {
-        ...previousPractice,
-
-        arrows: activeArrows.map(function (arrow) {
-            return {
-                ...arrow
-            };
-        }),
-
-        isDirty: activeArrows.length > 0
-    });
-}
-
 document.addEventListener("DOMContentLoaded", function () {
     drawTargetSvg();
     drawGroupingTargetSvg();
@@ -903,12 +870,6 @@ function syncPhotoPinsToGrouping(
     renderTargetPins();
     renderGroupingPins();
     updateCurrentEndDisplay();
-
-/*
- * 写真上のピン入力結果を
- * Project Zero の practice.arrows へ同期する。
- */
-syncCurrentPracticeInputToProjectZero();
 }
 
 window.syncPhotoPinsToGrouping =
@@ -1023,128 +984,11 @@ currentArrows.push({
     renderTargetPins();
     renderGroupingPins();
     updateScoreInputState();
-
-    syncCurrentPracticeInputToProjectZero();
 }
 
 /**
  * 写真入力の1本以上をGoogleスプレッドシートへ登録する
  */
-
-/**
- * 保存済みの練習データをProject Zeroへ同期する
- *
- * @param {Array} practiceData
- * @param {Object} savedRecord
- */
-function syncPracticeToProjectZero(
-    practiceData,
-    savedRecord
-) {
-    if (
-        typeof setState !== "function" ||
-        !savedRecord ||
-        !Array.isArray(practiceData)
-    ) {
-        return;
-    }
-
-    const samePracticeRecords =
-        practiceData.filter(function (record) {
-            return (
-                record &&
-                record.date === savedRecord.date &&
-                record.memberName === savedRecord.memberName &&
-                record.distance === savedRecord.distance
-            );
-        });
-
-    const totalScore =
-        samePracticeRecords.reduce(
-            function (sum, record) {
-                return sum + Number(record.total || 0);
-            },
-            0
-        );
-
-    const arrowCount =
-        samePracticeRecords.reduce(
-            function (count, record) {
-                if (Array.isArray(record.pins)) {
-                    return count + record.pins.length;
-                }
-
-                const scoreKeys = [
-                    "a1",
-                    "a2",
-                    "a3",
-                    "a4",
-                    "a5",
-                    "a6"
-                ];
-
-                return (
-                    count +
-                    scoreKeys.filter(function (key) {
-                        return (
-                            record[key] !== undefined &&
-                            record[key] !== null &&
-                            record[key] !== ""
-                        );
-                    }).length
-                );
-            },
-            0
-        );
-
-    const averageScore =
-        arrowCount > 0
-            ? Number(
-                (totalScore / arrowCount).toFixed(2)
-            )
-            : 0;
-
-    const previousLastPractice =
-        typeof getState === "function"
-            ? getState("lastPractice")
-            : null;
-
-    setState("lastPractice", {
-        date: savedRecord.date,
-        distance: savedRecord.distance,
-        totalScore: totalScore,
-        averageScore: averageScore,
-        arrowCount: arrowCount,
-        memo:
-            previousLastPractice &&
-            typeof previousLastPractice.memo === "string"
-                ? previousLastPractice.memo
-                : ""
-    });
-
-    setState("practice", {
-        date: savedRecord.date,
-        distance: savedRecord.distance,
-        arrows: Array.isArray(savedRecord.pins)
-            ? savedRecord.pins.map(function (arrow) {
-                return { ...arrow };
-            })
-            : [],
-        photoMode: true
-    });
-
-    console.log(
-        "[Project Zero] 練習データを同期しました。",
-        {
-            date: savedRecord.date,
-            distance: savedRecord.distance,
-            totalScore: totalScore,
-            averageScore: averageScore,
-            arrowCount: arrowCount
-        }
-    );
-}
-
 async function registerPhotoPracticeEnd(photoPins) {
     if (!Array.isArray(photoPins)) {
         return false;
@@ -1232,65 +1076,31 @@ async function registerPhotoPracticeEnd(photoPins) {
     }
 
     const arrows =
-    photoPins.map(function (pin) {
-        const rawLabel =
-            pin && pin.val != null
-                ? pin.val
-                : pin && pin.score != null
-                    ? pin.score
-                    : "M";
+        photoPins.map(function (pin) {
+            const label =
+                String(pin.score == null ? "M" : pin.score).toUpperCase();
 
-        const label =
-            String(rawLabel).toUpperCase();
+            let numericScore = 0;
 
-        let numericScore = 0;
+            if (
+                label === "X" ||
+                label === "10"
+            ) {
+                numericScore = 10;
+            } else if (label !== "M") {
+                numericScore = Number(label);
+            }
 
-        if (
-            label === "X" ||
-            label === "10"
-        ) {
-            numericScore = 10;
-        } else if (label !== "M") {
-            numericScore = Number(label);
-        }
-
-        const hasTargetPosition =
-            pin &&
-            pin.x != null &&
-            pin.y != null;
-
-        const hasPhotoPosition =
-            pin &&
-            pin.photoX != null &&
-            pin.photoY != null;
-
-        return {
-            val: label,
-            score: numericScore,
-
-            x: hasTargetPosition
-                ? Number(pin.x)
-                : null,
-
-            y: hasTargetPosition
-                ? Number(pin.y)
-                : null,
-
-            inputType:
-                pin &&
-                typeof pin.inputType === "string"
-                    ? pin.inputType
-                    : "photo",
-
-            photoX: hasPhotoPosition
-                ? Number(pin.photoX)
-                : null,
-
-            photoY: hasPhotoPosition
-                ? Number(pin.photoY)
-                : null
-        };
-    });
+            return {
+                val: label,
+                score: numericScore,
+                x: null,
+                y: null,
+                inputType: "photo",
+                photoX: Number(pin.x),
+                photoY: Number(pin.y)
+            };
+        });
 
     const sorted =
         [...arrows].sort(function (a, b) {
@@ -1358,37 +1168,12 @@ async function registerPhotoPracticeEnd(photoPins) {
 
         await saveResponse.text();
 
-        syncPracticeToProjectZero(
-    practiceData,
-    record
-);
+        currentArrows = [];
+        resetTargetZoom();
+        updateCurrentEndDisplay();
+        updateScoreInputState();
 
-/*
- * 保存した6射を登録済みグルーピングへ残す
- */
-registeredGroupingArrows =
-    registeredGroupingArrows.concat(
-        photoPins.map(function (arrow) {
-            return {
-                ...arrow
-            };
-        })
-    );
-
-/*
- * 現在入力中のデータだけを消去する
- */
-currentArrows = [];
-photoGroupingArrows = [];
-
-resetTargetZoom();
-updateCurrentEndDisplay();
-renderTargetPins();
-renderGroupingPins();
-updateScoreInputState();
-syncCurrentPracticeInputToProjectZero();
-
-return true;
+        return true;
     } catch (error) {
         console.error(
             "Photo practice save failed:",
@@ -1405,68 +1190,6 @@ return true;
 
 window.registerPhotoPracticeEnd =
     registerPhotoPracticeEnd;
-
-    /**
- * 通常入力の6射を正式な練習記録として保存する
- *
- * @returns {Promise<boolean>}
- */
-async function registerCurrentPracticeEnd() {
-    const arrows =
-        getActiveInputArrows();
-
-    if (!Array.isArray(arrows)) {
-        return false;
-    }
-
-    if (arrows.length !== 6) {
-        window.alert(
-            `点取り記録は6射で保存してください。現在は${arrows.length}射です。`
-        );
-
-        return false;
-    }
-
-    const saveButton =
-        document.getElementById(
-            "v4SaveCurrentEnd"
-        );
-
-    if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.textContent =
-            "保存しています…";
-    }
-
-    try {
-        const saved =
-            await registerPhotoPracticeEnd(
-                arrows.map(function (arrow) {
-                    return {
-                        ...arrow
-                    };
-                })
-            );
-
-        if (saved) {
-            window.alert(
-                "6射の練習記録を保存しました。"
-            );
-        }
-
-        return saved;
-    } finally {
-        if (saveButton) {
-            saveButton.textContent =
-                "💾 6射を記録";
-        }
-
-        updateScoreInputState();
-    }
-}
-
-window.registerCurrentPracticeEnd =
-    registerCurrentPracticeEnd;
 
 /**
  * 写真入力の任意本数で現在入力中の着弾を直接置き換える
@@ -1561,92 +1284,6 @@ function clearCurrentEnd() {
 }
 
 /**
- * 現在入力中の最後の1射だけを削除する
- */
-function undoLastArrow() {
-    const arrows =
-        getActiveInputArrows();
-
-    if (
-        !Array.isArray(arrows) ||
-        arrows.length === 0
-    ) {
-        return false;
-    }
-
-    arrows.pop();
-
-    if (
-        window.baikaTargetGesture &&
-        typeof window.baikaTargetGesture.clearPinSelection ===
-            "function"
-    ) {
-        window.baikaTargetGesture.clearPinSelection();
-    }
-
-    resetTargetZoom();
-    renderTargetPins();
-    renderGroupingPins();
-    updateCurrentEndDisplay();
-    updateScoreInputState();
-    syncCurrentPracticeInputToProjectZero();
-
-    return true;
-}
-
-/**
- * 現在入力とグルーピング追加済みの矢をすべて削除する
- */
-function clearAllArrows() {
-    const activeArrows =
-        getActiveInputArrows();
-
-    const totalArrowCount =
-        activeArrows.length +
-        registeredGroupingArrows.length;
-
-    if (totalArrowCount === 0) {
-        return false;
-    }
-
-    const shouldClear =
-        window.confirm(
-            `入力中とグルーピング追加済みの合計${totalArrowCount}射をすべてクリアしますか？`
-        );
-
-    if (!shouldClear) {
-        return false;
-    }
-
-    currentArrows = [];
-    photoGroupingArrows = [];
-    registeredGroupingArrows = [];
-
-    if (
-        window.baikaTargetGesture &&
-        typeof window.baikaTargetGesture.clearPinSelection ===
-            "function"
-    ) {
-        window.baikaTargetGesture.clearPinSelection();
-    }
-
-    resetTargetZoom();
-    renderTargetPins();
-    renderGroupingPins();
-    updateCurrentEndDisplay();
-    updateScoreInputState();
-    syncCurrentPracticeInputToProjectZero();
-
-    return true;
-}
-
-window.undoLastArrow =
-    undoLastArrow;
-
-window.clearAllArrows =
-    clearAllArrows;
-
-/**
  * 入力の有無に応じて、
  * キーパッドと登録ボタンの状態を更新する
  */
@@ -1658,66 +1295,14 @@ function updateScoreInputState() {
         button.disabled = false;
     });
 
-    const registerButton =
-    document.getElementById(
-        "v4RegisterCurrentEnd"
-    );
+    const registerButton = document.getElementById("v4RegisterCurrentEnd");
+    if (registerButton) registerButton.disabled = !hasArrows;
 
-if (registerButton) {
-    registerButton.disabled =
-        !hasArrows;
-}
+    const adjustedRegisterButton = document.getElementById("v4RegisterAdjustedArrows");
+    if (adjustedRegisterButton) adjustedRegisterButton.disabled = !hasArrows;
 
-const adjustedRegisterButton =
-    document.getElementById(
-        "v4RegisterAdjustedArrows"
-    );
-
-if (adjustedRegisterButton) {
-    adjustedRegisterButton.disabled =
-        !hasArrows;
-}
-
-const saveButton =
-    document.getElementById(
-        "v4SaveCurrentEnd"
-    );
-
-if (saveButton) {
-    saveButton.disabled =
-        arrows.length !== 6;
-}
-
-const undoButton =
-    document.getElementById(
-        "v4UndoLastArrow"
-    );
-
-if (undoButton) {
-    undoButton.disabled =
-        !hasArrows;
-}
-
-const clearButton =
-    document.getElementById(
-        "v4ClearCurrentEnd"
-    );
-
-if (clearButton) {
-    clearButton.disabled =
-        !hasArrows;
-}
-
-const clearAllButton =
-    document.getElementById(
-        "v4ClearAllArrows"
-    );
-
-if (clearAllButton) {
-    clearAllButton.disabled =
-        !hasArrows &&
-        registeredGroupingArrows.length === 0;
-}
+    const clearButton = document.getElementById("v4ClearCurrentEnd");
+    if (clearButton) clearButton.disabled = !hasArrows;
 }
 
 function registerCurrentGrouping() {
@@ -1772,75 +1357,4 @@ function bindUnlimitedGroupingRegistration() {
 
 document.addEventListener("DOMContentLoaded", bindUnlimitedGroupingRegistration);
 window.registerCurrentGrouping = registerCurrentGrouping;
-
-function bindClearActionButtons() {
-    const undoButton =
-        document.getElementById(
-            "v4UndoLastArrow"
-        );
-
-    if (
-        undoButton &&
-        undoButton.dataset.undoBound !== "true"
-    ) {
-        undoButton.dataset.undoBound =
-            "true";
-
-        undoButton.addEventListener(
-            "click",
-            undoLastArrow
-        );
-    }
-
-    const clearAllButton =
-        document.getElementById(
-            "v4ClearAllArrows"
-        );
-
-    if (
-        clearAllButton &&
-        clearAllButton.dataset.clearAllBound !==
-            "true"
-    ) {
-        clearAllButton.dataset.clearAllBound =
-            "true";
-
-        clearAllButton.addEventListener(
-            "click",
-            clearAllArrows
-        );
-    }
-}
-
-document.addEventListener(
-    "DOMContentLoaded",
-    bindClearActionButtons
-);
-
-function bindCurrentPracticeSave() {
-    const saveButton =
-        document.getElementById(
-            "v4SaveCurrentEnd"
-        );
-
-    if (
-        !saveButton ||
-        saveButton.dataset.saveBound === "true"
-    ) {
-        return;
-    }
-
-    saveButton.dataset.saveBound =
-        "true";
-
-    saveButton.addEventListener(
-        "click",
-        registerCurrentPracticeEnd
-    );
-}
-
-document.addEventListener(
-    "DOMContentLoaded",
-    bindCurrentPracticeSave
-);
 

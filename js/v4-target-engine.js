@@ -453,17 +453,28 @@
     }
 
     function handlePointerDown(event) {
-        const svg = getSvg();
-        if (!svg || (event.pointerType === "mouse" && event.button !== 0)) return;
+    const svg = getSvg();
 
-        const pin = findPinElement(event.target);
-        if (!pin) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-        beginPinSelection(event, pin);
+    if (
+        !svg ||
+        (
+            event.pointerType === "mouse" &&
+            event.button !== 0
+        )
+    ) {
+        return;
     }
 
+    const pin = findPinElement(event.target);
+
+    if (!pin) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    beginPinSelection(event, pin);
+}
     function handlePointerMove(event) {
         /* Step65-1: 入力的のパン・ピンチズーム・背景タップは使用しない。 */
     }

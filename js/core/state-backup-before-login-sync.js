@@ -114,105 +114,37 @@ BAS_STATE[key] = value;
 
 saveStateToStorage();
 
+if (key === "currentUser") {
+    syncCurrentUserToVer4Login();
+}
+
 if (typeof BAS_CONFIG !== "undefined" && BAS_CONFIG.debug) {
         console.log(`[Baika State] ${key} を更新しました`, value);
     }
 }
 
-/**
- * Ver4のログイン情報をProject Zeroへ取り込む
- *
- * ログイン情報の管理元は
- * localStorageのbaikaArcheryVer4Loginとする。
- *
- * @returns {boolean}
- */
-function restoreCurrentUserFromVer4Login() {
-    try {
-        const savedLoginData =
-            localStorage.getItem(
-                "baikaArcheryVer4Login"
-            );
+function syncCurrentUserToVer4Login() {
+    const currentUser = BAS_STATE.currentUser;
 
-        if (!savedLoginData) {
-            BAS_STATE.currentUser = null;
-            saveStateToStorage();
-
-            console.warn(
-                "[Baika State] ログイン情報がありません。"
-            );
-
-            return false;
-        }
-
-        const loginData =
-            JSON.parse(savedLoginData);
-
-        if (
-            !loginData ||
-            typeof loginData.member !== "string" ||
-            loginData.member.trim() === ""
-        ) {
-            BAS_STATE.currentUser = null;
-
-            localStorage.removeItem(
-                "baikaArcheryVer4Login"
-            );
-
-            saveStateToStorage();
-
-            console.warn(
-                "[Baika State] ログイン情報が不正です。"
-            );
-
-            return false;
-        }
-
-        BAS_STATE.currentUser = {
-            id:
-                typeof loginData.id === "string" &&
-                loginData.id.trim()
-                    ? loginData.id.trim()
-                    : loginData.member.trim(),
-
-            name: loginData.member.trim(),
-
-            role:
-                typeof loginData.role === "string" &&
-                loginData.role.trim()
-                    ? loginData.role.trim()
-                    : "member"
-        };
-
-        saveStateToStorage();
-
-        if (
-            typeof BAS_CONFIG !== "undefined" &&
-            BAS_CONFIG.debug
-        ) {
-            console.log(
-                "[Baika State] ログイン部員を復元しました。",
-                BAS_STATE.currentUser
-            );
-        }
-
-        return true;
-    } catch (error) {
-        BAS_STATE.currentUser = null;
-
-        localStorage.removeItem(
-            "baikaArcheryVer4Login"
-        );
-
-        saveStateToStorage();
-
-        console.error(
-            "[Baika State] ログイン情報を復元できませんでした。",
-            error
-        );
-
-        return false;
+    if (
+        !currentUser ||
+        typeof currentUser.name !== "string" ||
+        currentUser.name.trim() === ""
+    ) {
+        localStorage.removeItem("baikaArcheryVer4Login");
+        return;
     }
+
+    const ver4LoginData = {
+        member: currentUser.name.trim(),
+        role: currentUser.role || "member",
+        loggedInAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(
+        "baikaArcheryVer4Login",
+        JSON.stringify(ver4LoginData)
+    );
 }
 
 /**
@@ -294,4 +226,6 @@ function loadStateFromStorage() {
 }
 
 loadStateFromStorage();
+
+// Ver4のログイン情報を優先
 restoreCurrentUserFromVer4Login();

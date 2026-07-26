@@ -14,7 +14,10 @@
         var(--bas-content-width)
     );
     margin-inline: auto;
-    padding-block: var(--bas-space-6) var(--bas-space-12);
+    padding-top: calc(
+        var(--bas-header-height) + var(--bas-space-6)
+    );
+    padding-bottom: var(--bas-space-12);
 }
 
 .bas-page-header {
@@ -84,7 +87,9 @@
             calc(100% - (var(--bas-space-3) * 2)),
             var(--bas-content-width)
         );
-        padding-top: var(--bas-space-4);
+        padding-top: calc(
+            var(--bas-header-height) + 92px
+        );
     }
 
     .bas-actions {

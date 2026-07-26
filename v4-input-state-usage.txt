@@ -1,0 +1,605 @@
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:12: */
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:13:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:14:let currentArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:15:let photoGroupingArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:16:let registeredGroupingArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:17:let isZoomed = false;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:18:let zoomCenter = {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:27:    drawTargetSvg();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:28:    drawGroupingTargetSvg();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:29:    updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:30:    updateScoreInputState();    
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:31:});
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:32:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:33:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:75:        circle.setAttribute("stroke-width", "0.5");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:76:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:77:        svg.appendChild(circle);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:78:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:79:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:80:    const pinsGroup = document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:81:        "http://www.w3.org/2000/svg",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:84:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:85:    pinsGroup.id = "pinsGroup";
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:86:    svg.appendChild(pinsGroup);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:87:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:88:    renderTargetPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:89:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:90:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:91:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:92: * グルーピング確認用の的を描画する
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:136:        circle.setAttribute("stroke-width", "0.5");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:137:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:138:        svg.appendChild(circle);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:139:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:140:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:141:    const groupingPinsGroup =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:142:        document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:146:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:147:    groupingPinsGroup.id = "groupingPinsGroup";
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:148:    svg.appendChild(groupingPinsGroup);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:149:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:150:    renderGroupingPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:151:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:152:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:153:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:154: * 的をタップしたときの処理
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:225:    const arrow = calculateArrowScore(realX, realY);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:226:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:227:currentArrows.push(arrow);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:228:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:229:updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:230:resetTargetZoom();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:231:updateScoreInputState();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:232:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:233:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:236: */
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:237:function calculateArrowScore(x, y) {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:238:    const distanceFromCenter = Math.hypot(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:239:        x - 150,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:240:        y - 150
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:241:    );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:242:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:248:    };
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:249:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:250:    if (distanceFromCenter > 150) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:251:        return arrow;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:252:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:253:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:254:    if (distanceFromCenter <= 7.5) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:255:        arrow.val = "X";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:256:        arrow.score = 10;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:257:    } else if (distanceFromCenter <= 15) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:258:        arrow.val = "10";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:259:        arrow.score = 10;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:260:    } else if (distanceFromCenter <= 30) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:261:        arrow.val = "9";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:262:        arrow.score = 9;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:263:    } else if (distanceFromCenter <= 45) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:264:        arrow.val = "8";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:265:        arrow.score = 8;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:266:    } else if (distanceFromCenter <= 60) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:267:        arrow.val = "7";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:268:        arrow.score = 7;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:269:    } else if (distanceFromCenter <= 75) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:270:        arrow.val = "6";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:271:        arrow.score = 6;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:272:    } else if (distanceFromCenter <= 90) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:273:        arrow.val = "5";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:274:        arrow.score = 5;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:275:    } else if (distanceFromCenter <= 105) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:276:        arrow.val = "4";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:277:        arrow.score = 4;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:278:    } else if (distanceFromCenter <= 120) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:279:        arrow.val = "3";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:280:        arrow.score = 3;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:281:    } else if (distanceFromCenter <= 135) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:282:        arrow.val = "2";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:283:        arrow.score = 2;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:284:    } else {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:285:        arrow.val = "1";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:317:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:318:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:319:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:320:     renderGroupingPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:321:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:322:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:323:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:324: * 入力済みの着弾位置を表示する
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:325: */
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:326:function renderTargetPins() {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:327:    const pinsGroup =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:328:        document.getElementById("pinsGroup");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:329:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:330:    if (!pinsGroup) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:337:        photoGroupingArrows.length > 0
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:338:            ? photoGroupingArrows
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:339:            : currentArrows;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:340:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:341:    targetSource.forEach(function (arrow, index) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:342:if (
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:343:    arrow.x == null ||
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:397:        pinHitArea.style.touchAction = "none";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:398:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:399:        pinsGroup.appendChild(pinHitArea);
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:400:        pinsGroup.appendChild(pin);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:401:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:402:        const pinNumber = document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:403:            "http://www.w3.org/2000/svg",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:404:            "text"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:417:        pinNumber.style.pointerEvents = "none";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:418:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:419:        pinsGroup.appendChild(pinNumber);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:420:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:421:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:422:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:423: * グルーピング確認用の的に着弾位置を表示する
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:482:        true;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:483:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:484:    renderGroupingPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:485:    updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:486:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:487:    window.dispatchEvent(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:488:        new CustomEvent(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:489:            "baika:target-pin-updated",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:520:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:521:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:522:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:523:    renderGroupingPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:524:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:525:    return true;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:526:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:527:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:532:};
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:533:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:534:function renderGroupingPins() {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:535:    const pinsGroup =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:536:        document.getElementById("groupingPinsGroup");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:537:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:538:    if (!pinsGroup) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:545:        photoGroupingArrows.length > 0
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:546:            ? photoGroupingArrows
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:547:            : currentArrows;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:548:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:549:    const groupingSource =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:550:        registeredGroupingArrows.concat(activeArrows);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:551:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:571:        pin.setAttribute("stroke-width", "1.2");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:572:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:573:        pinsGroup.appendChild(pin);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:574:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:575:        const pinNumber = document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:576:            "http://www.w3.org/2000/svg",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:577:            "text"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:608:        pinNumber.style.pointerEvents = "none";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:609:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:610:        pinsGroup.appendChild(pinNumber);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:611:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:612:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:613:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:614:    renderGroupingCenter(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:615:        pinsGroup,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:616:        groupingSource
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:617:    );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:618:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:621: * グルーピングの平均着弾位置を表示する
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:622: */
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:623:function renderGroupingCenter(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:624:    pinsGroup,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:625:    arrows
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:626:) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:627:    const validArrows =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:697:    outerCircle.setAttribute("stroke-width", "2");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:698:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:699:    markerGroup.appendChild(outerCircle);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:700:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:701:    const horizontalLine =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:702:        document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:703:            "http://www.w3.org/2000/svg",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:718:    horizontalLine.setAttribute("stroke-width", "1.8");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:719:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:720:    markerGroup.appendChild(horizontalLine);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:721:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:722:    const verticalLine =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:723:        document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:724:            "http://www.w3.org/2000/svg",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:739:    verticalLine.setAttribute("stroke-width", "1.8");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:740:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:741:    markerGroup.appendChild(verticalLine);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:742:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:743:    const label =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:744:        document.createElementNS(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:745:            "http://www.w3.org/2000/svg",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:760:    label.textContent = "中心";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:761:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:762:    markerGroup.appendChild(label);
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:763:    pinsGroup.appendChild(markerGroup);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:764:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:765:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:766:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:767: * 写真上のピンをグルーピング表示へ反映する。
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:780:    ) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:781:        photoGroupingArrows = [];
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:782:        renderGroupingPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:783:        return;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:784:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:785:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:786:    const previousTargetArrows =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:868:        });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:869:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:870:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:871:    renderGroupingPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:872:    updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:873:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:874:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:875:window.syncPhotoPinsToGrouping =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:876:    syncPhotoPinsToGrouping;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:882:    return photoGroupingArrows.length > 0
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:883:        ? photoGroupingArrows
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:884:        : currentArrows;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:885:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:886:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:887:function updateTargetScoreSummary(arrows) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:888:    const summary = document.getElementById("v4TargetScoreSummary");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:901:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:902:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:903:    const total = source.reduce(function (sum, arrow) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:904:        return sum + Number(arrow && arrow.score || 0);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:905:    }, 0);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:906:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:907:    const average = (total / source.length).toFixed(1);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:908:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:909:    summary.textContent =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:910:        `${scoreLabels.join("  ")}　｜　本数 ${source.length}　合計 ${total}　平均 ${average}`;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:911:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:912:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:913:function updateCurrentEndDisplay() {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:914:    const arrows = getActiveInputArrows();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:915:    updateTargetScoreSummary(arrows);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:916:    const preview = document.getElementById("v4ArrowsPreview");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:917:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:939:                : "－";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:940:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:941:            slot.appendChild(number);
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:942:            slot.appendChild(score);
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:943:            preview.appendChild(slot);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:944:        });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:945:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:946:        if (arrows.length === 0) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:947:            const empty = document.createElement("div");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:948:            empty.className = "v4-arrows-empty";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:949:            empty.textContent = "まだ入力されていません";
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:950:            preview.appendChild(empty);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:951:        }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:952:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:953:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:954:    const count = arrows.length;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:955:    const total = arrows.reduce(function (sum, arrow) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:956:        return sum + Number(arrow && arrow.score || 0);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:957:    }, 0);
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:958:    const average = count > 0 ? (total / count).toFixed(1) : "0.0";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:959:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:960:    const countElement = document.getElementById("v4CurrentArrowCount");
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:961:    const totalElement = document.getElementById("v4CurrentArrowTotal");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:962:    const averageElement = document.getElementById("v4CurrentArrowAverage");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:963:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:964:    if (countElement) countElement.textContent = `${count}本`;
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:965:    if (totalElement) totalElement.textContent = String(total);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:966:    if (averageElement) averageElement.textContent = average;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:967:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:968:    updateScoreInputState();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:969:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:973: */
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:974:function handleScoreKeypadInput(value, score) {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:975:currentArrows.push({
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:976:    val: value,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:977:    score: score,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:978:    x: null,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:979:    y: null,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:981:});
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:982:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:983:    updateCurrentEndDisplay();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:984:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:985:    renderGroupingPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:986:    updateScoreInputState();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:987:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:988:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:989:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:994: * 保存済みの練習データをProject Zeroへ同期する
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:995: *
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:996: * @param {Array} practiceData
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:997: * @param {Object} savedRecord
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:998: */
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:999:function syncPracticeToProjectZero(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1000:    practiceData,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1001:    savedRecord
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1002:) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1003:    if (
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1004:        typeof setState !== "function" ||
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1005:        !savedRecord ||
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1006:        !Array.isArray(practiceData)
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1007:    ) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1008:        return;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1009:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1010:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1011:    const samePracticeRecords =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1012:        practiceData.filter(function (record) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1013:            return (
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1014:                record &&
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1015:                record.date === savedRecord.date &&
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1016:                record.memberName === savedRecord.memberName &&
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1017:                record.distance === savedRecord.distance
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1018:            );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1019:        });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1020:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1021:    const totalScore =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1022:        samePracticeRecords.reduce(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1023:            function (sum, record) {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1024:                return sum + Number(record.total || 0);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1025:            },
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1026:            0
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1027:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1028:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1029:    const arrowCount =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1030:        samePracticeRecords.reduce(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1031:            function (count, record) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1032:                if (Array.isArray(record.pins)) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1033:                    return count + record.pins.length;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1034:                }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1060:        arrowCount > 0
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1061:            ? Number(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1062:                (totalScore / arrowCount).toFixed(2)
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1063:            )
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1064:            : 0;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1065:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1066:    const previousLastPractice =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1067:        typeof getState === "function"
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1068:            ? getState("lastPractice")
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1069:            : null;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1070:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1071:    setState("lastPractice", {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1072:        date: savedRecord.date,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1073:        distance: savedRecord.distance,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1074:        totalScore: totalScore,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1075:        averageScore: averageScore,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1076:        arrowCount: arrowCount,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1077:        memo:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1078:            previousLastPractice &&
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1079:            typeof previousLastPractice.memo === "string"
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1080:                ? previousLastPractice.memo
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1081:                : ""
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1082:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1083:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1084:    setState("practice", {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1085:        date: savedRecord.date,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1086:        distance: savedRecord.distance,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1087:        arrows: Array.isArray(savedRecord.pins)
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1088:            ? savedRecord.pins.map(function (arrow) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1089:                return { ...arrow };
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1090:            })
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1091:            : [],
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1092:        photoMode: true
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1096:        "[Project Zero] 練習データを同期しました。",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1097:        {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1098:            date: savedRecord.date,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1099:            distance: savedRecord.distance,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1100:            totalScore: totalScore,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1101:            averageScore: averageScore,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1102:            arrowCount: arrowCount
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1103:        }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1104:    );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1105:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1106:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1107:async function registerPhotoPracticeEnd(photoPins) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1108:    if (!Array.isArray(photoPins)) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1109:        return false;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1110:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1111:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1130:        memberName === "ログイン情報を確認中"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1131:    ) {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1132:        const savedMemberName =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1133:            localStorage.getItem(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1134:                "v4PhotoPracticeMemberName"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1135:            ) || "";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1136:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1137:        const enteredMemberName =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1138:            window.prompt(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1139:                "登録する部員名を入力してください。",
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1140:                savedMemberName
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1141:            );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1142:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1143:        if (enteredMemberName === null) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1144:            return false;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1155:        }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1156:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1157:        localStorage.setItem(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1158:            "v4PhotoPracticeMemberName",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1159:            memberName
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1160:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1161:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1162:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1163:    const dateElement =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1164:        document.getElementById(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1165:            "v4PracticeDate"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1166:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1167:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1168:    const distanceElement =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1169:        document.getElementById(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1170:            "v4DistanceSelect"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1171:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1172:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1173:    const practiceDate =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1174:        dateElement ? dateElement.value : "";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1175:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1176:    const distance =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1177:        distanceElement ? distanceElement.value : "";
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1178:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1179:    if (!practiceDate) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1180:        window.alert(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1181:            "練習日を選択してください。"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1182:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1183:        return false;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1184:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1185:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1186:    if (!distance) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1187:        window.alert(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1188:            "距離を選択してください。"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1189:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1190:        return false;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1224:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1225:    const record = {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1226:        date: practiceDate,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1227:        memberName: memberName,
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1228:        distance: distance,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1229:        a1: sorted[0] ? sorted[0].val : "",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1230:        a2: sorted[1] ? sorted[1].val : "",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1231:        a3: sorted[2] ? sorted[2].val : "",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1232:        a4: sorted[3] ? sorted[3].val : "",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1233:        a5: sorted[4] ? sorted[4].val : "",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1234:        a6: sorted[5] ? sorted[5].val : "",
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1235:        total: sorted.reduce(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1236:            function (sum, arrow) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1237:                return sum + arrow.score;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1238:            },
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1239:            0
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1255:            await getResponse.json();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1256:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1257:        const practiceData =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1258:            Array.isArray(cloudData.practice)
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1259:                ? cloudData.practice
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1260:                : [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1261:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1262:        practiceData.push(record);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1263:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1264:        const payload = {
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1265:            mode: "practice",
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1266:            data: practiceData
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1267:        };
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1268:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1269:        const saveResponse =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1270:            await fetch(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1271:                V4_GAS_API_URL,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1272:                {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1273:                    method: "POST",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1276:            );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1277:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1278:        if (!saveResponse.ok) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1279:            throw new Error(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1280:                "クラウドへ保存できませんでした。"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1281:            );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1282:        }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1283:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1284:        await saveResponse.text();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1285:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1286:        syncPracticeToProjectZero(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1287:            practiceData,
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1288:            record
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1289:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1290:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1291:        currentArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1292:        resetTargetZoom();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1293:        updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1294:        updateScoreInputState();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1295:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1296:        return true;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1297:    } catch (error) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1298:        console.error(
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1299:            "Photo practice save failed:",
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1300:            error
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1301:        );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1302:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1303:        window.alert(
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1309:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1310:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1311:window.registerPhotoPracticeEnd =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1312:    registerPhotoPracticeEnd;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1313:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1314:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1315: * 写真入力の任意本数で現在入力中の着弾を直接置き換える
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1316: * 確認ダイアログは表示しない
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1317: */
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1318:function replaceCurrentEndFromPhoto(photoPins) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1319:    if (!Array.isArray(photoPins)) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1320:        return false;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1321:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1322:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1330:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1331:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1332:    currentArrows =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1333:        photoPins.map(function (pin) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1334:            const label =
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1335:                String(pin.score).toUpperCase();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1336:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1358:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1359:    resetTargetZoom();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1360:    updateCurrentEndDisplay();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1361:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1362:    renderGroupingPins();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1363:    updateScoreInputState();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1364:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1365:    return true;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1366:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1367:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1368:window.replaceCurrentEndFromPhoto =
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1369:    replaceCurrentEndFromPhoto;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1370:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1371:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1372: * 現在エンドをすべてクリアする
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1373: */
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1374:function clearCurrentEnd() {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1375:    const arrows = getActiveInputArrows();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1376:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1377:    if (arrows.length === 0) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1378:        return;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1387:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1388:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1389:    currentArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1390:    photoGroupingArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1391:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1392:    if (
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1393:        window.baikaTargetGesture &&
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1398:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1399:    resetTargetZoom();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1400:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1401:    renderGroupingPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1402:    updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1403:    updateScoreInputState();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1404:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1405:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1406:/**
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1416:    });
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1417:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1418:    const registerButton = document.getElementById("v4RegisterCurrentEnd");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1419:    if (registerButton) registerButton.disabled = !hasArrows;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1420:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1421:    const adjustedRegisterButton = document.getElementById("v4RegisterAdjustedArrows");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1422:    if (adjustedRegisterButton) adjustedRegisterButton.disabled = !hasArrows;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1423:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1424:    const clearButton = document.getElementById("v4ClearCurrentEnd");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1425:    if (clearButton) clearButton.disabled = !hasArrows;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1426:}
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1427:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1428:function registerCurrentGrouping() {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1434:    );
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1435:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1436:    currentArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1437:    photoGroupingArrows = [];
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1438:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1439:    if (window.baikaTargetGesture && typeof window.baikaTargetGesture.clearPinSelection === "function") {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1440:        window.baikaTargetGesture.clearPinSelection();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1441:    }
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1442:
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1443:    renderTargetPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1444:    renderGroupingPins();
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1445:    updateCurrentEndDisplay();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1446:    resetTargetZoom();
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1447:
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1448:    const message = document.getElementById("v4PinRegisterMessage");
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1449:    if (message) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1466:    [
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1467:        "v4RegisterAdjustedArrows",
+> C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1468:        "v4RegisterCurrentEnd"
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1469:    ].forEach(function (buttonId) {
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1470:        const button = document.getElementById(buttonId);
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1471:        if (!button || button.dataset.bound) return;
+  C:\Users\user\Desktop\Baika-Archery-System\js\v4-input.js:1472:

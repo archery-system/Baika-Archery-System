@@ -93,3 +93,35 @@
     padding: var(--bas-space-4) var(--bas-space-6);
     font-size: var(--bas-font-size-lg);
 }
+
+/* ==========================================
+   Practice Clear Buttons
+========================================== */
+
+.v4-clear-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--bas-space-2);
+    margin-bottom: var(--bas-space-3);
+}
+
+.v4-clear-actions .v4-end-action {
+    width: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 480px) {
+    .v4-clear-actions {
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 4px;
+    }
+
+    .v4-clear-actions .v4-end-action {
+        min-height: 48px;
+        padding-inline: 2px;
+        font-size: 0.72rem;
+        white-space: nowrap;
+    }
+}

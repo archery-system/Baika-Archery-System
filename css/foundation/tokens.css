@@ -2,21 +2,32 @@
  * Baika Archery System
  * Project Zero
  * Design Tokens
+ *
+ * Theme Engine対応版
  */
 
 :root {
-    /* Brand colors */
-    --bas-color-primary-900: #3f1d65;
-    --bas-color-primary-800: #52247f;
-    --bas-color-primary-700: #682f9b;
-    --bas-color-primary-600: #7d3fba;
-    --bas-color-primary-500: #9255cf;
-    --bas-color-primary-100: #f0e7f8;
-    --bas-color-primary-050: #f8f3fc;
+    /* =====================================================
+       Default theme：梅花ピンク
+       ===================================================== */
 
-    --bas-color-accent-600: #b8860b;
-    --bas-color-accent-500: #d4a72c;
-    --bas-color-accent-100: #fff3cd;
+    --bas-color-primary-900: #7d234d;
+    --bas-color-primary-800: #92295a;
+    --bas-color-primary-700: #a83268;
+    --bas-color-primary-600: #c23f79;
+    --bas-color-primary-500: #d94f8a;
+    --bas-color-primary-100: #f8d9e7;
+    --bas-color-primary-050: #fff0f6;
+
+    --bas-color-accent-600: #d96898;
+    --bas-color-accent-500: #f08ab5;
+    --bas-color-accent-100: #fde3ee;
+
+    /* Semantic theme colors */
+    --bas-color-primary: var(--bas-color-primary-500);
+    --bas-color-primary-dark: var(--bas-color-primary-700);
+    --bas-color-primary-light: var(--bas-color-primary-100);
+    --bas-color-accent: var(--bas-color-accent-500);
 
     /* Status colors */
     --bas-color-success: #16834a;
@@ -34,12 +45,29 @@
     --bas-color-gray-700: #374151;
     --bas-color-gray-900: #111827;
 
-    /* Background and text */
-    --bas-color-background: var(--bas-color-gray-050);
-    --bas-color-surface: var(--bas-color-white);
-    --bas-color-text: var(--bas-color-gray-900);
-    --bas-color-text-muted: var(--bas-color-gray-500);
-    --bas-color-border: var(--bas-color-gray-200);
+    /* Background and surface */
+    --bas-color-background: #fff8fb;
+    --bas-color-surface: #ffffff;
+    --bas-color-surface-soft: #fff0f6;
+    --bas-color-surface-raised: #ffffff;
+
+    /* Text */
+    --bas-color-text: #2f2530;
+    --bas-color-text-muted: #766a73;
+    --bas-color-text-inverse: #ffffff;
+
+    /* Border and focus */
+    --bas-color-border: #ead4df;
+    --bas-color-border-strong: #d9b8c8;
+    --bas-color-focus: var(--bas-color-primary);
+
+    /* Gradient */
+    --bas-gradient-primary:
+        linear-gradient(
+            135deg,
+            var(--bas-color-primary) 0%,
+            var(--bas-color-accent) 100%
+        );
 
     /* Typography */
     --bas-font-family:
@@ -93,4 +121,152 @@
     --bas-z-header: 100;
     --bas-z-dialog: 1000;
     --bas-z-toast: 1100;
+}
+
+/* =========================================================
+   梅花ピンク
+   ========================================================= */
+
+:root.bas-theme-baika-pink {
+    --bas-color-primary-900: #7d234d;
+    --bas-color-primary-800: #92295a;
+    --bas-color-primary-700: #a83268;
+    --bas-color-primary-600: #c23f79;
+    --bas-color-primary-500: #d94f8a;
+    --bas-color-primary-100: #f8d9e7;
+    --bas-color-primary-050: #fff0f6;
+
+    --bas-color-accent-600: #d96898;
+    --bas-color-accent-500: #f08ab5;
+    --bas-color-accent-100: #fde3ee;
+
+    --bas-color-primary: var(--bas-color-primary-500);
+    --bas-color-primary-dark: var(--bas-color-primary-700);
+    --bas-color-primary-light: var(--bas-color-primary-100);
+    --bas-color-accent: var(--bas-color-accent-500);
+
+    --bas-color-background: #fff8fb;
+    --bas-color-surface: #ffffff;
+    --bas-color-surface-soft: #fff0f6;
+    --bas-color-surface-raised: #ffffff;
+
+    --bas-color-text: #2f2530;
+    --bas-color-text-muted: #766a73;
+    --bas-color-text-inverse: #ffffff;
+
+    --bas-color-border: #ead4df;
+    --bas-color-border-strong: #d9b8c8;
+    --bas-color-focus: var(--bas-color-primary);
+}
+
+/* =========================================================
+   ブルー
+   ========================================================= */
+
+:root.bas-theme-blue {
+    --bas-color-primary-900: #173f72;
+    --bas-color-primary-800: #1e4c82;
+    --bas-color-primary-700: #245493;
+    --bas-color-primary-600: #2f66aa;
+    --bas-color-primary-500: #3777c8;
+    --bas-color-primary-100: #dceafb;
+    --bas-color-primary-050: #edf5ff;
+
+    --bas-color-accent-600: #438bd5;
+    --bas-color-accent-500: #65a5ed;
+    --bas-color-accent-100: #deedfc;
+
+    --bas-color-primary: var(--bas-color-primary-500);
+    --bas-color-primary-dark: var(--bas-color-primary-700);
+    --bas-color-primary-light: var(--bas-color-primary-100);
+    --bas-color-accent: var(--bas-color-accent-500);
+
+    --bas-color-background: #f7faff;
+    --bas-color-surface: #ffffff;
+    --bas-color-surface-soft: #edf5ff;
+    --bas-color-surface-raised: #ffffff;
+
+    --bas-color-text: #243247;
+    --bas-color-text-muted: #66758a;
+    --bas-color-text-inverse: #ffffff;
+
+    --bas-color-border: #d4e1f1;
+    --bas-color-border-strong: #afc6e1;
+    --bas-color-focus: var(--bas-color-primary);
+}
+
+/* =========================================================
+   グリーン
+   ========================================================= */
+
+:root.bas-theme-green {
+    --bas-color-primary-900: #194a35;
+    --bas-color-primary-800: #215a40;
+    --bas-color-primary-700: #27664a;
+    --bas-color-primary-600: #317957;
+    --bas-color-primary-500: #3a8d68;
+    --bas-color-primary-100: #dcefe7;
+    --bas-color-primary-050: #ecf8f1;
+
+    --bas-color-accent-600: #4a9f72;
+    --bas-color-accent-500: #68b78e;
+    --bas-color-accent-100: #dff2e8;
+
+    --bas-color-primary: var(--bas-color-primary-500);
+    --bas-color-primary-dark: var(--bas-color-primary-700);
+    --bas-color-primary-light: var(--bas-color-primary-100);
+    --bas-color-accent: var(--bas-color-accent-500);
+
+    --bas-color-background: #f7fcf9;
+    --bas-color-surface: #ffffff;
+    --bas-color-surface-soft: #ecf8f1;
+    --bas-color-surface-raised: #ffffff;
+
+    --bas-color-text: #25372f;
+    --bas-color-text-muted: #68786f;
+    --bas-color-text-inverse: #ffffff;
+
+    --bas-color-border: #d2e5da;
+    --bas-color-border-strong: #aacdb9;
+    --bas-color-focus: var(--bas-color-primary);
+}
+
+/* =========================================================
+   ダーク
+   ========================================================= */
+
+:root.bas-theme-dark {
+    --bas-color-primary-900: #7a294f;
+    --bas-color-primary-800: #923360;
+    --bas-color-primary-700: #b94679;
+    --bas-color-primary-600: #ca5689;
+    --bas-color-primary-500: #d86b9d;
+    --bas-color-primary-100: #49303d;
+    --bas-color-primary-050: #302830;
+
+    --bas-color-accent-600: #dc73a3;
+    --bas-color-accent-500: #ef92bb;
+    --bas-color-accent-100: #573747;
+
+    --bas-color-primary: var(--bas-color-primary-500);
+    --bas-color-primary-dark: var(--bas-color-primary-700);
+    --bas-color-primary-light: var(--bas-color-primary-100);
+    --bas-color-accent: var(--bas-color-accent-500);
+
+    --bas-color-background: #171417;
+    --bas-color-surface: #242025;
+    --bas-color-surface-soft: #302830;
+    --bas-color-surface-raised: #2b262b;
+
+    --bas-color-text: #f7edf2;
+    --bas-color-text-muted: #c4b3bc;
+    --bas-color-text-inverse: #ffffff;
+
+    --bas-color-border: #493d45;
+    --bas-color-border-strong: #6a5661;
+    --bas-color-focus: var(--bas-color-accent);
+
+    --bas-shadow-sm: 0 2px 8px rgb(0 0 0 / 24%);
+    --bas-shadow-md: 0 8px 24px rgb(0 0 0 / 32%);
+    --bas-shadow-lg: 0 16px 40px rgb(0 0 0 / 40%);
 }
