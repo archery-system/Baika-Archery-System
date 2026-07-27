@@ -266,11 +266,30 @@ updateScoreInputState();
 
 /**
  * 着弾位置から得点を計算する
+ * 表示ピンの外周が得点ラインに触れた場合は、
+ * 内側の高い得点として判定する。
  */
 function calculateArrowScore(x, y) {
+    const TARGET_CENTER = 150;
+    /*
+ * 白い外周の表示半径は5。
+ * 線の太さや画面表示の誤差を考慮し、
+ * 得点判定には1pxの補正を加える。
+ */
+const PIN_RADIUS = 6.5;
+
     const distanceFromCenter = Math.hypot(
-        x - 150,
-        y - 150
+        x - TARGET_CENTER,
+        y - TARGET_CENTER
+    );
+
+    /*
+     * ピンの中心ではなく、中心側の外周までの距離で判定する。
+     * これにより、ピンがラインに触れた時点で内側の得点になる。
+     */
+    const scoringDistance = Math.max(
+        0,
+        distanceFromCenter - PIN_RADIUS
     );
 
     const arrow = {
@@ -280,38 +299,38 @@ function calculateArrowScore(x, y) {
         y: y
     };
 
-    if (distanceFromCenter > 150) {
+    if (scoringDistance > 150) {
         return arrow;
     }
 
-    if (distanceFromCenter <= 7.5) {
+    if (scoringDistance <= 7.5) {
         arrow.val = "X";
         arrow.score = 10;
-    } else if (distanceFromCenter <= 15) {
+    } else if (scoringDistance <= 15) {
         arrow.val = "10";
         arrow.score = 10;
-    } else if (distanceFromCenter <= 30) {
+    } else if (scoringDistance <= 30) {
         arrow.val = "9";
         arrow.score = 9;
-    } else if (distanceFromCenter <= 45) {
+    } else if (scoringDistance <= 45) {
         arrow.val = "8";
         arrow.score = 8;
-    } else if (distanceFromCenter <= 60) {
+    } else if (scoringDistance <= 60) {
         arrow.val = "7";
         arrow.score = 7;
-    } else if (distanceFromCenter <= 75) {
+    } else if (scoringDistance <= 75) {
         arrow.val = "6";
         arrow.score = 6;
-    } else if (distanceFromCenter <= 90) {
+    } else if (scoringDistance <= 90) {
         arrow.val = "5";
         arrow.score = 5;
-    } else if (distanceFromCenter <= 105) {
+    } else if (scoringDistance <= 105) {
         arrow.val = "4";
         arrow.score = 4;
-    } else if (distanceFromCenter <= 120) {
+    } else if (scoringDistance <= 120) {
         arrow.val = "3";
         arrow.score = 3;
-    } else if (distanceFromCenter <= 135) {
+    } else if (scoringDistance <= 135) {
         arrow.val = "2";
         arrow.score = 2;
     } else {
@@ -379,17 +398,48 @@ if (
     return;
 }
 
-        const pin = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "circle"
-        );
+        /*
+ * 得点判定に使用する白い外周。
+ * calculateArrowScore() の PIN_RADIUS = 5 と一致させる。
+ */
+const pinOuter = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle"
+);
 
-        pin.setAttribute("cx", String(arrow.x));
-        pin.setAttribute("cy", String(arrow.y));
-        pin.setAttribute("r", "5");
-        pin.setAttribute("fill", "#ec4899");
-        pin.setAttribute("stroke", "#ffffff");
-        pin.setAttribute("stroke-width", "1");
+pinOuter.setAttribute("cx", String(arrow.x));
+pinOuter.setAttribute("cy", String(arrow.y));
+pinOuter.setAttribute("r", "5");
+pinOuter.setAttribute("fill", "#ffffff");
+pinOuter.setAttribute("stroke", "#374151");
+pinOuter.setAttribute("stroke-width", "0.6");
+pinOuter.setAttribute(
+    "data-target-pin-index",
+    String(index)
+);
+pinOuter.style.cursor = "grab";
+pinOuter.style.pointerEvents = "all";
+pinOuter.style.touchAction = "none";
+
+/*
+ * 着弾位置の中心を示す小さい赤丸。
+ */
+const pin = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle"
+);
+
+pin.setAttribute("cx", String(arrow.x));
+pin.setAttribute("cy", String(arrow.y));
+pin.setAttribute("r", "3");
+pin.setAttribute("fill", "#ec4899");
+pin.setAttribute(
+    "data-target-pin-index",
+    String(index)
+);
+pin.style.cursor = "grab";
+pin.style.pointerEvents = "all";
+pin.style.touchAction = "none";
         pin.setAttribute(
             "data-target-pin-index",
             String(index)
@@ -430,7 +480,8 @@ if (
         pinHitArea.style.touchAction = "none";
 
         pinsGroup.appendChild(pinHitArea);
-        pinsGroup.appendChild(pin);
+　　　　 pinsGroup.appendChild(pinOuter);
+　　　　 pinsGroup.appendChild(pin);
 
         const pinNumber = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -1292,22 +1343,24 @@ async function registerPhotoPracticeEnd(photoPins) {
         };
     });
 
-    const sorted =
-        [...arrows].sort(function (a, b) {
-            return b.score - a.score;
-        });
+        const memberId =
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMemberId === "function"
+            ? window.V4Session.getLoggedInMemberId()
+            : "";
 
     const record = {
         date: practiceDate,
+        memberId: memberId,
         memberName: memberName,
         distance: distance,
-        a1: sorted[0] ? sorted[0].val : "",
-        a2: sorted[1] ? sorted[1].val : "",
-        a3: sorted[2] ? sorted[2].val : "",
-        a4: sorted[3] ? sorted[3].val : "",
-        a5: sorted[4] ? sorted[4].val : "",
-        a6: sorted[5] ? sorted[5].val : "",
-        total: sorted.reduce(
+        a1: arrows[0] ? arrows[0].val : "",
+        a2: arrows[1] ? arrows[1].val : "",
+        a3: arrows[2] ? arrows[2].val : "",
+        a4: arrows[3] ? arrows[3].val : "",
+        a5: arrows[4] ? arrows[4].val : "",
+        a6: arrows[5] ? arrows[5].val : "",
+        total: arrows.reduce(
             function (sum, arrow) {
                 return sum + arrow.score;
             },
@@ -1315,6 +1368,11 @@ async function registerPhotoPracticeEnd(photoPins) {
         ),
         pins: arrows
     };
+
+    console.log(
+        "[練習保存] 送信直前のrecord",
+        record
+    );
 
     try {
         const getResponse =
