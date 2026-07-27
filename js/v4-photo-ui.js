@@ -1890,10 +1890,26 @@
         elements.preview.dataset.localPhotoId = String(photoId || "");
         clearArrowCandidates();
         elements.preview.addEventListener("load", function onLoad() {
-            elements.preview.removeEventListener("load", onLoad);
-            photoEngine.reset();
-            updatePhotoUI(elements, true);
+    elements.preview.removeEventListener("load", onLoad);
+
+    photoEngine.reset();
+    updatePhotoUI(elements, true);
+
+    /*
+     * 写真読込後は写真ビューアを表示位置へ移動する。
+     */
+    requestAnimationFrame(function () {
+        if (!elements.viewer) {
+            return;
+        }
+
+        elements.viewer.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest"
         });
+    });
+});
     }
 
     function handlePhotoSelection(event) {
