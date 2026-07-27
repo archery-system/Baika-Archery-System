@@ -75,22 +75,18 @@ function drawTargetSvg() {
 
     svg.innerHTML = "";
 
-    /*
-     * 外側から順番に描画する。
-     * 半径15ごとに1点帯。
-     */
     const rings = [
-        { radius: 150, fill: "#f7f7f4", stroke: "#6b7280" }, // 1
-        { radius: 135, fill: "#f7f7f4", stroke: "#6b7280" }, // 2
-        { radius: 120, fill: "#2f3136", stroke: "#f8fafc" }, // 3
-        { radius: 105, fill: "#2f3136", stroke: "#f8fafc" }, // 4
-        { radius: 90, fill: "#1996d3", stroke: "#111827" },  // 5
-        { radius: 75, fill: "#1996d3", stroke: "#111827" },  // 6
-        { radius: 60, fill: "#e53935", stroke: "#111827" },  // 7
-        { radius: 45, fill: "#e53935", stroke: "#111827" },  // 8
-        { radius: 30, fill: "#f6c915", stroke: "#111827" },  // 9
-        { radius: 15, fill: "#f6c915", stroke: "#111827" },  // 10
-        { radius: 7.5, fill: "none", stroke: "#111827" }      // X
+        { radius: 150, fill: "#ffffff" },
+        { radius: 135, fill: "#ffffff" },
+        { radius: 120, fill: "#333333" },
+        { radius: 105, fill: "#333333" },
+        { radius: 90, fill: "#007aff" },
+        { radius: 75, fill: "#007aff" },
+        { radius: 60, fill: "#ff3b30" },
+        { radius: 45, fill: "#ff3b30" },
+        { radius: 30, fill: "#ffd700" },
+        { radius: 15, fill: "#ffd700" },
+        { radius: 7.5, fill: "#ffd700" }
     ];
 
     rings.forEach(function (ring) {
@@ -103,77 +99,17 @@ function drawTargetSvg() {
         circle.setAttribute("cy", "150");
         circle.setAttribute("r", String(ring.radius));
         circle.setAttribute("fill", ring.fill);
-        circle.setAttribute("stroke", ring.stroke);
-        circle.setAttribute("stroke-width", "0.7");
-        circle.setAttribute("vector-effect", "non-scaling-stroke");
+
+        circle.setAttribute(
+            "stroke",
+            ring.fill === "#333333" ? "#ffffff" : "#000000"
+        );
+
+        circle.setAttribute("stroke-width", "0.5");
 
         svg.appendChild(circle);
     });
 
-    /*
-     * 得点数字
-     * 左右両側へ表示する。
-     */
-    const scoreLabels = [
-        { score: "1", radius: 142.5, color: "#111827" },
-        { score: "2", radius: 127.5, color: "#111827" },
-        { score: "3", radius: 112.5, color: "#ffffff" },
-        { score: "4", radius: 97.5, color: "#ffffff" },
-        { score: "5", radius: 82.5, color: "#111827" },
-        { score: "6", radius: 67.5, color: "#111827" },
-        { score: "7", radius: 52.5, color: "#111827" },
-        { score: "8", radius: 37.5, color: "#111827" },
-        { score: "9", radius: 22.5, color: "#111827" },
-        { score: "10", radius: 11.3, color: "#111827" }
-    ];
-
-    scoreLabels.forEach(function (label) {
-        [-1, 1].forEach(function (direction) {
-            const text = document.createElementNS(
-                "http://www.w3.org/2000/svg",
-                "text"
-            );
-
-            text.setAttribute(
-                "x",
-                String(150 + direction * label.radius)
-            );
-            text.setAttribute("y", "150");
-            text.setAttribute("fill", label.color);
-            text.setAttribute("font-size", label.score === "10" ? "6" : "7");
-            text.setAttribute("font-weight", "700");
-            text.setAttribute("text-anchor", "middle");
-            text.setAttribute("dominant-baseline", "middle");
-            text.setAttribute("pointer-events", "none");
-
-            text.textContent = label.score;
-            svg.appendChild(text);
-        });
-    });
-
-    /*
-     * 中央のX表示
-     */
-    const xLabel = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "text"
-    );
-
-    xLabel.setAttribute("x", "150");
-    xLabel.setAttribute("y", "150");
-    xLabel.setAttribute("fill", "#111827");
-    xLabel.setAttribute("font-size", "5");
-    xLabel.setAttribute("font-weight", "700");
-    xLabel.setAttribute("text-anchor", "middle");
-    xLabel.setAttribute("dominant-baseline", "middle");
-    xLabel.setAttribute("pointer-events", "none");
-    xLabel.textContent = "X";
-
-    svg.appendChild(xLabel);
-
-    /*
-     * ピンは数字やリングより前面へ表示する。
-     */
     const pinsGroup = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "g"
@@ -198,21 +134,18 @@ function drawGroupingTargetSvg() {
 
     svg.innerHTML = "";
 
-    /*
-     * 入力用的と同じ競技仕様デザイン。
-     */
     const rings = [
-        { radius: 150, fill: "#f7f7f4", stroke: "#6b7280" },
-        { radius: 135, fill: "#f7f7f4", stroke: "#6b7280" },
-        { radius: 120, fill: "#2f3136", stroke: "#f8fafc" },
-        { radius: 105, fill: "#2f3136", stroke: "#f8fafc" },
-        { radius: 90, fill: "#1996d3", stroke: "#111827" },
-        { radius: 75, fill: "#1996d3", stroke: "#111827" },
-        { radius: 60, fill: "#e53935", stroke: "#111827" },
-        { radius: 45, fill: "#e53935", stroke: "#111827" },
-        { radius: 30, fill: "#f6c915", stroke: "#111827" },
-        { radius: 15, fill: "#f6c915", stroke: "#111827" },
-        { radius: 7.5, fill: "none", stroke: "#111827" }
+        { radius: 150, fill: "#ffffff" },
+        { radius: 135, fill: "#ffffff" },
+        { radius: 120, fill: "#333333" },
+        { radius: 105, fill: "#333333" },
+        { radius: 90, fill: "#007aff" },
+        { radius: 75, fill: "#007aff" },
+        { radius: 60, fill: "#ff3b30" },
+        { radius: 45, fill: "#ff3b30" },
+        { radius: 30, fill: "#ffd700" },
+        { radius: 15, fill: "#ffd700" },
+        { radius: 7.5, fill: "#ffd700" }
     ];
 
     rings.forEach(function (ring) {
@@ -225,94 +158,19 @@ function drawGroupingTargetSvg() {
         circle.setAttribute("cy", "150");
         circle.setAttribute("r", String(ring.radius));
         circle.setAttribute("fill", ring.fill);
-        circle.setAttribute("stroke", ring.stroke);
-        circle.setAttribute("stroke-width", "0.7");
+
         circle.setAttribute(
-            "vector-effect",
-            "non-scaling-stroke"
+            "stroke",
+            ring.fill === "#333333"
+                ? "#ffffff"
+                : "#000000"
         );
+
+        circle.setAttribute("stroke-width", "0.5");
 
         svg.appendChild(circle);
     });
 
-    /*
-     * 入力用的と同じ得点数字。
-     */
-    const scoreLabels = [
-        { score: "1", radius: 142.5, color: "#111827" },
-        { score: "2", radius: 127.5, color: "#111827" },
-        { score: "3", radius: 112.5, color: "#ffffff" },
-        { score: "4", radius: 97.5, color: "#ffffff" },
-        { score: "5", radius: 82.5, color: "#111827" },
-        { score: "6", radius: 67.5, color: "#111827" },
-        { score: "7", radius: 52.5, color: "#111827" },
-        { score: "8", radius: 37.5, color: "#111827" },
-        { score: "9", radius: 22.5, color: "#111827" },
-        { score: "10", radius: 11.3, color: "#111827" }
-    ];
-
-    scoreLabels.forEach(function (label) {
-        [-1, 1].forEach(function (direction) {
-            const text = document.createElementNS(
-                "http://www.w3.org/2000/svg",
-                "text"
-            );
-
-            text.setAttribute(
-                "x",
-                String(150 + direction * label.radius)
-            );
-            text.setAttribute("y", "150");
-            text.setAttribute("fill", label.color);
-            text.setAttribute(
-                "font-size",
-                label.score === "10" ? "6" : "7"
-            );
-            text.setAttribute("font-weight", "700");
-            text.setAttribute("text-anchor", "middle");
-            text.setAttribute(
-                "dominant-baseline",
-                "middle"
-            );
-            text.setAttribute(
-                "pointer-events",
-                "none"
-            );
-
-            text.textContent = label.score;
-            svg.appendChild(text);
-        });
-    });
-
-    /*
-     * 中央のX表示。
-     */
-    const xLabel = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "text"
-    );
-
-    xLabel.setAttribute("x", "150");
-    xLabel.setAttribute("y", "150");
-    xLabel.setAttribute("fill", "#111827");
-    xLabel.setAttribute("font-size", "5");
-    xLabel.setAttribute("font-weight", "700");
-    xLabel.setAttribute("text-anchor", "middle");
-    xLabel.setAttribute(
-        "dominant-baseline",
-        "middle"
-    );
-    xLabel.setAttribute(
-        "pointer-events",
-        "none"
-    );
-    xLabel.textContent = "X";
-
-    svg.appendChild(xLabel);
-
-    /*
-     * グルーピングピンは最前面へ表示する。
-     */
     const groupingPinsGroup =
         document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -324,6 +182,7 @@ function drawGroupingTargetSvg() {
 
     renderGroupingPins();
 }
+
 /**
  * 的をタップしたときの処理
  *
@@ -407,30 +266,11 @@ updateScoreInputState();
 
 /**
  * 着弾位置から得点を計算する
- * 表示ピンの外周が得点ラインに触れた場合は、
- * 内側の高い得点として判定する。
  */
 function calculateArrowScore(x, y) {
-    const TARGET_CENTER = 150;
-    /*
- * 白い外周の表示半径は5。
- * 線の太さや画面表示の誤差を考慮し、
- * 得点判定には1pxの補正を加える。
- */
-const PIN_RADIUS = 6.5;
-
     const distanceFromCenter = Math.hypot(
-        x - TARGET_CENTER,
-        y - TARGET_CENTER
-    );
-
-    /*
-     * ピンの中心ではなく、中心側の外周までの距離で判定する。
-     * これにより、ピンがラインに触れた時点で内側の得点になる。
-     */
-    const scoringDistance = Math.max(
-        0,
-        distanceFromCenter - PIN_RADIUS
+        x - 150,
+        y - 150
     );
 
     const arrow = {
@@ -440,38 +280,38 @@ const PIN_RADIUS = 6.5;
         y: y
     };
 
-    if (scoringDistance > 150) {
+    if (distanceFromCenter > 150) {
         return arrow;
     }
 
-    if (scoringDistance <= 7.5) {
+    if (distanceFromCenter <= 7.5) {
         arrow.val = "X";
         arrow.score = 10;
-    } else if (scoringDistance <= 15) {
+    } else if (distanceFromCenter <= 15) {
         arrow.val = "10";
         arrow.score = 10;
-    } else if (scoringDistance <= 30) {
+    } else if (distanceFromCenter <= 30) {
         arrow.val = "9";
         arrow.score = 9;
-    } else if (scoringDistance <= 45) {
+    } else if (distanceFromCenter <= 45) {
         arrow.val = "8";
         arrow.score = 8;
-    } else if (scoringDistance <= 60) {
+    } else if (distanceFromCenter <= 60) {
         arrow.val = "7";
         arrow.score = 7;
-    } else if (scoringDistance <= 75) {
+    } else if (distanceFromCenter <= 75) {
         arrow.val = "6";
         arrow.score = 6;
-    } else if (scoringDistance <= 90) {
+    } else if (distanceFromCenter <= 90) {
         arrow.val = "5";
         arrow.score = 5;
-    } else if (scoringDistance <= 105) {
+    } else if (distanceFromCenter <= 105) {
         arrow.val = "4";
         arrow.score = 4;
-    } else if (scoringDistance <= 120) {
+    } else if (distanceFromCenter <= 120) {
         arrow.val = "3";
         arrow.score = 3;
-    } else if (scoringDistance <= 135) {
+    } else if (distanceFromCenter <= 135) {
         arrow.val = "2";
         arrow.score = 2;
     } else {
@@ -539,48 +379,17 @@ if (
     return;
 }
 
-        /*
- * 得点判定に使用する白い外周。
- * calculateArrowScore() の PIN_RADIUS = 5 と一致させる。
- */
-const pinOuter = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "circle"
-);
+        const pin = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
 
-pinOuter.setAttribute("cx", String(arrow.x));
-pinOuter.setAttribute("cy", String(arrow.y));
-pinOuter.setAttribute("r", "5");
-pinOuter.setAttribute("fill", "#ffffff");
-pinOuter.setAttribute("stroke", "#374151");
-pinOuter.setAttribute("stroke-width", "0.6");
-pinOuter.setAttribute(
-    "data-target-pin-index",
-    String(index)
-);
-pinOuter.style.cursor = "grab";
-pinOuter.style.pointerEvents = "all";
-pinOuter.style.touchAction = "none";
-
-/*
- * 着弾位置の中心を示す小さい赤丸。
- */
-const pin = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "circle"
-);
-
-pin.setAttribute("cx", String(arrow.x));
-pin.setAttribute("cy", String(arrow.y));
-pin.setAttribute("r", "3");
-pin.setAttribute("fill", "#ec4899");
-pin.setAttribute(
-    "data-target-pin-index",
-    String(index)
-);
-pin.style.cursor = "grab";
-pin.style.pointerEvents = "all";
-pin.style.touchAction = "none";
+        pin.setAttribute("cx", String(arrow.x));
+        pin.setAttribute("cy", String(arrow.y));
+        pin.setAttribute("r", "5");
+        pin.setAttribute("fill", "#ec4899");
+        pin.setAttribute("stroke", "#ffffff");
+        pin.setAttribute("stroke-width", "1");
         pin.setAttribute(
             "data-target-pin-index",
             String(index)
@@ -621,8 +430,7 @@ pin.style.touchAction = "none";
         pinHitArea.style.touchAction = "none";
 
         pinsGroup.appendChild(pinHitArea);
-　　　　 pinsGroup.appendChild(pinOuter);
-　　　　 pinsGroup.appendChild(pin);
+        pinsGroup.appendChild(pin);
 
         const pinNumber = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -1484,24 +1292,22 @@ async function registerPhotoPracticeEnd(photoPins) {
         };
     });
 
-        const memberId =
-        window.V4Session &&
-        typeof window.V4Session.getLoggedInMemberId === "function"
-            ? window.V4Session.getLoggedInMemberId()
-            : "";
+    const sorted =
+        [...arrows].sort(function (a, b) {
+            return b.score - a.score;
+        });
 
     const record = {
         date: practiceDate,
-        memberId: memberId,
         memberName: memberName,
         distance: distance,
-        a1: arrows[0] ? arrows[0].val : "",
-        a2: arrows[1] ? arrows[1].val : "",
-        a3: arrows[2] ? arrows[2].val : "",
-        a4: arrows[3] ? arrows[3].val : "",
-        a5: arrows[4] ? arrows[4].val : "",
-        a6: arrows[5] ? arrows[5].val : "",
-        total: arrows.reduce(
+        a1: sorted[0] ? sorted[0].val : "",
+        a2: sorted[1] ? sorted[1].val : "",
+        a3: sorted[2] ? sorted[2].val : "",
+        a4: sorted[3] ? sorted[3].val : "",
+        a5: sorted[4] ? sorted[4].val : "",
+        a6: sorted[5] ? sorted[5].val : "",
+        total: sorted.reduce(
             function (sum, arrow) {
                 return sum + arrow.score;
             },
@@ -1509,11 +1315,6 @@ async function registerPhotoPracticeEnd(photoPins) {
         ),
         pins: arrows
     };
-
-    console.log(
-        "[練習保存] 送信直前のrecord",
-        record
-    );
 
     try {
         const getResponse =

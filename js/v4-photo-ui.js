@@ -968,13 +968,34 @@
                     const rect = elements.viewer.getBoundingClientRect();
                     setPhotoFocusMode(false, elements);
                     requestAnimationFrame(function () {
-                        const nextRect = elements.viewer.getBoundingClientRect();
-                        photoEngine.focusAt(
-                            2.1,
-                            nextRect.left + nextRect.width / 2,
-                            nextRect.top + nextRect.height / 2
-                        );
-                    });
+    const nextRect =
+        elements.viewer.getBoundingClientRect();
+
+    photoEngine.focusAt(
+        2.1,
+        nextRect.left + nextRect.width / 2,
+        nextRect.top + nextRect.height / 2
+    );
+
+    /*
+     * 全画面解除後のレイアウト反映を待ってから、
+     * 入力的を画面内へ表示する。
+     */
+    requestAnimationFrame(function () {
+        const targetSvg =
+            document.getElementById("targetSvg");
+
+        if (!targetSvg) {
+            return;
+        }
+
+        targetSvg.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "nearest"
+        });
+    });
+});
                 }
             );
         }

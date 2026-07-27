@@ -56,53 +56,7 @@ function overwriteSheet(sheetName, data) {
 
   if (!data || data.length === 0) return;
 
-    const headers = [];
-
-  data.forEach(item => {
-    if (!item || typeof item !== "object") {
-      return;
-    }
-
-    Object.keys(item).forEach(key => {
-      if (!headers.includes(key)) {
-        headers.push(key);
-      }
-    });
-  });
-
-    const preferredHeaderOrder = [
-    "date",
-    "memberId",
-    "memberName",
-    "distance",
-    "a1",
-    "a2",
-    "a3",
-    "a4",
-    "a5",
-    "a6",
-    "total",
-    "pins"
-  ];
-
-  headers.sort((a, b) => {
-    const aIndex = preferredHeaderOrder.indexOf(a);
-    const bIndex = preferredHeaderOrder.indexOf(b);
-
-    if (aIndex === -1 && bIndex === -1) {
-      return 0;
-    }
-
-    if (aIndex === -1) {
-      return 1;
-    }
-
-    if (bIndex === -1) {
-      return -1;
-    }
-
-    return aIndex - bIndex;
-  });
+  const headers = Object.keys(data[0]);
 
   const rows = data.map(item => {
     return headers.map(header => {

@@ -152,49 +152,101 @@ const V4Auth = {
     },
 
     /**
-     * ログイン
-     */
-    login() {
-        const memberDropdown = document.getElementById("v4LoginMember");
-        const passwordInput = document.getElementById("v4LoginPassword");
+ * ログイン
+ */
+async login() {
+    const memberDropdown = document.getElementById("v4LoginMember");
+    const passwordInput = document.getElementById("v4LoginPassword");
+    const loginButton = document.getElementById("v4LoginButton");
 
-        if (!memberDropdown || !passwordInput) return;
+    if (!memberDropdown || !passwordInput) return;
 
-        const member = memberDropdown.value;
-        const password = passwordInput.value;
+    const memberIdentifier = memberDropdown.value.trim();
+    const password = passwordInput.value;
 
-        if (!member) {
-            this.showMessage("部員を選択してください。", "error");
-            memberDropdown.focus();
-            return;
-        }
+    if (!memberIdentifier) {
+        this.showMessage("部員を選択してください。", "error");
+        memberDropdown.focus();
+        return;
+    }
 
-        if (!password) {
-            this.showMessage("パスワードを入力してください。", "error");
-            passwordInput.focus();
-            return;
-        }
+    if (!password) {
+        this.showMessage("パスワードを入力してください。", "error");
+        passwordInput.focus();
+        return;
+    }
 
-        const correctPassword =
-            this.memberPasswords[member] || V4_DEFAULT_PASSWORD;
+    if (
+        typeof window.V4AuthApi === "undefined" ||
+        typeof window.V4AuthApi.login !== "function"
+    ) {
+        this.showMessage(
+            "認証機能を読み込めませんでした。ページを再読み込みしてください。",
+            "error"
+        );
+        return;
+    }
 
-        if (password !== correctPassword) {
-            this.showMessage("パスワードが違います。", "error");
+    if (loginButton) {
+        loginButton.disabled = true;
+        loginButton.textContent = "確認中...";
+    }
+
+    this.showMessage("ログイン情報を確認しています。", "");
+
+    try {
+        const result = await window.V4AuthApi.login(
+            memberIdentifier,
+            password
+        );
+
+        if (!result || result.success !== true || !result.member) {
+            const message =
+                result && result.message
+                    ? result.message
+                    : "ログインできませんでした。";
+
+            this.showMessage(message, "error");
             passwordInput.value = "";
             passwordInput.focus();
             return;
         }
 
-        this.loggedInMember = member;
-        this.saveLogin();
+        const authenticatedMember = result.member;
+
+        this.loggedInMember =
+            authenticatedMember.displayName ||
+            authenticatedMember.memberName ||
+            memberIdentifier;
+
+        this.saveLogin(authenticatedMember);
 
         passwordInput.value = "";
 
-        this.showMessage(`${member}さん、ログインしました。`, "success");
+        this.showMessage(
+            `${this.loggedInMember}さん、ログインしました。`,
+            "success"
+        );
+
         this.updateScreen();
 
         window.location.href = "project-zero-home.html";
-    },
+    } catch (error) {
+        console.error("ログイン処理に失敗しました:", error);
+
+        this.showMessage(
+            error && error.message
+                ? error.message
+                : "ログイン処理中にエラーが発生しました。",
+            "error"
+        );
+    } finally {
+        if (loginButton) {
+            loginButton.disabled = false;
+            loginButton.textContent = "ログイン";
+        }
+    }
+},
 
     /**
      * ログアウト
@@ -214,19 +266,33 @@ const V4Auth = {
     },
 
     /**
-     * ログイン状態を保存
-     */
-    saveLogin() {
-        const loginData = {
-            member: this.loggedInMember,
-            savedAt: new Date().toISOString()
-        };
+ * ログイン状態を保存
+ */
+saveLogin(memberData = {}) {
+    const memberName =
+        memberData.memberName ||
+        memberData.displayName ||
+        this.loggedInMember;
 
-        localStorage.setItem(
-            V4_AUTH_STORAGE_KEY,
-            JSON.stringify(loginData)
-        );
-    },
+    const displayName =
+        memberData.displayName ||
+        memberName ||
+        this.loggedInMember;
+
+    const loginData = {
+        member: displayName,
+        memberId: memberData.memberId || "",
+        memberName: memberName || "",
+        displayName: displayName || "",
+        role: memberData.role || "member",
+        savedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(
+        V4_AUTH_STORAGE_KEY,
+        JSON.stringify(loginData)
+    );
+},
 
     /**
      * 保存されたログイン状態を復元

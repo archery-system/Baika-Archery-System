@@ -18,3 +18,7 @@ const BAS_CONFIG = {
 };
 
 Object.freeze(BAS_CONFIG);
+
+const V4_GAS_API_URL =
+    "https://script.google.com/macros/s/AKfycbwGlg88mq5G4fR0_H9BlQ8VmdloL8oBPOBeIBQKWrK_XunDTPalvpo1tLu4I0qA2f16/exec";
+
