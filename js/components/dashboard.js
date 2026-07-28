@@ -8,7 +8,7 @@
     "use strict";
 
     const HOME_CARDS = [
-        {
+                {
             icon: "📝",
             title: "練習入力",
             description: "得点や着弾位置を記録します。",
@@ -24,6 +24,26 @@
                     label: "練習入力を開く",
                     href: "practice.html",
                     className: "bas-button--primary"
+                }
+            ]
+        },
+        {
+            icon: "📖",
+            title: "練習記録",
+            description:
+                "保存済みの練習記録を確認します。",
+            body:
+                "日付、距離、6射の得点、合計点を部員別に表示します。",
+            status: {
+                label: "利用可能",
+                type: "ready"
+            },
+            interactive: true,
+            actions: [
+                {
+                    label: "練習記録を開く",
+                    href: "project-zero-records.html",
+                    className: "bas-button--secondary"
                 }
             ]
         },
@@ -108,21 +128,58 @@
         element.textContent = value;
     }
 
-    function getCurrentUserName() {
+        function getCurrentUserName() {
         if (
-            typeof BAS_STATE === "undefined" ||
-            !BAS_STATE.currentUser
+            window.V4Session &&
+            typeof window.V4Session.getLoggedInMemberData ===
+                "function"
         ) {
-            return "ゲストユーザー";
+            const loginData =
+                window.V4Session.getLoggedInMemberData();
+
+            if (loginData) {
+                const memberName =
+                    loginData.displayName ||
+                    loginData.memberName ||
+                    loginData.member;
+
+                if (
+                    typeof memberName === "string" &&
+                    memberName.trim() !== ""
+                ) {
+                    return memberName.trim() + " さん";
+                }
+            }
         }
 
-        const currentUser = BAS_STATE.currentUser;
+        if (
+            window.V4Session &&
+            typeof window.V4Session.getLoggedInMember ===
+                "function"
+        ) {
+            const memberName =
+                window.V4Session.getLoggedInMember();
+
+            if (
+                typeof memberName === "string" &&
+                memberName.trim() !== ""
+            ) {
+                return memberName.trim() + " さん";
+            }
+        }
 
         if (
-            typeof currentUser.name === "string" &&
-            currentUser.name.trim() !== ""
+            typeof BAS_STATE !== "undefined" &&
+            BAS_STATE.currentUser
         ) {
-            return currentUser.name.trim() + " さん";
+            const currentUser = BAS_STATE.currentUser;
+
+            if (
+                typeof currentUser.name === "string" &&
+                currentUser.name.trim() !== ""
+            ) {
+                return currentUser.name.trim() + " さん";
+            }
         }
 
         return "ゲストユーザー";

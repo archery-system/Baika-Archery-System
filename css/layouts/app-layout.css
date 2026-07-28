@@ -100,3 +100,19 @@
         width: 100%;
     }
 }
+
+/**
+ * スマートフォン・小型タブレット横向き
+ * ヘッダーが2段になる場合の上余白を確保
+ */
+@media (
+    max-width: 900px
+) and (
+    orientation: landscape
+) {
+    .bas-app__main {
+        padding-top: calc(
+            var(--bas-header-height) + 92px
+        );
+    }
+}

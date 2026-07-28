@@ -9,7 +9,7 @@
 
     const LOGIN_STORAGE_KEY = "baikaArcheryVer4Login";
 
-    const HEADER_ITEMS = [
+        const HEADER_ITEMS = [
         {
             route: "home",
             label: "ホーム",
@@ -21,6 +21,12 @@
             label: "練習入力",
             icon: "📝",
             href: "practice.html"
+        },
+        {
+            route: "records",
+            label: "記録",
+            icon: "📚",
+            href: "project-zero-record-center.html"
         },
         {
             route: "analysis",
