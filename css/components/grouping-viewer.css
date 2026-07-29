@@ -1,0 +1,192 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Grouping Viewer
+ */
+
+.bas-grouping-viewer[hidden] {
+    display: none;
+}
+
+.bas-grouping-viewer {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.bas-grouping-viewer__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(20 12 28 / 70%);
+    backdrop-filter: blur(4px);
+}
+
+.bas-grouping-viewer__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 560px);
+    max-height: calc(100vh - 48px);
+    overflow: auto;
+    border: 1px solid rgb(255 255 255 / 18%);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgb(35 20 45 / 35%);
+}
+
+.bas-grouping-viewer__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #eadfea;
+    background:
+        linear-gradient(
+            135deg,
+            #7228b7,
+            #9f2d67
+        );
+    color: #ffffff;
+}
+
+.bas-grouping-viewer__eyebrow {
+    margin: 0 0 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    opacity: 0.8;
+}
+
+.bas-grouping-viewer__title {
+    margin: 0;
+    font-size: 1.3rem;
+}
+
+.bas-grouping-viewer__close {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgb(255 255 255 / 35%);
+    border-radius: 999px;
+    color: #ffffff;
+    background: rgb(255 255 255 / 12%);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.bas-grouping-viewer__body {
+    padding: 20px;
+}
+
+.bas-grouping-viewer__summary {
+    margin: 0 0 16px;
+    color: #5f4c63;
+    font-weight: 700;
+    text-align: center;
+}
+
+.bas-grouping-viewer__target {
+    display: grid;
+    place-items: center;
+    min-height: 280px;
+    border: 1px solid #eadfea;
+    border-radius: 16px;
+    background: #faf7fb;
+}
+
+.bas-grouping-viewer__message {
+    margin: 0;
+    padding: 24px;
+    color: #5f4c63;
+    font-weight: 700;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .bas-grouping-viewer {
+        padding: 12px;
+    }
+
+    .bas-grouping-viewer__dialog {
+        width: 100%;
+        max-height: calc(100vh - 24px);
+        border-radius: 16px;
+    }
+
+    .bas-grouping-viewer__header {
+        padding: 16px;
+    }
+
+    .bas-grouping-viewer__body {
+        padding: 16px;
+    }
+}
+
+.bas-grouping-viewer__target-svg {
+    display: block;
+    width: min(100%, 420px);
+    height: auto;
+    aspect-ratio: 1;
+}
+
+.bas-grouping-viewer__details {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #eadfea;
+    border-radius: 16px;
+    background: #faf7fb;
+}
+
+.bas-grouping-viewer__details-title {
+    margin: 0 0 12px;
+    color: #4b3152;
+    font-size: 1rem;
+}
+
+.bas-grouping-viewer__details-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.bas-grouping-viewer__details-item {
+    min-width: 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.bas-grouping-viewer__details-item--wide {
+    grid-column: 1 / -1;
+}
+
+.bas-grouping-viewer__details-item dt {
+    margin: 0 0 4px;
+    color: #7a627e;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.bas-grouping-viewer__details-item dd {
+    margin: 0;
+    color: #2f2631;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 480px) {
+    .bas-grouping-viewer__details-list {
+        grid-template-columns: 1fr;
+    }
+
+    .bas-grouping-viewer__details-item--wide {
+        grid-column: auto;
+    }
+}

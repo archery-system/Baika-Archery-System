@@ -1,0 +1,496 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Records Page
+ */
+
+.bas-records {
+    display: grid;
+    gap: var(--bas-space-5);
+    width: min(
+        calc(100% - (var(--bas-space-4) * 2)),
+        var(--bas-content-width)
+    );
+    margin-inline: auto;
+    padding-block: var(--bas-space-5) var(--bas-space-8);
+}
+
+/* ========================================
+   Summary
+======================================== */
+
+.bas-records__summary {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-records__summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bas-space-4);
+}
+
+.bas-records__label {
+    margin: 0 0 var(--bas-space-1);
+    color: var(--bas-color-text-muted);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 700;
+}
+
+.bas-records__user-name {
+    margin: 0;
+    color: var(--bas-color-text);
+    font-size: clamp(
+        var(--bas-font-size-xl),
+        5vw,
+        var(--bas-font-size-2xl)
+    );
+    line-height: 1.25;
+}
+
+.bas-records__count {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.5rem;
+    min-height: 2.5rem;
+    padding: var(--bas-space-2) var(--bas-space-3);
+    border-radius: 999px;
+    color: var(--bas-color-white);
+    background: var(--bas-color-primary-700);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 800;
+}
+
+.bas-records__description {
+    margin: 0;
+    color: var(--bas-color-text-muted);
+    line-height: 1.7;
+}
+
+/* ========================================
+   Status
+======================================== */
+
+.bas-records__status {
+    text-align: center;
+}
+
+.bas-records__status p {
+    margin: 0;
+    color: var(--bas-color-text-muted);
+    font-weight: 700;
+}
+
+.bas-records__status--error {
+    border-color: var(--bas-color-danger);
+}
+
+.bas-records__status--error p {
+    color: var(--bas-color-danger);
+}
+
+/* ========================================
+   Records List
+======================================== */
+
+.bas-records__list-section {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-records__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bas-space-3);
+}
+
+.bas-records__section-title {
+    margin: 0;
+    color: var(--bas-color-text);
+    font-size: var(--bas-font-size-xl);
+}
+
+.bas-records__list {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+/* ========================================
+   Record Card
+======================================== */
+
+.bas-records__item {
+    display: grid;
+    gap: var(--bas-space-4);
+    padding: var(--bas-space-5);
+    border: 1px solid var(--bas-color-border);
+    border-radius: var(--bas-radius-lg);
+    background: var(--bas-color-surface);
+    box-shadow: var(--bas-shadow-sm);
+}
+
+.bas-records__item-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--bas-space-3);
+}
+
+.bas-records__date {
+    margin: 0;
+    color: var(--bas-color-text);
+    font-size: var(--bas-font-size-lg);
+    font-weight: 800;
+}
+
+.bas-records__distance {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.75rem;
+    min-height: 2rem;
+    padding-inline: var(--bas-space-3);
+    border-radius: 999px;
+    color: var(--bas-color-primary-900);
+    background: var(--bas-color-primary-100);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 800;
+}
+
+.bas-records__arrows {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--bas-space-2);
+}
+
+.bas-records__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    border: 1px solid var(--bas-color-border);
+    border-radius: var(--bas-radius-md);
+    color: var(--bas-color-text);
+    background: var(--bas-color-background);
+    font-size: var(--bas-font-size-lg);
+    font-weight: 800;
+}
+
+.bas-records__total {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: var(--bas-space-2);
+    padding-top: var(--bas-space-3);
+    border-top: 1px solid var(--bas-color-border);
+}
+
+.bas-records__total-label {
+    color: var(--bas-color-text-muted);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 700;
+}
+
+.bas-records__total-value {
+    color: var(--bas-color-primary-800);
+    font-size: var(--bas-font-size-2xl);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.bas-records__total-unit {
+    color: var(--bas-color-text-muted);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 700;
+}
+
+/* ========================================
+   Empty State
+======================================== */
+
+.bas-records__empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--bas-space-3);
+    padding-block: var(--bas-space-8);
+    text-align: center;
+}
+
+.bas-records__empty[hidden] {
+    display: none;
+}
+
+.bas-records__empty-icon {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.bas-records__empty-title {
+    margin: 0;
+    color: var(--bas-color-text);
+    font-size: var(--bas-font-size-xl);
+}
+
+.bas-records__empty-message {
+    max-width: 32rem;
+    margin: 0;
+    color: var(--bas-color-text-muted);
+    line-height: 1.7;
+}
+
+.bas-records__practice-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    margin-top: var(--bas-space-2);
+    padding: var(--bas-space-2) var(--bas-space-5);
+    border-radius: var(--bas-radius-md);
+    color: var(--bas-color-white);
+    background: var(--bas-color-primary-700);
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.bas-records__practice-link:hover {
+    background: var(--bas-color-primary-800);
+    transform: translateY(-1px);
+}
+
+.bas-records__practice-link:focus-visible {
+    outline: 3px solid var(--bas-color-primary-300);
+    outline-offset: 3px;
+}
+
+/* ========================================
+   Hidden Elements
+======================================== */
+
+.bas-records__status[hidden],
+.bas-records__list-section[hidden] {
+    display: none;
+}
+
+/* ========================================
+   Responsive
+======================================== */
+
+@media (max-width: 640px) {
+    .bas-records {
+        gap: var(--bas-space-4);
+        width: min(
+            calc(100% - (var(--bas-space-3) * 2)),
+            var(--bas-content-width)
+        );
+        padding-block: var(--bas-space-4) var(--bas-space-6);
+    }
+
+    .bas-records__summary-header {
+        align-items: flex-start;
+    }
+
+    .bas-records__item {
+        gap: var(--bas-space-3);
+        padding: var(--bas-space-4);
+    }
+
+    .bas-records__arrows {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .bas-records__arrow {
+        min-height: 2.75rem;
+    }
+}
+
+.bas-records__tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.bas-records__tab {
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid rgb(111 45 189 / 24%);
+    border-radius: 12px;
+    color: #54228f;
+    background: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bas-records__tab--active {
+    color: #fff;
+    background: #6f2dbd;
+}
+
+.bas-records__tab:focus-visible {
+    outline: 3px solid rgb(111 45 189 / 25%);
+    outline-offset: 2px;
+}
+
+.bas-records__grouping-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.bas-records__grouping-conditions {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid rgb(111 45 189 / 14%);
+    border-radius: 12px;
+    background: rgb(111 45 189 / 4%);
+}
+
+.bas-records__grouping-condition {
+    display: grid;
+    grid-template-columns: minmax(110px, auto) 1fr;
+    gap: 12px;
+    align-items: start;
+    margin: 0;
+}
+
+.bas-records__grouping-condition span {
+    color: #67428f;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.bas-records__grouping-condition strong {
+    min-width: 0;
+    color: #333;
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.bas-records__grouping-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.bas-records__grouping-button {
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid rgb(111 45 189 / 26%);
+    border-radius: 10px;
+    color: #54228f;
+    background: #fff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bas-records__grouping-button--primary {
+    color: #fff;
+    background: #6f2dbd;
+}
+
+.bas-records__grouping-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 520px) {
+    .bas-records__grouping-conditions {
+        padding: 10px;
+    }
+
+    .bas-records__grouping-condition {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .bas-records__grouping-condition strong {
+        padding-left: 1.75rem;
+    }
+}
+
+.bas-records__grouping-button--selected {
+    border-color: #6f3f78;
+    color: #ffffff;
+    background: #6f3f78;
+    box-shadow: 0 4px 12px rgb(71 38 80 / 20%);
+}
+
+.bas-records__comparison-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+    padding: 16px;
+    border: 1px solid rgb(111 63 120 / 28%);
+    border-radius: 16px;
+    background:
+        linear-gradient(
+            135deg,
+            rgb(111 63 120 / 10%),
+            rgb(255 255 255 / 95%)
+        );
+}
+
+.bas-records__comparison-bar[hidden] {
+    display: none;
+}
+
+.bas-records__comparison-bar strong {
+    color: #4d2d55;
+    font-size: 1rem;
+}
+
+.bas-records__comparison-bar p {
+    margin: 4px 0 0;
+    color: #715d75;
+    font-size: 0.88rem;
+}
+
+.bas-records__comparison-start {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 12px;
+    color: #ffffff;
+    background: #6f3f78;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bas-records__comparison-start:disabled {
+    color: #8a7e8c;
+    background: #ddd7de;
+    cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+    .bas-records__comparison-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .bas-records__comparison-start {
+        width: 100%;
+    }
+}

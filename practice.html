@@ -122,6 +122,230 @@
     </div>
 </section>
 
+<section class="v4-card v4-card-full v4-condition-card">
+    <details id="v4PracticeCondition">
+        <summary class="v4-condition-summary">
+            <span>
+                🌤 練習コンディション
+                <small>任意</small>
+            </span>
+
+            <span class="v4-condition-summary-note">
+                今日の調子や天候、練習テーマを記録できます
+            </span>
+        </summary>
+
+        <div class="v4-condition-content">
+            <div class="v4-condition-grid">
+
+                <div class="v4-form-group">
+                    <label for="v4ConditionFeeling">
+                        今日の調子
+                    </label>
+
+                    <select
+                        id="v4ConditionFeeling"
+                        name="conditionFeeling"
+                    >
+                        <option value="">未入力</option>
+                        <option value="very-good">とても良い</option>
+                        <option value="good">良い</option>
+                        <option value="normal">普通</option>
+                        <option value="bad">悪い</option>
+                        <option value="very-bad">とても悪い</option>
+                    </select>
+                </div>
+
+                <div class="v4-form-group">
+                    <label for="v4ConditionWeather">
+                        天気
+                    </label>
+
+                    <select
+                        id="v4ConditionWeather"
+                        name="conditionWeather"
+                    >
+                        <option value="">未入力</option>
+                        <option value="sunny">晴れ</option>
+                        <option value="cloudy">曇り</option>
+                        <option value="rainy">雨</option>
+                        <option value="snowy">雪</option>
+                        <option value="other">その他</option>
+                    </select>
+                </div>
+
+                <div class="v4-form-group">
+                    <label for="v4ConditionWindStrength">
+                        風の強さ
+                    </label>
+
+                    <select
+                        id="v4ConditionWindStrength"
+                        name="conditionWindStrength"
+                    >
+                        <option value="">未入力</option>
+                        <option value="none">無風</option>
+                        <option value="weak">弱い</option>
+                        <option value="normal">普通</option>
+                        <option value="strong">強い</option>
+                    </select>
+                </div>
+
+                <div class="v4-form-group">
+    <label>
+        風向
+    </label>
+
+    <div
+        id="v4ConditionWindDirection"
+        class="v4-wind-direction"
+        role="group"
+        aria-label="風が流れる方向"
+    >
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="north-west"
+            aria-label="右手前から左奥へ"
+            title="右手前から左奥へ"
+        >
+            ↖
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="north"
+            aria-label="手前から奥へ"
+            title="手前から奥へ"
+        >
+            ↑
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="north-east"
+            aria-label="左手前から右奥へ"
+            title="左手前から右奥へ"
+        >
+            ↗
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="west"
+            aria-label="右から左へ"
+            title="右から左へ"
+        >
+            ←
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button v4-wind-direction-button--calm"
+            data-wind-direction=""
+            aria-label="風向を未入力にする"
+            title="未入力"
+        >
+            ○
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="east"
+            aria-label="左から右へ"
+            title="左から右へ"
+        >
+            →
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="south-west"
+            aria-label="右奥から左手前へ"
+            title="右奥から左手前へ"
+        >
+            ↙
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="south"
+            aria-label="奥から手前へ"
+            title="奥から手前へ"
+        >
+            ↓
+        </button>
+
+        <button
+            type="button"
+            class="v4-wind-direction-button"
+            data-wind-direction="south-east"
+            aria-label="左奥から右手前へ"
+            title="左奥から右手前へ"
+        >
+            ↘
+        </button>
+    </div>
+
+    <input
+        type="hidden"
+        id="v4ConditionWindDirectionValue"
+        name="conditionWindDirection"
+        value=""
+    >
+
+    <p
+        id="v4ConditionWindDirectionLabel"
+        class="v4-wind-direction-label"
+        aria-live="polite"
+    >
+        未入力
+    </p>
+</div>
+
+                <div class="v4-form-group v4-condition-wide">
+                    <label for="v4ConditionTheme">
+                        今日のテーマ
+                    </label>
+
+                    <input
+                        type="text"
+                        id="v4ConditionTheme"
+                        name="conditionTheme"
+                        maxlength="100"
+                        placeholder="例：クリッカー後も伸び続ける"
+                    >
+                </div>
+
+                <div class="v4-form-group v4-condition-wide">
+                    <label for="v4ConditionMemo">
+                        練習メモ
+                    </label>
+
+                    <textarea
+                        id="v4ConditionMemo"
+                        name="conditionMemo"
+                        rows="4"
+                        maxlength="500"
+                        placeholder="その日の調子、気づき、サイト調整などを自由に記録できます"
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <p class="v4-condition-help">
+                すべて任意項目です。未入力のままでも練習記録を保存できます。
+            </p>
+        </div>
+    </details>
+</section>
+
 <section class="v4-card v4-card-full v4-photo-workspace-card">
     <div class="v4-card-title">
         🎯 写真から着弾位置を転記
@@ -208,7 +432,7 @@
                 <button type="button" id="v4PinAdjustDone" class="v4-pin-adjust-done">選択解除</button>
             </div>
 
-            <button type="button" id="v4RegisterAdjustedArrows" class="v4-pin-register-button" disabled>💾 現在の着弾を登録</button>
+            <button type="button" id="v4RegisterAdjustedArrows" class="v4-pin-register-button" disabled>💾 ｸﾞﾙｰﾋﾟﾝｸﾞに追加</button>
             <div id="v4PinRegisterMessage" class="v4-pin-register-message" aria-live="polite"></div>
         </div>
     </div>
@@ -219,9 +443,21 @@
         <div class="v4-target-container v4-grouping-container">
             <svg id="groupingTargetSvg" viewBox="0 0 300 300" role="img" aria-label="グルーピング確認用の的"></svg>
         </div>
-        <p class="v4-grouping-note">入力済みの着弾位置を全体表示します。</p>
-    </div>
+        <button
+    type="button"
+    id="v4SaveGrouping"
+    class="v4-grouping-save-button"
+    disabled
+>
+    💾 グルーピングを保存
+</button>
 
+<div
+    id="v4GroupingSaveMessage"
+    class="v4-grouping-save-message"
+    aria-live="polite"
+>
+    グルーピングがありません
 </div>
 
 </section>
@@ -478,7 +714,7 @@
         class="v4-end-action v4-end-action-register"
         disabled
     >
-        📍 現在の着弾を登録
+        📍 グルーピングに追加
     </button>
 
     <button
@@ -520,9 +756,10 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        setDefaultPracticeDate();
-        displayLoggedInMember();
-    });
+    setDefaultPracticeDate();
+    displayLoggedInMember();
+    initializeWindDirectionButtons();
+});
 
     function setDefaultPracticeDate() {
         const practiceDateInput =
@@ -654,6 +891,96 @@
 
         return "";
     }
+
+function initializeWindDirectionButtons() {
+
+    const windDirectionContainer =
+        document.getElementById(
+            "v4ConditionWindDirection"
+        );
+
+    const windDirectionInput =
+        document.getElementById(
+            "v4ConditionWindDirectionValue"
+        );
+
+    const windDirectionLabel =
+        document.getElementById(
+            "v4ConditionWindDirectionLabel"
+        );
+
+    if (
+        !windDirectionContainer ||
+        !windDirectionInput ||
+        !windDirectionLabel
+    ) {
+        return;
+    }
+
+    const buttons =
+        windDirectionContainer.querySelectorAll(
+            ".v4-wind-direction-button"
+        );
+
+    const directionLabels = {
+    "north-west": "右手前から左奥へ",
+    "north": "手前から奥へ",
+    "north-east": "左手前から右奥へ",
+    "west": "右から左へ",
+    "east": "左から右へ",
+    "south-west": "右奥から左手前へ",
+    "south": "奥から手前へ",
+    "south-east": "左奥から右手前へ"
+};
+
+    buttons.forEach(function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                const selectedDirection =
+                    button.dataset.windDirection || "";
+
+                buttons.forEach(function (currentButton) {
+                    currentButton.classList.remove(
+                        "is-selected"
+                    );
+
+                    currentButton.setAttribute(
+                        "aria-pressed",
+                        "false"
+                    );
+                });
+
+                windDirectionInput.value =
+                    selectedDirection;
+
+                if (!selectedDirection) {
+                    windDirectionLabel.textContent =
+                        "未入力";
+
+                    return;
+                }
+
+                button.classList.add("is-selected");
+
+                button.setAttribute(
+                    "aria-pressed",
+                    "true"
+                );
+
+                windDirectionLabel.textContent =
+                    directionLabels[
+                        selectedDirection
+                    ] || "未入力";
+            }
+        );
+
+    });
+
+}
+
 </script>
 
 
@@ -770,7 +1097,7 @@
 </div>
 
 <script src="js/core/state.js"></script>
-<script src="js/v4-input.js?v=675"></script>
+<script src="js/v4-input.js?v=676"></script>
 <script src="js/v4-photo-engine.js?v=630"></script>
 <script src="js/v4-layout.js?v=29b4"></script>
 <script src="js/v4-target-engine.js?v=670"></script>

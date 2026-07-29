@@ -88,7 +88,7 @@
             var(--bas-content-width)
         );
         padding-top: calc(
-            var(--bas-header-height) + 92px
+            var(--bas-header-height) + 108px
         );
     }
 
@@ -112,7 +112,7 @@
 ) {
     .bas-app__main {
         padding-top: calc(
-            var(--bas-header-height) + 92px
+            var(--bas-header-height) + 108px
         );
     }
 }

@@ -1,0 +1,140 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Record Center Page
+ */
+
+.bas-record-center {
+    width: 100%;
+}
+
+.bas-record-center__grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: var(--bas-space-5);
+}
+
+.bas-record-center__card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--bas-space-4);
+    min-height: 100%;
+}
+
+.bas-record-center__icon {
+    display: grid;
+    flex: 0 0 auto;
+    width: 54px;
+    height: 54px;
+    place-items: center;
+    border-radius: var(--bas-radius-lg);
+    background:
+        linear-gradient(
+            135deg,
+            rgb(107 70 193 / 14%),
+            rgb(107 70 193 / 5%)
+        );
+    font-size: 1.8rem;
+}
+
+.bas-record-center__content {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+.bas-record-center__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--bas-space-3);
+}
+
+.bas-record-center__title {
+    margin: 0;
+    color: var(--bas-color-text);
+    font-size: var(--bas-font-size-xl);
+    line-height: 1.35;
+}
+
+.bas-record-center__description {
+    margin: var(--bas-space-1) 0 0;
+    color: var(--bas-color-text-muted);
+    line-height: 1.6;
+}
+
+.bas-record-center__body {
+    flex: 1;
+    margin:
+        var(--bas-space-4)
+        0;
+    color: var(--bas-color-text-muted);
+    line-height: 1.7;
+}
+
+.bas-record-center__status {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding:
+        var(--bas-space-1)
+        var(--bas-space-3);
+    border-radius: 999px;
+    font-size: var(--bas-font-size-xs);
+    font-weight: var(--bas-font-weight-bold);
+    white-space: nowrap;
+}
+
+.bas-record-center__status--ready {
+    color: #17663a;
+    background: #e5f6ec;
+}
+
+.bas-record-center__status--planned {
+    color: var(--bas-color-text-muted);
+    background: rgb(0 0 0 / 6%);
+}
+
+.bas-record-center__button {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+.bas-record-center__button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media (max-width: 800px) {
+    .bas-record-center__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .bas-record-center__card {
+        flex-direction: column;
+    }
+
+    .bas-record-center__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.55rem;
+    }
+
+    .bas-record-center__heading {
+        width: 100%;
+    }
+
+    .bas-record-center__title {
+        font-size: var(--bas-font-size-lg);
+    }
+
+    .bas-record-center__button {
+        width: 100%;
+    }
+}

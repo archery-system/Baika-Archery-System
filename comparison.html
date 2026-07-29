@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        グルーピング比較 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/page-header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/pages/comparison.css"
+    >
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <section class="bas-comparison">
+                <header class="bas-comparison__header">
+                    <div>
+                        <p class="bas-comparison__eyebrow">
+                            Grouping Comparison
+                        </p>
+
+                        <h1 class="bas-comparison__title">
+                            グルーピング比較
+                        </h1>
+
+                        <p class="bas-comparison__description">
+                            選択した2件のグルーピングを比較します。
+                        </p>
+                    </div>
+
+                    <a
+                        class="bas-comparison__back"
+                        href="project-zero-records.html"
+                    >
+                        記録画面へ戻る
+                    </a>
+                </header>
+
+                <section
+                    id="comparisonError"
+                    class="bas-card bas-comparison__error"
+                    hidden
+                >
+                    <h2>
+                        比較データを読み込めません
+                    </h2>
+
+                    <p id="comparisonErrorMessage">
+                    </p>
+                </section>
+
+                <section
+                    id="comparisonContent"
+                    class="bas-comparison__content"
+                    hidden
+                >
+                    <div class="bas-comparison__records">
+                        <article
+                            id="comparisonRecordA"
+                            class="bas-card bas-comparison__record"
+                        >
+                        </article>
+
+                        <article
+                            id="comparisonRecordB"
+                            class="bas-card bas-comparison__record"
+                        >
+                        </article>
+                    </div>
+
+                    <section class="bas-card bas-comparison__target-card">
+                        <h2 class="bas-comparison__section-title">
+                            比較用の的
+                        </h2>
+
+                        <div
+    class="bas-comparison__display-controls"
+    aria-label="グルーピング表示切り替え"
+>
+    <button
+        id="comparisonShowRecordA"
+        class="bas-comparison__display-button"
+        type="button"
+        data-comparison-display="record-a"
+        aria-pressed="false"
+    >
+        <span
+            class="bas-comparison__display-marker
+                   bas-comparison__display-marker--record-a"
+            aria-hidden="true"
+        ></span>
+
+        記録1
+    </button>
+
+    <button
+        id="comparisonShowRecordB"
+        class="bas-comparison__display-button"
+        type="button"
+        data-comparison-display="record-b"
+        aria-pressed="false"
+    >
+        <span
+            class="bas-comparison__display-marker
+                   bas-comparison__display-marker--record-b"
+            aria-hidden="true"
+        ></span>
+
+        記録2
+    </button>
+
+    <button
+        id="comparisonShowOverlay"
+        class="
+            bas-comparison__display-button
+            bas-comparison__display-button--selected
+        "
+        type="button"
+        data-comparison-display="overlay"
+        aria-pressed="true"
+    >
+        <span
+            class="bas-comparison__display-marker
+                   bas-comparison__display-marker--overlay"
+            aria-hidden="true"
+        ></span>
+
+        重ねて表示
+    </button>
+</div>
+
+<div
+    class="bas-comparison__target-container"
+>
+    <svg
+        id="comparisonTarget"
+        class="bas-comparison__target"
+        viewBox="0 0 300 300"
+        aria-label="グルーピング比較"
+    >
+    </svg>
+</div>
+                    </section>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+    <script src="js/auth/api.js"></script>
+
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/core/theme.js"></script>
+    <script src="js/core/state.js"></script>
+
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+    <script src="js/components/card.js"></script>
+
+    <script src="js/components/grouping-target.js"></script>
+
+    <!-- Comparison Page -->
+    <script src="js/pages/comparison.js"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    window.BAS_COMPARISON &&
+                    typeof window.BAS_COMPARISON.initialize ===
+                        "function"
+                ) {
+                    window.BAS_COMPARISON.initialize();
+                }
+            }
+        );
+    </script>
+</body>
+</html>

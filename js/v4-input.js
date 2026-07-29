@@ -14,11 +14,207 @@
 let currentArrows = [];
 let photoGroupingArrows = [];
 let registeredGroupingArrows = [];
+let isGroupingSaved = false;
 let isZoomed = false;
 let zoomCenter = {
     x: 150,
     y: 150
 };
+
+const GROUPING_DRAFT_STORAGE_PREFIX =
+    "basProjectZeroGroupingDraft";
+
+/**
+ * ログイン中の部員を識別する値を取得する
+ */
+function getGroupingDraftMemberKey() {
+    const sessionMember =
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMember ===
+            "function"
+            ? window.V4Session.getLoggedInMember()
+            : null;
+
+    if (sessionMember) {
+        if (typeof sessionMember === "string") {
+            return sessionMember;
+        }
+
+        if (
+            typeof sessionMember === "object"
+        ) {
+            return (
+                sessionMember.id ||
+                sessionMember.memberId ||
+                sessionMember.name ||
+                sessionMember.memberName ||
+                "unknown"
+            );
+        }
+    }
+
+    const savedMember =
+        window.localStorage.getItem(
+            "baikaLoggedInMember"
+        );
+
+    return savedMember || "unknown";
+}
+
+/**
+ * 部員別のグルーピング一時保存キーを作成する
+ */
+function getGroupingDraftStorageKey() {
+    return [
+        GROUPING_DRAFT_STORAGE_PREFIX,
+        getGroupingDraftMemberKey()
+    ].join(":");
+}
+
+/**
+ * 登録済みグルーピングを端末へ一時保存する
+ */
+function saveGroupingDraft() {
+    try {
+        const payload = {
+            savedAt:
+                new Date().toISOString(),
+
+            arrows:
+                registeredGroupingArrows.map(
+                    function (arrow) {
+                        return {
+                            ...arrow
+                        };
+                    }
+                )
+        };
+
+        window.localStorage.setItem(
+            getGroupingDraftStorageKey(),
+            JSON.stringify(payload)
+        );
+    } catch (error) {
+        console.warn(
+            "グルーピングの一時保存に失敗しました。",
+            error
+        );
+    }
+}
+
+/**
+ * 端末に残っているグルーピングを復元する
+ */
+function restoreGroupingDraft() {
+    try {
+        const savedValue =
+            window.localStorage.getItem(
+                getGroupingDraftStorageKey()
+            );
+
+        if (!savedValue) {
+            return false;
+        }
+
+        const savedDraft =
+            JSON.parse(savedValue);
+
+        if (
+            !savedDraft ||
+            !Array.isArray(savedDraft.arrows)
+        ) {
+            return false;
+        }
+
+        registeredGroupingArrows =
+            savedDraft.arrows.map(
+                function (arrow) {
+                    return {
+                        ...arrow
+                    };
+                }
+            );
+
+        return (
+            registeredGroupingArrows.length > 0
+        );
+    } catch (error) {
+        console.warn(
+            "グルーピングの復元に失敗しました。",
+            error
+        );
+
+        return false;
+    }
+}
+
+/**
+ * 部員別のグルーピング一時保存を削除する
+ */
+function clearGroupingDraft() {
+    try {
+        window.localStorage.removeItem(
+            getGroupingDraftStorageKey()
+        );
+    } catch (error) {
+        console.warn(
+            "グルーピングの一時保存削除に失敗しました。",
+            error
+        );
+    }
+}
+
+function getGroupingHistoryStorageKey() {
+
+    const memberId =
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMemberId ===
+            "function"
+            ? window.V4Session.getLoggedInMemberId()
+            : "";
+
+    if (!memberId) {
+        return "baika-grouping-history-unknown";
+    }
+
+    return (
+        "baika-grouping-history-" +
+        memberId
+    );
+
+}
+
+function loadGroupingHistory() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                getGroupingHistoryStorageKey()
+            );
+
+        if (!saved) {
+            return [];
+        }
+
+        return JSON.parse(saved);
+
+    } catch {
+
+        return [];
+
+    }
+
+}
+
+function saveGroupingHistory(history) {
+
+    localStorage.setItem(
+        getGroupingHistoryStorageKey(),
+        JSON.stringify(history)
+    );
+
+}
 
 const V4_GAS_API_URL =
     "https://script.google.com/macros/s/AKfycbwGlg88mq5G4fR0_H9BlQ8VmdloL8oBPOBeIBQKWrK_XunDTPalvpo1tLu4I0qA2f16/exec";
@@ -56,12 +252,17 @@ function syncCurrentPracticeInputToProjectZero() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    drawTargetSvg();
-    drawGroupingTargetSvg();
-    updateCurrentEndDisplay();
-    updateScoreInputState();    
-});
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+        restoreGroupingDraft();
+
+        drawTargetSvg();
+        drawGroupingTargetSvg();
+        updateCurrentEndDisplay();
+        updateScoreInputState();
+    }
+);
 
 /**
  * アーチェリーの的をSVGで描画する
@@ -401,6 +602,7 @@ function handleTargetClick(event) {
 currentArrows.push(arrow);
 
 updateCurrentEndDisplay();
+updateScoreInputState();
 resetTargetZoom();
 updateScoreInputState();
 }
@@ -1242,14 +1444,34 @@ function syncPracticeToProjectZero(
     }
 
     const samePracticeRecords =
-        practiceData.filter(function (record) {
-            return (
-                record &&
-                record.date === savedRecord.date &&
-                record.memberName === savedRecord.memberName &&
-                record.distance === savedRecord.distance
-            );
-        });
+    practiceData.filter(function (record) {
+        if (!record) {
+            return false;
+        }
+
+        const savedMemberId =
+            String(savedRecord.memberId || "").trim();
+
+        const recordMemberId =
+            String(record.memberId || "").trim();
+
+        /*
+         * 新しい記録はmemberIdで部員を識別する。
+         * 過去データにmemberIdがない場合だけ、
+         * memberNameで比較する。
+         */
+        const isSameMember =
+            savedMemberId && recordMemberId
+                ? recordMemberId === savedMemberId
+                : record.memberName ===
+                    savedRecord.memberName;
+
+        return (
+            record.date === savedRecord.date &&
+            isSameMember &&
+            record.distance === savedRecord.distance
+        );
+    });
 
     const totalScore =
         samePracticeRecords.reduce(
@@ -1574,9 +1796,8 @@ registeredGroupingArrows =
         })
     );
 
-/*
- * 現在入力中のデータだけを消去する
- */
+    saveGroupingDraft();
+
 currentArrows = [];
 photoGroupingArrows = [];
 
@@ -1821,6 +2042,20 @@ function clearAllArrows() {
     photoGroupingArrows = [];
     registeredGroupingArrows = [];
 
+    clearGroupingDraft();
+
+    isGroupingSaved = false;
+
+const groupingSaveMessage =
+    document.getElementById(
+        "v4GroupingSaveMessage"
+    );
+
+if (groupingSaveMessage) {
+    groupingSaveMessage.textContent =
+        "グルーピングがありません";
+}
+
     if (
         window.baikaTargetGesture &&
         typeof window.baikaTargetGesture.clearPinSelection ===
@@ -1917,18 +2152,47 @@ if (clearAllButton) {
         !hasArrows &&
         registeredGroupingArrows.length === 0;
 }
+const saveGroupingButton =
+    document.getElementById(
+        "v4SaveGrouping"
+    );
+
+if (saveGroupingButton) {
+    saveGroupingButton.disabled =
+        registeredGroupingArrows.length === 0 ||
+        isGroupingSaved;
+}
 }
 
 function registerCurrentGrouping() {
     const arrows = getActiveInputArrows();
     if (arrows.length === 0) return false;
 
-    registeredGroupingArrows = registeredGroupingArrows.concat(
-        arrows.map(function (arrow) { return { ...arrow }; })
+    registeredGroupingArrows =
+    registeredGroupingArrows.concat(
+        arrows.map(function (arrow) {
+            return {
+                ...arrow
+            };
+        })
     );
 
-    currentArrows = [];
-    photoGroupingArrows = [];
+saveGroupingDraft();
+
+isGroupingSaved = false;
+
+const groupingSaveMessage =
+    document.getElementById(
+        "v4GroupingSaveMessage"
+    );
+
+if (groupingSaveMessage) {
+    groupingSaveMessage.textContent =
+        "未保存";
+}
+
+currentArrows = [];
+photoGroupingArrows = [];
 
     if (window.baikaTargetGesture && typeof window.baikaTargetGesture.clearPinSelection === "function") {
         window.baikaTargetGesture.clearPinSelection();
@@ -1937,6 +2201,7 @@ function registerCurrentGrouping() {
     renderTargetPins();
     renderGroupingPins();
     updateCurrentEndDisplay();
+    updateScoreInputState();
     resetTargetZoom();
 
     const message = document.getElementById("v4PinRegisterMessage");
@@ -2043,3 +2308,212 @@ document.addEventListener(
     bindCurrentPracticeSave
 );
 
+function bindGroupingSaveButton() {
+
+    const button =
+        document.getElementById(
+            "v4SaveGrouping"
+        );
+
+    if (!button) {
+        return;
+    }
+
+    button.addEventListener(
+    "click",
+    function () {
+
+        if (
+            registeredGroupingArrows.length === 0
+        ) {
+            return;
+        }
+
+        const memberNameElement =
+            document.getElementById(
+                "v4LoggedInMemberName"
+            );
+
+        const dateElement =
+            document.getElementById(
+                "v4PracticeDate"
+            );
+
+        const distanceElement =
+            document.getElementById(
+                "v4DistanceSelect"
+            );
+
+        const memberName =
+            memberNameElement
+                ? memberNameElement.textContent.trim()
+                : "";
+
+        const practiceDate =
+            dateElement
+                ? dateElement.value
+                : "";
+
+                const memberId =
+    window.V4Session &&
+    typeof window.V4Session.getLoggedInMemberId ===
+        "function"
+        ? window.V4Session.getLoggedInMemberId()
+        : "";
+
+        if (!memberId) {
+    window.alert(
+        "部員IDを取得できません。いったんログインし直してください。"
+    );
+
+    return;
+}
+
+        const distance =
+            distanceElement
+                ? distanceElement.value
+                : "";
+
+        if (
+            !memberName ||
+            memberName === "未ログイン" ||
+            memberName === "ログイン情報を確認中"
+        ) {
+            window.alert(
+                "ログイン中の部員を確認してください。"
+            );
+
+            return;
+        }
+
+        if (!practiceDate) {
+            window.alert(
+                "練習日を選択してください。"
+            );
+
+            return;
+        }
+
+        const conditionFeeling =
+    document.getElementById(
+        "v4ConditionFeeling"
+    )?.value || "";
+
+const conditionWeather =
+    document.getElementById(
+        "v4ConditionWeather"
+    )?.value || "";
+
+const conditionWindStrength =
+    document.getElementById(
+        "v4ConditionWindStrength"
+    )?.value || "";
+
+const conditionWindDirection =
+    document.getElementById(
+        "v4ConditionWindDirectionValue"
+    )?.value || "";
+
+const conditionTheme =
+    document.getElementById(
+        "v4ConditionTheme"
+    )?.value.trim() || "";
+
+const conditionMemo =
+    document.getElementById(
+        "v4ConditionMemo"
+    )?.value.trim() || "";
+
+        if (!distance) {
+            window.alert(
+                "距離を選択してください。"
+            );
+
+            return;
+        }
+
+        const history =
+            loadGroupingHistory();
+
+        const savedAt =
+            new Date().toISOString();
+
+        const record = {
+    id:
+        "grouping-" +
+        Date.now(),
+
+    savedAt:
+        savedAt,
+
+    memberId:
+        memberId,
+
+    memberName:
+        memberName,
+
+    practiceDate:
+        practiceDate,
+
+    distance:
+        distance,
+
+    conditionFeeling:
+        conditionFeeling,
+
+    conditionWeather:
+        conditionWeather,
+
+    conditionWindStrength:
+        conditionWindStrength,
+
+    conditionWindDirection:
+        conditionWindDirection,
+
+    conditionTheme:
+        conditionTheme,
+
+    conditionMemo:
+        conditionMemo,
+
+    arrows:
+        registeredGroupingArrows.map(
+            function (arrow) {
+                return {
+                    ...arrow
+                };
+            }
+        )
+};
+
+        history.push(record);
+
+        saveGroupingHistory(history);
+
+        isGroupingSaved = true;
+
+        const message =
+            document.getElementById(
+                "v4GroupingSaveMessage"
+            );
+
+        if (message) {
+            message.textContent =
+                "✅ 保存済み";
+        }
+
+        updateScoreInputState();
+
+        console.log(
+            "グルーピング履歴を保存しました。",
+            record
+        );
+    }
+);
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    bindGroupingSaveButton
+);

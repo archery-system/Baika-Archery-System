@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+記録 | Baika Archery System
+</title>
+
+<link rel="stylesheet" href="css/foundation/tokens.css">
+<link rel="stylesheet" href="css/foundation/base.css">
+<link rel="stylesheet" href="css/layouts/app-layout.css">
+<link rel="stylesheet" href="css/components/header.css">
+<link rel="stylesheet" href="css/components/page-header.css">
+<link rel="stylesheet" href="css/components/card.css">
+<link rel="stylesheet" href="css/pages/record-center.css">
+
+</head>
+
+<body>
+
+<div class="bas-app">
+
+    <div id="app-header"></div>
+
+    <main class="bas-app__main">
+
+        <div id="page-header"></div>
+
+        <div class="bas-record-center">
+
+            <section class="bas-record-center__grid">
+
+                <article class="bas-card bas-record-center__card">
+
+                    <div class="bas-record-center__icon">
+                        📖
+                    </div>
+
+                    <div class="bas-record-center__content">
+
+                        <div class="bas-record-center__heading">
+
+                            <div>
+
+                                <h2 class="bas-record-center__title">
+                                    練習記録
+                                </h2>
+
+                                <p class="bas-record-center__description">
+                                    保存済みの練習記録を確認します。
+                                </p>
+
+                            </div>
+
+                            <span
+                                class="
+                                    bas-record-center__status
+                                    bas-record-center__status--ready
+                                "
+                            >
+                                利用可能
+                            </span>
+
+                        </div>
+
+                        <p class="bas-record-center__body">
+                            日付、距離、6射の得点、合計点を部員別に表示します。
+                        </p>
+
+                        <a
+                            class="
+                                bas-button
+                                bas-button--primary
+                                bas-record-center__button
+                            "
+                            href="project-zero-records.html"
+                        >
+                            練習記録を開く
+                        </a>
+
+                    </div>
+
+                </article>
+
+                <article class="bas-card bas-record-center__card">
+
+                    <div class="bas-record-center__icon">
+                        🏆
+                    </div>
+
+                    <div class="bas-record-center__content">
+
+                        <div class="bas-record-center__heading">
+
+                            <div>
+
+                                <h2 class="bas-record-center__title">
+                                    大会記録
+                                </h2>
+
+                                <p class="bas-record-center__description">
+                                    大会結果とラウンド記録を管理します。
+                                </p>
+
+                            </div>
+
+                            <span
+                                class="
+                                    bas-record-center__status
+                                    bas-record-center__status--planned
+                                "
+                            >
+                                準備中
+                            </span>
+
+                        </div>
+
+                        <p class="bas-record-center__body">
+                            大会別の得点、順位、ラウンド結果を保存できるようにします。
+                        </p>
+
+                        <button
+                            class="
+                                bas-button
+                                bas-button--outline
+                                bas-record-center__button
+                            "
+                            type="button"
+                            disabled
+                        >
+                            準備中
+                        </button>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Login Session -->
+<script src="js/v4-session.js"></script>
+<script src="js/auth/api.js"></script>
+
+<!-- Project Zero Core -->
+<script src="js/core/config.js"></script>
+<script src="js/core/organization.js"></script>
+<script src="js/core/theme.js"></script>
+<script src="js/core/state.js"></script>
+
+<!-- Project Zero Components -->
+<script src="js/components/header.js"></script>
+<script src="js/components/page-header.js"></script>
+<script src="js/components/card.js"></script>
+
+<!-- Project Zero Pages -->
+<script src="js/pages/record-center.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (
+            window.BAS_HEADER &&
+            typeof window.BAS_HEADER.render === "function"
+        ) {
+            window.BAS_HEADER.render({
+                currentRoute: "records"
+            });
+        }
+
+        if (
+            window.BAS_PAGE_HEADER &&
+            typeof window.BAS_PAGE_HEADER.render === "function"
+        ) {
+            window.BAS_PAGE_HEADER.render({
+                eyebrow: "Records",
+                title: "記録",
+                description:
+                    "練習記録と大会記録を確認・管理します。"
+            });
+        }
+
+        if (
+            window.BAS_RECORD_CENTER &&
+            typeof window.BAS_RECORD_CENTER.initialize ===
+                "function"
+        ) {
+            window.BAS_RECORD_CENTER.initialize();
+        }
+    });
+</script>
+
+</body>
+</html>
