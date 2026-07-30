@@ -259,28 +259,6 @@ function resetPracticeState() {
 }
 
 /**
- * 練習セッション用の一意なIDを作成する
- *
- * @returns {string}
- */
-function createPracticeSessionId() {
-    if (
-        typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
-    ) {
-        return `practice-${crypto.randomUUID()}`;
-    }
-
-    return [
-        "practice",
-        Date.now(),
-        Math.random()
-            .toString(36)
-            .slice(2, 10)
-    ].join("-");
-}
-
-/**
  * 練習セッションを開始する
  *
  * @param {Object} settings
@@ -289,10 +267,9 @@ function startPracticeSession(settings = {}) {
     const now = new Date().toISOString();
 
     BAS_STATE.currentPracticeSession = {
-    id: createPracticeSessionId(),
-    active: true,
-    startedAt: now,
-    endedAt: null,
+        active: true,
+        startedAt: now,
+        endedAt: null,
 
         distance: String(settings.distance || "").trim(),
         weather: String(settings.weather || "").trim(),
@@ -398,59 +375,53 @@ function addPhotoSession(photoData = {}) {
         new Date().toISOString();
 
     const photoSession = {
-    id:
-        createPhotoSessionId(),
+        id:
+            createPhotoSessionId(),
 
-    capturedAt:
-        now,
+        capturedAt:
+            now,
 
-    practiceSessionId:
-        session.id || null,
+        practiceStartedAt:
+            session.startedAt || null,
 
-    localPhotoId:
-        photoData.localPhotoId ?? null,
+        distance:
+            String(
+                photoData.distance ??
+                session.distance ??
+                ""
+            ).trim(),
 
-    practiceStartedAt:
-        session.startedAt || null,
+        weather:
+            String(
+                photoData.weather ??
+                session.weather ??
+                ""
+            ).trim(),
 
-    distance:
-        String(
-            photoData.distance ??
-            session.distance ??
-            ""
-        ).trim(),
+        windDirection:
+            String(
+                photoData.windDirection ??
+                session.windDirection ??
+                ""
+            ).trim(),
 
-    weather:
-        String(
-            photoData.weather ??
-            session.weather ??
-            ""
-        ).trim(),
+        windSpeed:
+            String(
+                photoData.windSpeed ??
+                session.windSpeed ??
+                ""
+            ).trim(),
 
-    windDirection:
-        String(
-            photoData.windDirection ??
-            session.windDirection ??
-            ""
-        ).trim(),
+        condition:
+            String(
+                photoData.condition ??
+                session.condition ??
+                ""
+            ).trim(),
 
-    windSpeed:
-        String(
-            photoData.windSpeed ??
-            session.windSpeed ??
-            ""
-        ).trim(),
-
-    condition:
-        String(
-            photoData.condition ??
-            session.condition ??
-            ""
-        ).trim(),
-
-    status:
-        "unprocessed"
-};
+        status:
+            "unprocessed"
+    };
 
     BAS_STATE.photoSessions.push(
         photoSession
@@ -527,7 +498,6 @@ function loadStateFromStorage() {
             );
 
             BAS_STATE.currentPracticeSession = {
-                id: null,
                 active: false,
                 startedAt: null,
                 endedAt: null,

@@ -263,6 +263,14 @@ class="bas-home__grid">
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         if (
+            !window.V4Session ||
+            typeof window.V4Session.requireLogin !== "function" ||
+            !window.V4Session.requireLogin()
+        ) {
+            return;
+        }
+
+        if (
             window.BAS_HEADER &&
             typeof window.BAS_HEADER.render === "function"
         ) {

@@ -43,8 +43,6 @@ const BAS_STATE = {
         reflectionMemo: ""
     },
 
-    photoSessions: [],
-
     lastPractice: {
     date: "2026-07-20",
     distance: "70m",
@@ -259,28 +257,6 @@ function resetPracticeState() {
 }
 
 /**
- * 練習セッション用の一意なIDを作成する
- *
- * @returns {string}
- */
-function createPracticeSessionId() {
-    if (
-        typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
-    ) {
-        return `practice-${crypto.randomUUID()}`;
-    }
-
-    return [
-        "practice",
-        Date.now(),
-        Math.random()
-            .toString(36)
-            .slice(2, 10)
-    ].join("-");
-}
-
-/**
  * 練習セッションを開始する
  *
  * @param {Object} settings
@@ -289,10 +265,9 @@ function startPracticeSession(settings = {}) {
     const now = new Date().toISOString();
 
     BAS_STATE.currentPracticeSession = {
-    id: createPracticeSessionId(),
-    active: true,
-    startedAt: now,
-    endedAt: null,
+        active: true,
+        startedAt: now,
+        endedAt: null,
 
         distance: String(settings.distance || "").trim(),
         weather: String(settings.weather || "").trim(),
@@ -373,117 +348,6 @@ function finishPracticeSession(reflectionMemo = "") {
 }
 
 /**
- * 撮影記録を追加する
- *
- * @param {Object} photoData
- * @returns {Object|null}
- */
-function addPhotoSession(photoData = {}) {
-    const session =
-        BAS_STATE.currentPracticeSession;
-
-    if (!session || !session.active) {
-        console.warn(
-            "[Baika State] 練習中ではないため撮影記録を追加できません"
-        );
-
-        return null;
-    }
-
-    if (!Array.isArray(BAS_STATE.photoSessions)) {
-        BAS_STATE.photoSessions = [];
-    }
-
-    const now =
-        new Date().toISOString();
-
-    const photoSession = {
-    id:
-        createPhotoSessionId(),
-
-    capturedAt:
-        now,
-
-    practiceSessionId:
-        session.id || null,
-
-    localPhotoId:
-        photoData.localPhotoId ?? null,
-
-    practiceStartedAt:
-        session.startedAt || null,
-
-    distance:
-        String(
-            photoData.distance ??
-            session.distance ??
-            ""
-        ).trim(),
-
-    weather:
-        String(
-            photoData.weather ??
-            session.weather ??
-            ""
-        ).trim(),
-
-    windDirection:
-        String(
-            photoData.windDirection ??
-            session.windDirection ??
-            ""
-        ).trim(),
-
-    windSpeed:
-        String(
-            photoData.windSpeed ??
-            session.windSpeed ??
-            ""
-        ).trim(),
-
-    condition:
-        String(
-            photoData.condition ??
-            session.condition ??
-            ""
-        ).trim(),
-
-    status:
-        "unprocessed"
-};
-
-    BAS_STATE.photoSessions.push(
-        photoSession
-    );
-
-    saveStateToStorage();
-
-    return photoSession;
-}
-
-/**
- * 撮影記録用の一意なIDを作成する
- *
- * @returns {string}
- */
-function createPhotoSessionId() {
-    if (
-        typeof crypto !== "undefined" &&
-        typeof crypto.randomUUID === "function"
-    ) {
-        return crypto.randomUUID();
-    }
-
-    return [
-        "photo",
-        Date.now(),
-        Math.random()
-            .toString(36)
-            .slice(2, 10)
-    ].join("-");
-}
-
-/**
  * Project Zeroの状態をブラウザへ保存する
  */
 function saveStateToStorage() {
@@ -527,7 +391,6 @@ function loadStateFromStorage() {
             );
 
             BAS_STATE.currentPracticeSession = {
-                id: null,
                 active: false,
                 startedAt: null,
                 endedAt: null,
@@ -547,11 +410,6 @@ function loadStateFromStorage() {
                         : {}
                 )
             };
-
-            BAS_STATE.photoSessions =
-           Array.isArray(parsedState.photoSessions)
-        ? parsedState.photoSessions
-        : [];
 
         }
     } catch (error) {

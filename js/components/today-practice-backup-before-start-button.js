@@ -97,79 +97,20 @@
             </ul>
 
             <button
-    type="button"
-    class="bas-button bas-button--primary"
-    id="homeStartPracticeButton"
-    ${
-        data.session &&
-        data.session.active
-            ? "disabled"
-            : ""
-    }
->
-    ${
-        data.session &&
-        data.session.active
-            ? "練習中"
-            : "練習を開始"
-    }
-</button>
+                type="button"
+                class="bas-button bas-button--primary"
+                id="homeStartPracticeButton"
+            >
+                練習を開始
+            </button>
         `;
     }
 
     function initialize() {
     render(getTodayPracticeData());
-    bindStartPracticeButton();
 
     console.log("[BAS_TODAY_PRACTICE] initialized");
-}
-
-function bindStartPracticeButton() {
-    const button =
-        document.getElementById("homeStartPracticeButton");
-
-    if (!button) {
-        return;
     }
-
-    button.addEventListener(
-        "click",
-        handleStartPractice
-    );
-}
-
-function handleStartPractice() {
-    const practiceData =
-        getTodayPracticeData();
-
-    const session =
-        practiceData.session;
-
-    if (
-        session &&
-        session.active
-    ) {
-        return;
-    }
-
-    if (
-        typeof startPracticeSession !== "function"
-    ) {
-        console.error(
-            "[BAS_TODAY_PRACTICE] startPracticeSession が見つかりません。"
-        );
-
-        return;
-    }
-
-    startPracticeSession({
-        distance:
-            practiceData.distance || ""
-    });
-
-    render(getTodayPracticeData());
-    bindStartPracticeButton();
-}
 
     function getTodayPracticeData() {
     const practice =

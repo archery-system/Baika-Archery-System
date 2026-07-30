@@ -1520,7 +1520,20 @@
             };
 
             lastCaptureId = await addPhoto(record);
-            sessionCount += 1;
+
+if (
+    typeof addPhotoSession === "function" &&
+    window.BAS_STATE &&
+    BAS_STATE.currentPracticeSession &&
+    BAS_STATE.currentPracticeSession.active
+) {
+    addPhotoSession({
+        localPhotoId:
+            lastCaptureId
+    });
+}
+
+sessionCount += 1;
             el.sessionCount.textContent = String(sessionCount);
             el.deleteLast.disabled = false;
             showCaptureFeedback(el, "End " + endNumber + " を保存しました");

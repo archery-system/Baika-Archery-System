@@ -37,23 +37,6 @@
                 ${escapeHtml(data.date)}
             </p>
 
-                        <div class="bas-home__stats">
-                <div class="bas-home__stat">
-                    <span class="bas-home__stat-label">
-                        状態
-                    </span>
-
-                    <strong class="bas-home__stat-value">
-                        ${
-                            data.session &&
-                            data.session.active
-                                ? "練習中"
-                                : "未開始"
-                        }
-                    </strong>
-                </div>
-            </div>
-
             <div class="bas-home__stats">
                 <div class="bas-home__stat">
                     <span class="bas-home__stat-label">
@@ -97,79 +80,20 @@
             </ul>
 
             <button
-    type="button"
-    class="bas-button bas-button--primary"
-    id="homeStartPracticeButton"
-    ${
-        data.session &&
-        data.session.active
-            ? "disabled"
-            : ""
-    }
->
-    ${
-        data.session &&
-        data.session.active
-            ? "練習中"
-            : "練習を開始"
-    }
-</button>
+                type="button"
+                class="bas-button bas-button--primary"
+                id="homeStartPracticeButton"
+            >
+                練習を開始
+            </button>
         `;
     }
 
     function initialize() {
     render(getTodayPracticeData());
-    bindStartPracticeButton();
 
     console.log("[BAS_TODAY_PRACTICE] initialized");
-}
-
-function bindStartPracticeButton() {
-    const button =
-        document.getElementById("homeStartPracticeButton");
-
-    if (!button) {
-        return;
     }
-
-    button.addEventListener(
-        "click",
-        handleStartPractice
-    );
-}
-
-function handleStartPractice() {
-    const practiceData =
-        getTodayPracticeData();
-
-    const session =
-        practiceData.session;
-
-    if (
-        session &&
-        session.active
-    ) {
-        return;
-    }
-
-    if (
-        typeof startPracticeSession !== "function"
-    ) {
-        console.error(
-            "[BAS_TODAY_PRACTICE] startPracticeSession が見つかりません。"
-        );
-
-        return;
-    }
-
-    startPracticeSession({
-        distance:
-            practiceData.distance || ""
-    });
-
-    render(getTodayPracticeData());
-    bindStartPracticeButton();
-}
 
     function getTodayPracticeData() {
     const practice =
@@ -191,15 +115,9 @@ function handleStartPractice() {
             practice.goalScore ??
             DEFAULT_DATA.goalScore,
 
-                missions:
+        missions:
             practice.missions ??
-            DEFAULT_DATA.missions,
-
-        session:
-            typeof BAS_STATE !== "undefined" &&
-            BAS_STATE.currentPracticeSession
-                ? BAS_STATE.currentPracticeSession
-                : null
+            DEFAULT_DATA.missions
     };
 }
 

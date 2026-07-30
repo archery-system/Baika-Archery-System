@@ -756,10 +756,18 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    setDefaultPracticeDate();
-    displayLoggedInMember();
-    initializeWindDirectionButtons();
-});
+        if (
+            !window.V4Session ||
+            typeof window.V4Session.requireLogin !== "function" ||
+            !window.V4Session.requireLogin()
+        ) {
+            return;
+        }
+
+        setDefaultPracticeDate();
+        displayLoggedInMember();
+        initializeWindDirectionButtons();
+    });
 
     function setDefaultPracticeDate() {
         const practiceDateInput =
