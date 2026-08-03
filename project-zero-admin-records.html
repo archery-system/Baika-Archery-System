@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        記録管理 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+
+<style>
+    .admin-record-filter-field input {
+        width: 100%;
+        min-height: 44px;
+        box-sizing: border-box;
+    }
+
+    .bas-filter-bar {
+    margin-top: 16px;
+}
+
+.bas-filter-bar__title {
+    margin: 0 0 16px;
+    font-size: 1rem;
+}
+
+.bas-filter-bar__grid {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 2fr)
+        minmax(220px, 2fr)
+        minmax(120px, 1fr)
+        minmax(120px, 1fr);
+    gap: 16px;
+    align-items: end;
+}
+
+.bas-filter-bar__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.bas-filter-bar__field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.bas-filter-bar__field input,
+.bas-filter-bar__field select {
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+}
+
+.bas-filter-bar__date {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    gap: 6px;
+}
+
+.bas-filter-bar__date-input {
+    position: relative;
+    min-width: 0;
+}
+
+.bas-filter-bar__date-input input {
+    padding-right: 36px;
+}
+
+.bas-filter-bar__date-clear {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    color: #666;
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.bas-filter-bar__date-clear:hover {
+    background: rgb(0 0 0 / 8%);
+}
+
+.bas-filter-bar__date-clear[hidden] {
+    display: none;
+}
+
+.bas-filter-bar__calendar-button {
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    .bas-filter-bar__grid {
+        grid-template-columns:
+            repeat(2, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .bas-filter-bar__grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bas-filter-calendar {
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid rgb(0 0 0 / 12%);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.bas-filter-calendar__header {
+    display: grid;
+    grid-template-columns: 42px 1fr 42px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.bas-filter-calendar__header strong {
+    text-align: center;
+}
+
+.bas-filter-calendar__header button {
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+}
+
+.bas-filter-calendar__grid {
+    display: grid;
+    grid-template-columns:
+        repeat(7, minmax(36px, 1fr));
+    gap: 6px;
+}
+
+.bas-filter-calendar__day-label {
+    padding-block: 6px;
+    color: #666;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.bas-filter-calendar__cell {
+    position: relative;
+    min-height: 40px;
+    padding: 4px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.bas-filter-calendar__cell:hover {
+    background: rgb(0 0 0 / 6%);
+}
+
+.bas-filter-calendar__cell--has-record::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 3px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(
+        --bas-color-primary-600,
+        #6f42c1
+    );
+    transform: translateX(-50%);
+}
+
+.bas-filter-calendar__cell--today {
+    border: 2px solid
+        var(--bas-color-primary-600, #6f42c1);
+}
+
+.bas-filter-calendar__cell--selected {
+    color: #fff;
+    background:
+        var(--bas-color-primary-600, #6f42c1);
+}
+
+.bas-filter-calendar__cell--selected::after {
+    background: #fff;
+}
+
+.bas-filter-calendar__cell--empty {
+    pointer-events: none;
+}
+
+.bas-admin-record__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.bas-admin-record__detail-button {
+    min-width: 88px;
+}
+
+.bas-admin-record__actions {
+    gap: 8px;
+}
+
+.bas-admin-record__edit-form {
+    display: grid;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgb(0 0 0 / 12%);
+}
+
+.bas-admin-record__edit-form h3 {
+    margin: 0;
+}
+
+.bas-admin-record__edit-field {
+    display: grid;
+    gap: 6px;
+}
+
+.bas-admin-record__edit-field span {
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.bas-admin-record__edit-field input {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+}
+
+.bas-admin-record__arrow-fields {
+    display: grid;
+    grid-template-columns:
+        repeat(6, minmax(64px, 1fr));
+    gap: 8px;
+}
+
+.bas-admin-record__edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (max-width: 700px) {
+    .bas-admin-record__arrow-fields {
+        grid-template-columns:
+            repeat(3, minmax(64px, 1fr));
+    }
+}
+
+.bas-admin-record__delete-button {
+    color: #b42318 !important;
+    background: #fff5f5 !important;
+
+    border: 1px solid #d92d20 !important;
+
+    box-shadow: none;
+
+    transition:
+        background-color 0.2s,
+        border-color 0.2s;
+}
+
+.bas-admin-record__delete-button:hover {
+    background: #ffe2e0 !important;
+    border-color: #b42318 !important;
+}
+
+.bas-admin-record__delete-button:active {
+    background: #ffd2cf !important;
+}
+
+.bas-admin-record__delete-button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.bas-admin-record__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.bas-admin-record__action-button {
+    width: 42px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    border: 1px solid #d0d5dd;
+
+    background: #ffffff;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+    transition:
+        background-color .2s,
+        border-color .2s,
+        transform .15s;
+}
+
+.bas-admin-record__action-button:hover {
+    transform: translateY(-1px);
+}
+
+</style>
+
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div class="bas-app__content">
+                <section class="bas-card">
+                    <p>Administrator</p>
+
+                    <h1>📝 記録管理</h1>
+
+                    <p>
+                        練習記録の確認・修正・削除を行います。
+                    </p>
+
+   <section
+    class="bas-card bas-filter-bar"
+    aria-labelledby="adminRecordFilterTitle"
+>
+    <h2
+        id="adminRecordFilterTitle"
+        class="bas-filter-bar__title"
+    >
+        記録を絞り込む
+    </h2>
+
+    <div class="bas-filter-bar__grid">
+        <div class="bas-filter-bar__field">
+            <label for="adminRecordMemberFilter">
+                部員名
+            </label>
+
+            <input
+                id="adminRecordMemberFilter"
+                type="search"
+                placeholder="部員名を入力"
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="bas-filter-bar__field">
+            <label for="adminRecordDateFilter">
+                日付
+            </label>
+
+            <div class="bas-filter-bar__date">
+    <div class="bas-filter-bar__date-input">
+        <input
+            id="adminRecordDateFilter"
+            type="text"
+            inputmode="numeric"
+            placeholder="2026/08/01"
+            autocomplete="off"
+        >
+
+        <button
+            id="adminRecordDateClearButton"
+            type="button"
+            class="bas-filter-bar__date-clear"
+            aria-label="入力した日付を消去"
+            hidden
+        >
+            ×
+        </button>
+    </div>
+
+    <button
+        id="adminRecordCalendarButton"
+        type="button"
+        class="bas-filter-bar__calendar-button"
+        aria-label="記録カレンダーを開く"
+    >
+        📅
+    </button>
+</div>
+        </div>
+
+        <div class="bas-filter-bar__field">
+            <label for="adminRecordDistanceFilter">
+                距離
+            </label>
+
+            <select id="adminRecordDistanceFilter">
+                <option value="">すべて</option>
+                <option value="18">18m</option>
+                <option value="30">30m</option>
+                <option value="50">50m</option>
+                <option value="60">60m</option>
+                <option value="70">70m</option>
+                <option value="90">90m</option>
+            </select>
+        </div>
+
+        <div class="bas-filter-bar__field">
+            <label for="adminRecordSortOrder">
+                並び順
+            </label>
+
+            <select id="adminRecordSortOrder">
+                <option value="newest">
+                    最新順
+                </option>
+
+                <option value="oldest">
+                    古い順
+                </option>
+            </select>
+        </div>
+    </div>
+
+    <div
+        id="adminRecordCalendarPanel"
+        class="bas-filter-calendar"
+        hidden
+    >
+        <div class="bas-filter-calendar__header">
+            <button
+                id="adminRecordCalendarPrevious"
+                type="button"
+                aria-label="前の月"
+            >
+                ◀
+            </button>
+
+            <strong id="adminRecordCalendarTitle">
+                読み込み中
+            </strong>
+
+            <button
+                id="adminRecordCalendarNext"
+                type="button"
+                aria-label="次の月"
+            >
+                ▶
+            </button>
+        </div>
+
+        <div
+            id="adminRecordCalendarGrid"
+            class="bas-filter-calendar__grid"
+            aria-label="記録カレンダー"
+        ></div>
+    </div>
+</section>
+
+   <div
+    id="adminRecordsStatus"
+    class="bas-card"
+    aria-live="polite"
+>
+    練習記録を読み込んでいます。
+</div>
+
+<div
+    id="adminRecordsList"
+    aria-label="練習記録一覧"
+></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/v4-session.js"></script>
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/core/cloud.js?v=2"></script>
+    <script src="js/pages/admin-records.js?v=24"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    !window.V4Session ||
+                    typeof window.V4Session.requireAdmin !== "function" ||
+                    !window.V4Session.requireAdmin()
+                ) {
+                    return;
+                }
+
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER.render === "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        currentRoute: "admin"
+                    });
+                }
+            }
+        );
+    </script>
+</body>
+</html>

@@ -107,18 +107,97 @@ const V4Auth = {
         dropdown.innerHTML = '<option value="">部員を選択してください</option>';
 
         this.members.forEach(member => {
-            const option = document.createElement("option");
-            option.value = member;
-            option.textContent = member;
-            dropdown.appendChild(option);
+    const memberData =
+        typeof member === "string"
+            ? {
+                memberId: member,
+                name: member,
+                displayName: member,
+                active: true
+            }
+            : member;
+
+    if (
+        !memberData ||
+        typeof memberData !== "object" ||
+        memberData.active === false
+    ) {
+        return;
+    }
+
+    const memberId =
+        String(
+            memberData.memberId ||
+            memberData.name ||
+            memberData.displayName ||
+            ""
+        ).trim();
+
+    const displayName =
+        String(
+            memberData.displayName ||
+            memberData.name ||
+            memberId
+        ).trim();
+
+    if (!memberId || !displayName) {
+        return;
+    }
+
+    const option =
+        document.createElement("option");
+
+    option.value = memberId;
+    option.textContent = displayName;
+
+    option.dataset.memberName =
+        String(
+            memberData.name ||
+            displayName
+        );
+
+    dropdown.appendChild(option);
+});
+
+if (this.loggedInMember) {
+    const matchingMember =
+        this.members.find(member => {
+            if (typeof member === "string") {
+                return (
+                    member ===
+                    this.loggedInMember
+                );
+            }
+
+            if (
+                !member ||
+                typeof member !== "object"
+            ) {
+                return false;
+            }
+
+            return (
+                member.memberId ===
+                    this.loggedInMember ||
+                member.name ===
+                    this.loggedInMember ||
+                member.displayName ===
+                    this.loggedInMember
+            );
         });
 
-        if (
-            this.loggedInMember &&
-            this.members.includes(this.loggedInMember)
-        ) {
-            dropdown.value = this.loggedInMember;
-        }
+    if (matchingMember) {
+        dropdown.value =
+            typeof matchingMember === "string"
+                ? matchingMember
+                : (
+                    matchingMember.memberId ||
+                    matchingMember.name ||
+                    matchingMember.displayName ||
+                    ""
+                );
+    }
+}
     },
 
     /**

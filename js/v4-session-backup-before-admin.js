@@ -152,42 +152,21 @@
         return false;
     }
 
-    /**
- * 管理者でなければ管理画面へのアクセスを拒否する
- */
-function requireAdmin() {
-    if (!requireLogin()) {
-        return false;
-    }
-
-    if (isAdmin()) {
-        return true;
-    }
-
-    console.warn(
-        "管理者権限がないため、管理画面へのアクセスを拒否しました。"
-    );
-
-    window.location.replace("project-zero-home.html");
-
-    return false;
-}
 
     /**
      * 外部公開
      */
     window.V4Session = {
-    readLoginData,
-    getLoggedInMember,
-    getLoggedInMemberId,
-    getLoggedInMemberData,
-    getLoggedInRole,
-    isAdmin,
-    isLoggedIn,
-    clearSession,
-    requireLogin,
-    requireAdmin
-};
+        readLoginData,
+        getLoggedInMember,
+        getLoggedInMemberId,
+        getLoggedInMemberData,
+        getLoggedInRole,
+        isAdmin,
+        isLoggedIn,
+        clearSession,
+        requireLogin
+    };
 
 
     /*

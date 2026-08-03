@@ -62,8 +62,98 @@
         return result.practice;
     }
 
-    window.BAS_CLOUD = {
-        loadAllData: loadAllData,
-        loadPracticeRecords: loadPracticeRecords
+    /**
+ * 練習記録をクラウドへ全件保存する
+ *
+ * 管理画面だけで使う一時的な項目
+ * __sourceIndex は送信しない。
+ *
+ * @param {Array} records
+ * @returns {Promise<Object>}
+ */
+async function overwritePracticeRecords(records) {
+    if (!Array.isArray(records)) {
+        throw new TypeError(
+            "保存する練習記録が配列ではありません。"
+        );
+    }
+
+    const cleanRecords =
+        records.map(function (record) {
+            if (
+                !record ||
+                typeof record !== "object"
+            ) {
+                return record;
+            }
+
+            const {
+                __sourceIndex,
+                ...cleanRecord
+            } = record;
+
+            return cleanRecord;
+        });
+
+    const payload = {
+        mode: "practice",
+        data: cleanRecords
     };
+
+    const response =
+        await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                body: JSON.stringify(payload)
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            "練習記録をクラウドへ保存できませんでした。"
+        );
+    }
+
+    const responseText =
+        await response.text();
+
+    if (!responseText) {
+        return {
+            success: true
+        };
+    }
+
+    try {
+        const result =
+            JSON.parse(responseText);
+
+        if (result.success === false) {
+            throw new Error(
+                result.message ||
+                "練習記録の保存に失敗しました。"
+            );
+        }
+
+        return result;
+    } catch (error) {
+        if (
+            error instanceof SyntaxError
+        ) {
+            return {
+                success: true,
+                responseText
+            };
+        }
+
+        throw error;
+    }
+}
+
+    window.BAS_CLOUD = {
+    loadAllData: loadAllData,
+    loadPracticeRecords: loadPracticeRecords,
+    overwritePracticeRecords:
+        overwritePracticeRecords
+};
 })();

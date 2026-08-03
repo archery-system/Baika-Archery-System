@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        管理者 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/button.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div class="bas-app__content">
+                <section aria-labelledby="adminPageTitle">
+                    <p>
+                        Baika Archery System
+                    </p>
+
+                    <h1 id="adminPageTitle">
+                        ⚙️ 管理者
+                    </h1>
+
+                    <p>
+                        部員情報や練習記録などを管理します。
+                    </p>
+                </section>
+
+                <section
+                    id="adminAccountCard"
+                    class="bas-card"
+                    aria-labelledby="adminAccountTitle"
+                >
+                    <h2 id="adminAccountTitle">
+                        管理者情報
+                    </h2>
+
+                    <dl>
+                        <div>
+                            <dt>ログイン中</dt>
+
+                            <dd id="adminMemberName">
+                                確認中
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>部員ID</dt>
+
+                            <dd id="adminMemberId">
+                                確認中
+                            </dd>
+                        </div>
+
+                        <div>
+                            <dt>権限</dt>
+
+                            <dd id="adminMemberRole">
+                                確認中
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section aria-labelledby="adminMenuTitle">
+                    <h2 id="adminMenuTitle">
+                        管理メニュー
+                    </h2>
+
+                    <div>
+                        <article class="bas-card">
+                            <h3>👥 部員管理</h3>
+
+                            <p>
+    部員ID・氏名・権限・利用状態を管理します。
+</p>
+
+    <button
+    type="button"
+    class="bas-button"
+    id="openMemberManager"
+>
+    開く
+</button>
+                        </article>
+
+                        <article class="bas-card">
+                            <h3>📝 記録管理</h3>
+
+                            <p>
+                                練習記録の修正や削除を行います。
+                            </p>
+
+                           <button
+    type="button"
+    class="bas-button"
+    id="openRecordManager"
+>
+    開く
+</button>
+                        </article>
+
+                        <article class="bas-card">
+                            <h3>🔒 パスワード管理</h3>
+
+                            <p>
+                                部員ごとのログインパスワードを管理します。
+                            </p>
+
+                            <button
+                                type="button"
+                                class="bas-button"
+                                disabled
+                            >
+                                準備中
+                            </button>
+                        </article>
+
+                        <article class="bas-card">
+                            <h3>⚙️ システム設定</h3>
+
+                            <p>
+                                大学名や部名などの基本情報を管理します。
+                            </p>
+
+                            <button
+                                type="button"
+                                class="bas-button"
+                                disabled
+                            >
+                                準備中
+                            </button>
+                        </article>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/v4-session.js"></script>
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/pages/admin.js"></script>
+</body>
+</html>

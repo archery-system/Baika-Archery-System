@@ -42,13 +42,6 @@
         }
     ];
 
-const ADMIN_HEADER_ITEM = {
-    route: "admin",
-    label: "管理",
-    icon: "⚙️",
-    href: "project-zero-admin.html"
-};
-
     function createNavigationLink(item, currentRoute) {
         const link = document.createElement("a");
 
@@ -108,38 +101,6 @@ const ADMIN_HEADER_ITEM = {
             return "";
         }
     }
-
-function isAdminLoggedIn() {
-    if (
-        window.V4Session &&
-        typeof window.V4Session.isAdmin === "function"
-    ) {
-        return window.V4Session.isAdmin();
-    }
-
-    try {
-        const savedData =
-            localStorage.getItem(LOGIN_STORAGE_KEY);
-
-        if (!savedData) {
-            return false;
-        }
-
-        const loginData = JSON.parse(savedData);
-
-        return (
-            loginData &&
-            String(loginData.role || "").trim() === "admin"
-        );
-    } catch (error) {
-        console.warn(
-            "管理者権限を確認できませんでした:",
-            error
-        );
-
-        return false;
-    }
-}
 
     function logout() {
         localStorage.removeItem(LOGIN_STORAGE_KEY);
@@ -217,17 +178,11 @@ function isAdminLoggedIn() {
         navigation.className = "bas-header__nav";
         navigation.setAttribute("aria-label", "主要メニュー");
 
-        const navigationItems = [...HEADER_ITEMS];
-
-if (isAdminLoggedIn()) {
-    navigationItems.push(ADMIN_HEADER_ITEM);
-}
-
-navigationItems.forEach(function (item) {
-    navigation.append(
-        createNavigationLink(item, currentRoute)
-    );
-});
+        HEADER_ITEMS.forEach(function (item) {
+            navigation.append(
+                createNavigationLink(item, currentRoute)
+            );
+        });
 
         const rightArea = document.createElement("div");
 

@@ -215,11 +215,12 @@
     }
 
         .bas-header__nav {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: var(--bas-space-1);
-        width: 100%;
-    }
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(52px, 1fr));
+    gap: var(--bas-space-1);
+    width: 100%;
+}
 
         .bas-header__nav-link {
         flex-direction: column;

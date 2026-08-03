@@ -50,6 +50,135 @@ function readSheetData(sheetName) {
   });
 }
 
+/**
+ * metadataシートの指定項目だけを追加・更新する。
+ *
+ * 他のmetadata項目は残したまま、
+ * 同じkeyがあればjsonを更新し、
+ * なければ新しい行として追加する。
+ */
+function upsertMetadataValue(key, value) {
+  const metadata =
+    readSheetData(SHEET_NAMES.METADATA);
+
+  const normalizedKey =
+    String(key || "").trim();
+
+  if (!normalizedKey) {
+    throw new Error(
+      "metadataのkeyが指定されていません。"
+    );
+  }
+
+  const updatedMetadata = [];
+  let isUpdated = false;
+
+  metadata.forEach(function(row) {
+    if (!row || typeof row !== "object") {
+      return;
+    }
+
+    if (String(row.key || "") === normalizedKey) {
+      updatedMetadata.push({
+        key: normalizedKey,
+        json: value
+      });
+
+      isUpdated = true;
+      return;
+    }
+
+    updatedMetadata.push(row);
+  });
+
+  if (!isUpdated) {
+    updatedMetadata.push({
+      key: normalizedKey,
+      json: value
+    });
+  }
+
+  overwriteSheet(
+    SHEET_NAMES.METADATA,
+    updatedMetadata
+  );
+
+  return value;
+}
+
+/**
+ * 部員マスターを確認用membersシートへ同期する。
+ *
+ * metadataシートはシステム処理用として維持し、
+ * membersシートには人が確認しやすい形式で
+ * 1部員につき1行を書き出す。
+ *
+ * 管理者が部員のパスワードを確認できるよう、
+ * 現在有効なパスワードもinitialPassword列へ出力する。
+ */
+function syncMembersSheet(
+  members,
+  memberPasswords
+) {
+  const normalizedMembers =
+    normalizeMemberMaster(members);
+
+  const passwords =
+    memberPasswords &&
+    typeof memberPasswords === "object" &&
+    !Array.isArray(memberPasswords)
+      ? memberPasswords
+      : {};
+
+  const rows =
+    normalizedMembers.map(function(member) {
+      const memberId =
+        String(member.memberId || "");
+
+      const memberName =
+        String(member.name || "");
+
+      const displayName =
+        String(
+          member.displayName ||
+          member.name ||
+          ""
+        );
+
+      const effectivePassword =
+        passwords[memberId] ||
+        passwords[memberName] ||
+        passwords[displayName] ||
+        DEFAULT_DATA.DEFAULT_PASSWORD;
+
+      return {
+        memberId: memberId,
+
+        memberName: memberName,
+
+        displayName: displayName,
+
+        role:
+          member.role === ROLE_NAMES.ADMIN
+            ? ROLE_NAMES.ADMIN
+            : ROLE_NAMES.MEMBER,
+
+        active:
+          member.active !== false,
+
+        initialPassword:
+          String(effectivePassword || "")
+      };
+    });
+
+  overwriteSheet(
+    SHEET_NAMES.MEMBERS,
+    rows
+  );
+
+  return rows;
+}
+
 function overwriteSheet(sheetName, data) {
   const sheet = getOrCreateSheet(sheetName);
   sheet.clearContents();
