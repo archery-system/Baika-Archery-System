@@ -14,6 +14,7 @@ const SHEET_NAMES = {
 
 const ROLE_NAMES = {
   MEMBER: "member",
+  COACH: "coach",
   ADMIN: "admin"
 };
 
@@ -73,12 +74,31 @@ function normalizeMemberMaster(memberMaster) {
     .map((member, index) => {
       if (typeof member === "string") {
         return {
-          memberId: createLegacyMemberId_(member, index),
-          name: member,
-          displayName: member,
-          role: ROLE_NAMES.MEMBER,
-          active: true
-        };
+          
+  memberId:
+    createLegacyMemberId_(
+      member,
+      index
+    ),
+
+  name:
+    member,
+
+  displayName:
+    member,
+
+  role:
+    ROLE_NAMES.MEMBER,
+
+  active:
+    true,
+
+  updatedAt:
+    "",
+
+  updatedBy:
+    ""
+};
       }
 
       if (!member || typeof member !== "object") {
@@ -98,22 +118,28 @@ function normalizeMemberMaster(memberMaster) {
       }
 
       return {
-        memberId:
-          String(member.memberId || "").trim() ||
-          createLegacyMemberId_(name, index),
+  memberId:
+    String(member.memberId || "").trim() ||
+    createLegacyMemberId_(name, index),
 
-        name: name,
+  name: name,
 
-        displayName:
-          String(member.displayName || "").trim() ||
-          name,
+  displayName:
+    String(member.displayName || "").trim() ||
+    name,
 
-        role:
-          normalizeRole_(member.role),
+  role:
+    normalizeRole_(member.role),
 
-        active:
-          member.active !== false
-      };
+  active:
+    member.active !== false,
+
+  updatedAt:
+    String(member.updatedAt || "").trim(),
+
+  updatedBy:
+    String(member.updatedBy || "").trim()
+};
     })
     .filter(Boolean);
 }
@@ -137,9 +163,15 @@ function createLegacyMemberId_(memberName, index) {
  * 権限名を安全な値へ統一する。
  */
 function normalizeRole_(role) {
-  return role === ROLE_NAMES.ADMIN
-    ? ROLE_NAMES.ADMIN
-    : ROLE_NAMES.MEMBER;
+  if (role === ROLE_NAMES.ADMIN) {
+    return ROLE_NAMES.ADMIN;
+  }
+
+  if (role === ROLE_NAMES.COACH) {
+    return ROLE_NAMES.COACH;
+  }
+
+  return ROLE_NAMES.MEMBER;
 }
 
 function testNormalizeMemberMaster() {

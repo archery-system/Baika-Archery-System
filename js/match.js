@@ -5,10 +5,56 @@ function addBlankMatchRow(ends) {
     let currentMatchName = document.getElementById("envMatchName").value.trim() || "無名の大会";
     let categoryName = ends === 10 ? "インドア18m" : "RC女子";
     
-    let o = { 
-        matchName: currentMatchName, matchDate: selectedDateStr, name: getActiveInputMember(), category: categoryName, maxEnd: ends, 
-        x1: 0, ten1: 0, x2: 0, ten2: 0, total: 0 
-    };
+    const activeMemberName =
+    getActiveInputMember();
+
+const activeMemberId =
+    window.V4Session &&
+    typeof window.V4Session.getLoggedInMemberId ===
+        "function"
+        ? String(
+            window.V4Session.getLoggedInMemberId() ||
+            ""
+        ).trim()
+        : "";
+    
+    let o = {
+    matchName:
+        currentMatchName,
+
+    matchDate:
+        selectedDateStr,
+
+    memberId:
+        activeMemberId,
+
+    memberName:
+        activeMemberName,
+
+    name:
+        activeMemberName,
+
+    category:
+        categoryName,
+
+    maxEnd:
+        ends,
+
+    x1:
+        0,
+
+    ten1:
+        0,
+
+    x2:
+        0,
+
+    ten2:
+        0,
+
+    total:
+        0
+};
     for(let e=1;e<=12;e++) o[`e${e}`] = 0;
     matchData.push(o); saveToCloud('match'); headResetAndRender(); updateDashboard();
 }

@@ -184,24 +184,19 @@
                     権限
                 </label>
 
-                <select
-                    id="newMemberRole"
-                    name="memberRole"
-                    style="
-                        width:100%;
-                        min-height:44px;
-                        box-sizing:border-box;
-                        margin-top:6px;
-                    "
-                >
-                    <option value="member">
-                        部員
-                    </option>
+                <select id="newMemberRole">
+    <option value="member">
+        部員
+    </option>
 
-                    <option value="admin">
-                        管理者
-                    </option>
-                </select>
+    <option value="coach">
+        監督
+    </option>
+
+    <option value="admin">
+        管理者
+    </option>
+</select>
             </div>
 
             <div>
@@ -310,7 +305,7 @@
 <script src="js/core/config.js"></script>
 <script src="js/core/organization.js"></script>
 <script src="js/components/header.js"></script>
-<script src="js/pages/admin-members.js?v=15"></script>
+<script src="js/pages/admin-members.js?v=19"></script>
 
 <script>
         document.addEventListener(

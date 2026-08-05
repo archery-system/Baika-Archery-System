@@ -34,6 +34,22 @@ function handleGet(e) {
 }
 
 /*
+ * 大会記録一覧用。
+ *
+ * practice・metadataを含めず、
+ * matchシートだけを返す。
+ */
+if (action === "getMatchRecords") {
+  return createJsonResponse({
+    success: true,
+    match:
+      readSheetData(
+        SHEET_NAMES.MATCH
+      )
+  });
+}
+
+/*
  * 部員管理画面用。
  *
  * getMemberMaster()を通すことで、
@@ -44,11 +60,28 @@ function handleGet(e) {
  * memberId・name・displayName・role・activeを持つ
  * 新形式へ統一して返す。
  */
+
 if (action === "getMembers") {
   return createJsonResponse({
     success: true,
     members: getMemberMaster()
   });
+}
+
+/*
+ * 部員編集画面用。
+ */
+if (action === "getMemberDetails") {
+  const memberId =
+    e && e.parameter
+      ? String(
+          e.parameter.memberId || ""
+        ).trim()
+      : "";
+
+  return handleGetMemberDetailsAction_(
+    memberId
+  );
 }
 
 /*
@@ -82,6 +115,75 @@ return createJsonResponse({
   }
 }
 
+/**
+ * 部員編集画面へ部員詳細を返す。
+ */
+function handleGetMemberDetailsAction_(
+  memberId
+) {
+  const normalizedMemberId =
+    String(memberId || "").trim();
+
+  if (!normalizedMemberId) {
+    return createJsonResponse({
+      success: false,
+      message: "部員IDが指定されていません。"
+    });
+  }
+
+  const member =
+    findMember(normalizedMemberId);
+
+  if (!member) {
+    return createJsonResponse({
+      success: false,
+      message: "指定された部員が見つかりません。"
+    });
+  }
+
+  const passwords =
+    getMemberPasswords();
+
+  const currentPassword =
+    passwords[member.memberId] ||
+    passwords[member.name] ||
+    passwords[member.displayName] ||
+    DEFAULT_DATA.DEFAULT_PASSWORD;
+
+  return createJsonResponse({
+    success: true,
+
+    member: {
+      memberId:
+        String(member.memberId || ""),
+
+      name:
+        String(member.name || ""),
+
+      displayName:
+        String(
+          member.displayName ||
+          member.name ||
+          ""
+        ),
+
+      role:
+  member.role === ROLE_NAMES.ADMIN
+    ? ROLE_NAMES.ADMIN
+    : (
+        member.role === ROLE_NAMES.COACH
+          ? ROLE_NAMES.COACH
+          : ROLE_NAMES.MEMBER
+      ),
+
+      active:
+        member.active !== false,
+
+      password:
+        String(currentPassword || "")
+    }
+  });
+}
 
 /**
  * POSTリクエストを処理する。
@@ -116,8 +218,78 @@ function handlePost(e) {
   return handleLoginAction_(payload);
 }
 
+/**
+ * 大会記録1件の追加・更新要求を処理する。
+ */
+function handleSaveMatchRecordAction_(
+  payload
+) {
+  const record =
+    payload &&
+    payload.record &&
+    typeof payload.record === "object"
+      ? payload.record
+      : null;
+
+  if (!record) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "保存する大会記録が指定されていません。"
+    });
+  }
+
+  const recordId =
+    String(
+      record.recordId || ""
+    ).trim();
+
+  if (!recordId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "大会記録IDが指定されていません。"
+    });
+  }
+
+  const result =
+    upsertMatchRecord(
+      record
+    );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      result.operation === "updated"
+        ? "大会記録を更新しました。"
+        : "大会記録を追加しました。",
+
+    recordId:
+      result.recordId,
+
+    operation:
+      result.operation,
+
+    rowNumber:
+      result.rowNumber
+  });
+}
+
 if (action === "addMember") {
   return handleAddMemberAction_(payload);
+}
+
+if (action === "updateMemberName") {
+  return handleUpdateMemberNameAction_(payload);
+}
+
+/*
+ * 大会記録1件を追加または更新する。
+ */
+if (action === "saveMatchRecord") {
+  return handleSaveMatchRecordAction_(
+    payload
+  );
 }
 
     /*
@@ -247,10 +419,17 @@ function handleAddMemberAction_(payload) {
     ""
   ).trim();
 
-  const role =
-    payload.role === ROLE_NAMES.ADMIN
-      ? ROLE_NAMES.ADMIN
-      : ROLE_NAMES.MEMBER;
+  const requestedRole =
+  String(payload.role || "");
+
+const role =
+  requestedRole === ROLE_NAMES.ADMIN
+    ? ROLE_NAMES.ADMIN
+    : (
+        requestedRole === ROLE_NAMES.COACH
+          ? ROLE_NAMES.COACH
+          : ROLE_NAMES.MEMBER
+      );
 
   const password = String(
     payload.password || ""
@@ -341,6 +520,147 @@ return createJsonResponse({
   });
 }
 
+/**
+ * 部員氏名の更新要求を処理する。
+ */
+function handleUpdateMemberNameAction_(payload) {
+  const memberId =
+    String(
+      payload.memberId || ""
+    ).trim();
+
+  const newName =
+    String(
+      payload.memberName ||
+      payload.name ||
+      ""
+    ).trim();
+
+  const updatedBy =
+    String(
+      payload.updatedBy || ""
+    ).trim();
+
+    const requestedRole =
+  String(
+    payload.role || ""
+  ).trim();
+
+const newRole =
+  requestedRole === ROLE_NAMES.ADMIN
+    ? ROLE_NAMES.ADMIN
+    : (
+        requestedRole === ROLE_NAMES.COACH
+          ? ROLE_NAMES.COACH
+          : ROLE_NAMES.MEMBER
+      );
+
+  if (!memberId) {
+    return createJsonResponse({
+      success: false,
+      message: "部員IDが指定されていません。"
+    });
+  }
+
+  if (!newName) {
+    return createJsonResponse({
+      success: false,
+      message: "氏名を入力してください。"
+    });
+  }
+
+  const members =
+    getMemberMaster();
+
+  const targetIndex =
+    members.findIndex(function(member) {
+      return (
+        String(member.memberId || "") ===
+        memberId
+      );
+    });
+
+  if (targetIndex < 0) {
+    return createJsonResponse({
+      success: false,
+      message: "指定された部員が見つかりません。"
+    });
+  }
+
+  const duplicateMember =
+    members.find(function(member) {
+      return (
+        String(member.memberId || "") !== memberId &&
+        (
+          String(member.name || "").trim() === newName ||
+          String(member.displayName || "").trim() === newName
+        )
+      );
+    });
+
+  if (duplicateMember) {
+    return createJsonResponse({
+      success: false,
+      message: "同じ氏名の部員が既に登録されています。"
+    });
+  }
+
+  const previousMember =
+    members[targetIndex];
+
+  const updatedAt =
+    Utilities.formatDate(
+      new Date(),
+      "Asia/Tokyo",
+      "yyyy-MM-dd HH:mm:ss"
+    );
+
+  const updatedMember = {
+  ...previousMember,
+
+  name:
+    newName,
+
+  displayName:
+    newName,
+
+  role:
+    newRole,
+
+  updatedAt:
+    updatedAt,
+
+  updatedBy:
+    updatedBy
+};
+
+  const updatedMembers =
+    members.map(function(member, index) {
+      return index === targetIndex
+        ? updatedMember
+        : member;
+    });
+
+  const passwords =
+    getMemberPasswords();
+
+  upsertMetadataValue(
+    "memberMaster",
+    updatedMembers
+  );
+
+  syncMembersSheet(
+    updatedMembers,
+    passwords
+  );
+
+  return createJsonResponse({
+    success: true,
+    message: "氏名を更新しました。",
+    member: updatedMember,
+    members: updatedMembers
+  });
+}
 
 /**
  * 次に使用する部員IDを作成する。
@@ -425,6 +745,27 @@ function testGetMembersApi() {
   const mockEvent = {
     parameter: {
       action: "getMembers"
+    }
+  };
+
+  const response =
+    handleGet(mockEvent);
+
+  console.log(
+    response.getContent()
+  );
+}
+
+/**
+ * 部員詳細取得APIの動作確認用テスト。
+ *
+ * シートのデータは変更しない。
+ */
+function testGetMemberDetailsApi() {
+  const mockEvent = {
+    parameter: {
+      action: "getMemberDetails",
+      memberId: "mem_003"
     }
   };
 

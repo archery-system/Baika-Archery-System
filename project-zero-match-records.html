@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        大会記録一覧 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/page-header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/button.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/pages/match-records.css?v=5"
+    >
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div id="page-header"></div>
+
+            <div class="bas-app__content">
+                <section
+                    class="bas-card"
+                    aria-labelledby="matchRecordsTitle"
+                >
+                    <div class="bas-match-records__header">
+                        <div>
+                            <h2 id="matchRecordsTitle">
+                                大会記録一覧
+                            </h2>
+
+                            <p>
+                                保存済みの大会・記録会の結果を表示します。
+                            </p>
+                        </div>
+
+                        <span
+                            id="matchRecordCount"
+                            class="bas-match-records__count"
+                        >
+                            0件
+                        </span>
+                    </div>
+
+                    <div
+                        id="matchRecordsStatus"
+                        class="bas-match-records__status"
+                    >
+                        大会記録を読み込んでいます。
+                    </div>
+
+                    <div
+                        id="matchRecordsList"
+                        class="bas-match-records__list"
+                        hidden
+                    ></div>
+
+                    <div
+                        id="matchRecordsEmpty"
+                        class="bas-match-records__empty"
+                        hidden
+                    >
+                        大会記録はありません。
+                    </div>
+
+                    <div class="bas-match-records__actions">
+                        <a
+                            href="project-zero-match.html"
+                            class="bas-button bas-button--primary"
+                        >
+                            大会記録を入力する
+                        </a>
+
+                        <a
+                            href="project-zero-record-center.html"
+                            class="bas-button"
+                        >
+                            記録センターへ戻る
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/v4-session.js"></script>
+
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/core/theme.js"></script>
+    <script src="js/core/cloud.js?v=5"></script>
+
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+
+    <script src="js/pages/match-records.js?v=6"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    !window.V4Session ||
+                    typeof window.V4Session
+                        .requireLogin !==
+                        "function" ||
+                    !window.V4Session
+                        .requireLogin()
+                ) {
+                    return;
+                }
+
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER
+                        .render ===
+                        "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        targetId:
+                            "app-header",
+
+                        currentRoute:
+                            "records"
+                    });
+                }
+
+                if (
+                    window.BAS_PAGE_HEADER &&
+                    typeof window.BAS_PAGE_HEADER
+                        .render ===
+                        "function"
+                ) {
+                    window.BAS_PAGE_HEADER.render({
+                        targetId:
+                            "page-header",
+
+                        eyebrow:
+                            "Competition Records",
+
+                        title:
+                            "大会記録一覧",
+
+                        description:
+                            "保存済みの大会結果を確認します。"
+                    });
+                }
+
+                if (
+                    window.BAS_MATCH_RECORDS &&
+                    typeof window.BAS_MATCH_RECORDS
+                        .initialize ===
+                        "function"
+                ) {
+                    window.BAS_MATCH_RECORDS
+                        .initialize();
+                } else {
+                    console.error(
+                        "[大会記録一覧] " +
+                        "初期化処理を読み込めません。"
+                    );
+                }
+            }
+        );
+    </script>
+</body>
+</html>

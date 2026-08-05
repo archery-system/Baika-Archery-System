@@ -138,3 +138,21 @@
         width: 100%;
     }
 }
+
+.bas-record-center__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bas-space-3);
+    align-items: center;
+}
+
+@media (max-width: 600px) {
+    .bas-record-center__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bas-record-center__actions .bas-button {
+        width: 100%;
+    }
+}

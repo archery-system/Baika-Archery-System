@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        大会記録入力 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/page-header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/button.css"
+    >
+
+<link
+    rel="stylesheet"
+    href="css/pages/match.css?v=1"
+>
+
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div id="page-header"></div>
+
+            <div class="bas-app__content">
+
+                <!-- 基本情報 -->
+                <section
+                    class="bas-card"
+                    aria-labelledby="matchFormTitle"
+                >
+                    <h2 id="matchFormTitle">
+                        大会記録入力
+                    </h2>
+
+                    <p>
+                        大会・記録会の基本情報を入力します。
+                    </p>
+
+                    <form id="matchRecordForm">
+                        <div>
+                            <label for="matchName">
+                                大会名
+                            </label>
+
+                            <input
+                                type="text"
+                                id="matchName"
+                                name="matchName"
+                                autocomplete="off"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label for="matchDate">
+                                開催日
+                            </label>
+
+                            <input
+                                type="date"
+                                id="matchDate"
+                                name="matchDate"
+                                required
+                            >
+                        </div>
+
+                        <div>
+                            <label for="matchCategory">
+                                種目
+                            </label>
+
+                            <select
+                                id="matchCategory"
+                                name="matchCategory"
+                                required
+                            >
+                                <option value="">
+                                    選択してください
+                                </option>
+
+                                <option value="70m">
+                                    70mラウンド
+                                </option>
+
+                                <option value="60m">
+                                    60mラウンド
+                                </option>
+
+                                <option value="50m">
+                                    50mラウンド
+                                </option>
+
+                                <option value="30m">
+                                    30mラウンド
+                                </option>
+
+                                <option value="50m30m">
+                                    50m・30mラウンド
+                                </option>
+
+                                <option value="indoor18m">
+                                    インドア18m
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="matchVisibility">
+                                公開設定
+                            </label>
+
+                            <select
+                                id="matchVisibility"
+                                name="matchVisibility"
+                            >
+                                <option value="members">
+    部員全員に公開
+</option>
+
+<option value="private">
+    本人・監督・管理者のみ
+</option>
+                            </select>
+                        </div>
+
+                        <div>
+    <label for="matchResultUrl">
+        大会結果URL
+    </label>
+
+    <input
+        type="url"
+        id="matchResultUrl"
+        name="matchResultUrl"
+        inputmode="url"
+        autocomplete="url"
+        placeholder="https://example.com/result"
+    >
+
+    <p>
+        大会結果や順位表が公開されている場合に入力します。
+    </p>
+</div>
+
+                        <div class="bas-match-actions">
+                            <button
+                                type="button"
+                                class="
+                                    bas-button
+                                    bas-button--primary
+                                "
+                                id="continueMatchInputButton"
+                            >
+                                得点入力へ進む
+                            </button>
+
+                            <a
+                                href="project-zero-record-center.html"
+                                class="bas-button"
+                            >
+                                記録センターへ戻る
+                            </a>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- 得点入力 -->
+                <section
+                    id="matchScoreSection"
+                    class="bas-card"
+                    aria-labelledby="matchScoreTitle"
+                    hidden
+                >
+                    <h2 id="matchScoreTitle">
+                        得点入力
+                    </h2>
+
+                    <div id="matchSummary">
+                        <p>
+                            <strong>
+                                大会名：
+                            </strong>
+
+                            <span id="matchSummaryName"></span>
+                        </p>
+
+                        <p>
+                            <strong>
+                                開催日：
+                            </strong>
+
+                            <span id="matchSummaryDate"></span>
+                        </p>
+
+                        <p>
+                            <strong>
+                                種目：
+                            </strong>
+
+                            <span id="matchSummaryCategory"></span>
+                        </p>
+
+                        <p>
+                            <strong>
+                                公開設定：
+                            </strong>
+
+                            <span id="matchSummaryVisibility"></span>
+                        </p>
+                    </div>
+
+                    <div id="matchEndInputs"></div>
+
+                    <div class="bas-match-grand-total">
+    <p class="bas-match-grand-total__item">
+        総合計
+        <strong id="matchTotalScore">
+            0
+        </strong>
+        点
+    </p>
+
+    <p class="bas-match-grand-total__item">
+    総<span id="matchTotalCount1Label">X</span>数
+
+    <strong id="matchTotalX">
+        0
+    </strong>
+</p>
+
+    <p class="bas-match-grand-total__item">
+    総<span id="matchTotalCount2Label">10</span>数
+
+    <strong id="matchTotalTen">
+        0
+    </strong>
+</p>
+</div>
+
+                    <div class="bas-match-actions">
+                        <button
+                            type="button"
+                            class="
+                                bas-button
+                                bas-button--primary
+                            "
+                            id="saveMatchRecordButton"
+                            disabled
+                        >
+                            大会記録を保存
+                        </button>
+
+                        <button
+                            type="button"
+                            class="bas-button"
+                            id="backToMatchBasicButton"
+                        >
+                            基本情報へ戻る
+                        </button>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/core/theme.js"></script>
+    <script src="js/core/cloud.js?v=5"></script>
+
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+
+    <!-- Project Zero Match -->
+    <script src="js/pages/match.js?v=13"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    !window.V4Session ||
+                    typeof window.V4Session
+                        .requireLogin !==
+                        "function" ||
+                    !window.V4Session
+                        .requireLogin()
+                ) {
+                    return;
+                }
+
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER
+                        .render ===
+                        "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        targetId:
+                            "app-header",
+
+                        currentRoute:
+                            "records"
+                    });
+                }
+
+                if (
+                    window.BAS_PAGE_HEADER &&
+                    typeof window.BAS_PAGE_HEADER
+                        .render ===
+                        "function"
+                ) {
+                    window.BAS_PAGE_HEADER.render({
+                        targetId:
+                            "page-header",
+
+                        eyebrow:
+                            "Competition",
+
+                        title:
+                            "大会記録入力",
+
+                        description:
+                            "大会・記録会の結果を登録します。"
+                    });
+                }
+
+                if (
+                    window.BAS_MATCH &&
+                    typeof window.BAS_MATCH
+                        .initialize ===
+                        "function"
+                ) {
+                    window.BAS_MATCH.initialize();
+                } else {
+                    console.error(
+                        "[大会記録入力] " +
+                        "BAS_MATCHを初期化できません。"
+                    );
+                }
+
+                console.log(
+                    "[大会記録入力] 初期化しました。"
+                );
+            }
+        );
+    </script>
+</body>
+</html>

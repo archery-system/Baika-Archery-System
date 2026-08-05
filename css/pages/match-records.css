@@ -1,0 +1,649 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * 大会記録一覧
+ */
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.bas-match-records__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--bas-space-4);
+    margin-bottom: var(--bas-space-5);
+}
+
+.bas-match-records__header h2 {
+    margin-top: 0;
+}
+
+.bas-match-records__count {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    background: rgb(247 239 246);
+}
+
+.bas-match-records__status,
+.bas-match-records__empty {
+    padding: var(--bas-space-5);
+    border: 1px solid rgb(120 50 110 / 15%);
+    border-radius: 12px;
+    text-align: center;
+    background: rgb(251 247 250);
+}
+
+.bas-match-records__list {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-match-record {
+    display: grid;
+    gap: var(--bas-space-3);
+    padding: var(--bas-space-4);
+    border: 1px solid rgb(120 50 110 / 18%);
+    border-radius: 14px;
+    background: var(--bas-color-white);
+}
+
+.bas-match-record__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--bas-space-3);
+}
+
+.bas-match-record__title {
+    margin: 0;
+    font-size: 1.08rem;
+}
+
+.bas-match-record__date {
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.bas-match-record__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.bas-match-record__badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    background: rgb(247 239 246);
+}
+
+.bas-match-record__score {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+    gap: 8px;
+}
+
+.bas-match-record__score-item {
+    margin: 0;
+    padding: 10px 6px;
+    border-radius: 10px;
+    text-align: center;
+    background: rgb(251 247 250);
+}
+
+.bas-match-record__score-item strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.bas-match-records__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bas-space-3);
+    margin-top: var(--bas-space-6);
+}
+
+@media (max-width: 600px) {
+    .bas-match-records__header {
+        align-items: stretch;
+    }
+
+    .bas-match-record__top {
+        display: grid;
+    }
+
+    .bas-match-record__date {
+        white-space: normal;
+    }
+
+    .bas-match-records__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-records__actions .bas-button {
+        width: 100%;
+    }
+}
+
+/*
+ * 大会記録の全エンド表示
+ */
+.bas-match-record__detail {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+    gap: 10px;
+}
+
+.bas-match-record__half {
+    min-width: 0;
+    border: 1px solid rgb(120 50 110 / 14%);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bas-match-record__half-title {
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    color: var(--bas-color-white);
+    background:
+        linear-gradient(
+            135deg,
+            var(--bas-color-primary-800),
+            var(--bas-color-primary-600)
+        );
+}
+
+.bas-match-record__ends {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            6,
+            minmax(0, 1fr)
+        );
+    gap: 4px;
+    padding: 8px;
+}
+
+.bas-match-record__end {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 3px;
+    margin: 0;
+    padding: 4px 5px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    background: rgb(251 247 250);
+}
+
+.bas-match-record__end span {
+    color: rgb(80 65 80);
+}
+
+.bas-match-record__end strong {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.bas-match-record__half-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+    gap: 4px;
+    padding: 6px 8px;
+    border-top: 1px solid rgb(120 50 110 / 12%);
+    background: rgb(248 243 247);
+}
+
+.bas-match-record__compact-summary {
+    margin: 0;
+    padding: 3px;
+    text-align: center;
+    font-size: 0.8rem;
+}
+
+.bas-match-record__compact-summary span,
+.bas-match-record__compact-summary strong {
+    display: block;
+}
+
+.bas-match-record__compact-summary strong {
+    margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+}
+
+.bas-match-record__url {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px;
+    align-items: start;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    background: rgb(251 247 250);
+}
+
+.bas-match-record__url-link {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+/*
+ * PC・横向きでは前半と後半を横一列に表示する。
+ */
+@media (min-width: 601px) {
+    .bas-match-record__detail {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+}
+
+/*
+ * スマホ縦では、
+ * 前半・後半を縦に並べ、
+ * 各エンドは2列で表示する。
+ */
+@media (max-width: 600px) {
+    .bas-match-record__detail {
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-record__ends {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+
+    .bas-match-record__url {
+        grid-template-columns: 1fr;
+    }
+}
+
+.bas-match-record__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--bas-space-2);
+    padding-top: 4px;
+}
+
+@media (max-width: 600px) {
+    .bas-match-record__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-record__actions .bas-button {
+        width: 100%;
+    }
+}
+
+/*
+ * 大会成績表形式
+ *
+ * PC・タブレット横向き：
+ * 前半／後半を横一列の成績表として表示する。
+ *
+ * スマホ縦向き：
+ * 各エンドを2列にして見やすく表示する。
+ */
+
+.bas-match-record {
+    gap: 8px;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.bas-match-record__top {
+    align-items: center;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgb(120 50 110 / 14%);
+}
+
+.bas-match-record__title {
+    font-size: 1rem;
+}
+
+.bas-match-record__date {
+    font-size: 0.82rem;
+}
+
+.bas-match-record__meta {
+    gap: 5px;
+}
+
+.bas-match-record__badge {
+    min-height: 24px;
+    padding: 2px 7px;
+    font-size: 0.76rem;
+}
+
+/*
+ * 総合計・総X・総10
+ */
+.bas-match-record__score {
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+    gap: 4px;
+}
+
+.bas-match-record__score-item {
+    padding: 5px 4px;
+    border: 1px solid rgb(120 50 110 / 10%);
+    border-radius: 6px;
+    font-size: 0.76rem;
+}
+
+.bas-match-record__score-item strong {
+    display: inline;
+    margin-top: 0;
+    margin-left: 5px;
+    font-size: 1rem;
+}
+
+/*
+ * 前半・後半の成績表
+ */
+.bas-match-record__detail {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid rgb(120 50 110 / 18%);
+    border-radius: 8px;
+}
+
+/*
+ * 1行を
+ *
+ * 前半70m｜1｜2｜3｜4｜5｜6｜合計｜X｜10
+ *
+ * のように横方向へ配置する。
+ */
+.bas-match-record__half {
+    display: grid;
+    grid-template-columns:
+        minmax(76px, 0.8fr)
+        minmax(0, 4fr)
+        minmax(150px, 1.4fr);
+    align-items: stretch;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.bas-match-record__half + .bas-match-record__half {
+    border-top: 1px solid rgb(120 50 110 / 16%);
+}
+
+.bas-match-record__half-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 6px 8px;
+    border-right: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 0;
+    text-align: center;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+/*
+ * 各エンド
+ */
+.bas-match-record__ends {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            6,
+            minmax(40px, 1fr)
+        );
+    gap: 0;
+    padding: 0;
+    background: var(--bas-color-white);
+}
+
+.bas-match-record__end {
+    display: grid;
+    grid-template-rows: auto auto;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border-right: 1px solid rgb(120 50 110 / 12%);
+    border-radius: 0;
+    text-align: center;
+    background: transparent;
+}
+
+.bas-match-record__end span {
+    display: block;
+    padding: 3px 2px;
+    border-bottom: 1px solid rgb(120 50 110 / 10%);
+    font-size: 0.67rem;
+    color: rgb(90 75 90);
+    background: rgb(249 246 249);
+}
+
+.bas-match-record__end strong {
+    display: block;
+    padding: 5px 2px;
+    text-align: center;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 前半合計・X・10
+ * インドアでは合計・10・9
+ */
+.bas-match-record__half-summary {
+    display: grid;
+    grid-template-columns:
+        minmax(64px, 1.3fr)
+        minmax(40px, 0.7fr)
+        minmax(40px, 0.7fr);
+    gap: 0;
+    padding: 0;
+    border-top: 0;
+    background: rgb(248 243 247);
+}
+
+.bas-match-record__compact-summary {
+    display: grid;
+    grid-template-rows: auto auto;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid rgb(120 50 110 / 12%);
+    text-align: center;
+}
+
+.bas-match-record__compact-summary span {
+    display: block;
+    padding: 3px 2px;
+    border-bottom: 1px solid rgb(120 50 110 / 10%);
+    font-size: 0.67rem;
+    color: rgb(90 75 90);
+}
+
+.bas-match-record__compact-summary strong {
+    display: block;
+    padding: 5px 2px;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+ * 大会結果URL
+ */
+.bas-match-record__url {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px 7px;
+    font-size: 0.76rem;
+}
+
+.bas-match-record__url-link {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+}
+
+/*
+ * 訂正ボタン
+ */
+.bas-match-record__actions {
+    padding-top: 2px;
+}
+
+.bas-match-record__actions .bas-button {
+    min-height: 34px;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+}
+
+/*
+ * スマホ縦向き
+ */
+@media (max-width: 600px) {
+    .bas-match-record {
+        padding: 9px;
+    }
+
+    .bas-match-record__top {
+        display: grid;
+        gap: 3px;
+    }
+
+    .bas-match-record__half {
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-record__half + .bas-match-record__half {
+        margin-top: 7px;
+        border-top: 0;
+    }
+
+    .bas-match-record__half-title {
+        justify-content: flex-start;
+        padding: 6px 9px;
+        border-right: 0;
+        text-align: left;
+    }
+
+    /*
+     * スマホ縦ではエンドを2列で表示する。
+     */
+    .bas-match-record__ends {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    grid-template-rows:
+        repeat(
+            3,
+            auto
+        );
+
+    grid-auto-flow: column;
+
+    gap: 1px;
+    padding: 1px;
+
+    background:
+        rgb(120 50 110 / 12%);
+}
+
+    .bas-match-record__end {
+        grid-template-columns: 34px 1fr;
+        grid-template-rows: 1fr;
+        align-items: center;
+        background: var(--bas-color-white);
+    }
+
+    .bas-match-record__end span {
+        height: 100%;
+        padding: 6px 3px;
+        border-right: 1px solid rgb(120 50 110 / 10%);
+        border-bottom: 0;
+    }
+
+    .bas-match-record__end strong {
+        padding: 6px 3px;
+    }
+
+    .bas-match-record__half-summary {
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(0, 1fr)
+            );
+        margin-top: 1px;
+    }
+
+    .bas-match-record__compact-summary {
+        border-left: 0;
+        border-right: 1px solid rgb(120 50 110 / 12%);
+    }
+
+    .bas-match-record__compact-summary:last-child {
+        border-right: 0;
+    }
+
+    .bas-match-record__url {
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-record__actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-record__actions .bas-button {
+        width: 100%;
+    }
+}

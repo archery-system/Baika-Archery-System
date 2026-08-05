@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        部員編集 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/button.css"
+    >
+
+    <style>
+        .bas-member-edit-form {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .bas-member-edit-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .bas-member-edit-field label {
+            font-weight: 600;
+        }
+
+        .bas-member-edit-field input,
+        .bas-member-edit-field select {
+            width: 100%;
+            min-height: 44px;
+            box-sizing: border-box;
+        }
+
+        .bas-member-edit-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        @media (min-width: 700px) {
+            .bas-member-edit-form {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .bas-member-edit-actions {
+                grid-column: 1 / -1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div class="bas-app__content">
+                <section aria-labelledby="memberEditPageTitle">
+                    <p>
+                        管理者メニュー
+                    </p>
+
+                    <h1 id="memberEditPageTitle">
+                        ✏️ 部員編集
+                    </h1>
+
+                    <p>
+                        部員の基本情報・権限・利用状態を編集します。
+                    </p>
+                </section>
+
+                <section
+                    class="bas-card"
+                    aria-labelledby="memberEditFormTitle"
+                >
+                    <h2 id="memberEditFormTitle">
+                        部員情報
+                    </h2>
+
+                    <form
+                        id="memberEditForm"
+                        class="bas-member-edit-form"
+                    >
+                        <div class="bas-member-edit-field">
+                            <label for="editMemberId">
+                                部員ID
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editMemberId"
+                                readonly
+                            >
+                        </div>
+
+                        <div class="bas-member-edit-field">
+                            <label for="editMemberName">
+                                氏名
+                            </label>
+
+                            <input
+                            type="text"
+                            id="editMemberName"
+                            autocomplete="off"
+                            >
+                        </div>
+
+                        <div class="bas-member-edit-field">
+    <label for="editMemberRole">
+        権限
+    </label>
+
+    <select
+    id="editMemberRole"
+>
+        <option value="member">
+            部員
+        </option>
+
+        <option value="coach">
+            監督
+        </option>
+
+        <option value="admin">
+            管理者
+        </option>
+    </select>
+</div>
+
+<div class="bas-member-edit-field">
+    <label for="editMemberActive">
+        利用状態
+    </label>
+
+    <select
+        id="editMemberActive"
+        disabled
+    >
+        <option value="true">
+            利用中
+        </option>
+
+        <option value="false">
+            利用停止
+        </option>
+    </select>
+</div>
+
+<div class="bas-member-edit-field">
+    <label for="editMemberPassword">
+        現在のパスワード
+    </label>
+
+    <input
+        type="text"
+        id="editMemberPassword"
+        disabled
+    >
+</div>
+
+                        <div class="bas-member-edit-actions">
+                            <button
+                                type="button"
+                                class="bas-button"
+                                id="backToMemberList"
+                            >
+                                部員一覧へ戻る
+                            </button>
+
+                            <button
+                            type="button"
+                            class="bas-button"
+                            id="saveMemberButton"
+                            >
+                           保存
+                           </button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/v4-session.js"></script>
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/components/header.js"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    !window.V4Session ||
+                    typeof window.V4Session.requireAdmin !== "function" ||
+                    !window.V4Session.requireAdmin()
+                ) {
+                    return;
+                }
+
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER.render === "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        targetId: "app-header",
+                        currentRoute: "admin"
+                    });
+                }
+
+                const searchParams =
+                    new URLSearchParams(
+                        window.location.search
+                    );
+
+                const memberId =
+                    searchParams.get("memberId") || "";
+
+                const memberIdInput =
+                    document.getElementById(
+                        "editMemberId"
+                    );
+
+                    loadMemberDetails(memberId);
+
+                if (memberIdInput) {
+                    memberIdInput.value = memberId;
+                }
+
+                const backButton =
+                    document.getElementById(
+                        "backToMemberList"
+                    );
+
+                if (backButton) {
+                    backButton.addEventListener(
+                        "click",
+                        function () {
+                            window.location.href =
+                                "project-zero-admin-members.html";
+                        }
+                    );
+                }
+            }
+        );
+
+async function loadMemberDetails(
+    memberId
+) {
+    if (!memberId) {
+        return;
+    }
+
+    const response =
+        await fetch(
+            `${V4_GAS_API_URL}?action=getMemberDetails&memberId=${encodeURIComponent(memberId)}`,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+    const result =
+        await response.json();
+
+    console.log(
+        "部員詳細取得:",
+        result
+    );
+
+    if (
+        !result ||
+        result.success !== true
+    ) {
+        alert(
+            result.message ||
+            "部員情報を取得できませんでした。"
+        );
+        return;
+    }
+
+    const member =
+        result.member;
+
+    document.getElementById(
+        "editMemberId"
+    ).value =
+        member.memberId;
+
+    document.getElementById(
+        "editMemberName"
+    ).value =
+        member.displayName;
+
+    const roleSelect =
+    document.getElementById(
+        "editMemberRole"
+    );
+
+if (roleSelect) {
+    roleSelect.value =
+        String(member.role || "member");
+
+    console.log(
+        "編集画面の権限設定:",
+        {
+            apiRole: member.role,
+            selectedValue: roleSelect.value
+        }
+    );
+}
+
+    document.getElementById(
+        "editMemberActive"
+    ).value =
+        String(member.active);
+
+    const passwordInput =
+        document.getElementById(
+            "editMemberPassword"
+        );
+
+    if (passwordInput) {
+        passwordInput.value =
+            member.password;
+    }
+}
+
+const saveButton =
+    document.getElementById(
+        "saveMemberButton"
+    );
+
+if (saveButton) {
+    saveButton.addEventListener(
+        "click",
+        saveMemberName
+    );
+}
+
+
+/**
+ * 氏名変更をGASへ保存する
+ */
+async function saveMemberName() {
+    const memberIdInput =
+        document.getElementById(
+            "editMemberId"
+        );
+
+    const memberNameInput =
+        document.getElementById(
+            "editMemberName"
+        );
+
+    const saveButton =
+        document.getElementById(
+            "saveMemberButton"
+        );
+
+    if (
+        !memberIdInput ||
+        !memberNameInput ||
+        !saveButton
+    ) {
+        return;
+    }
+
+    const memberId =
+        memberIdInput.value.trim();
+
+    const memberName =
+        memberNameInput.value.trim();
+
+        const memberRoleSelect =
+    document.getElementById(
+        "editMemberRole"
+    );
+
+const memberRole =
+    memberRoleSelect
+        ? String(
+            memberRoleSelect.value ||
+            "member"
+        )
+        : "member";
+
+    if (!memberId) {
+        alert(
+            "部員IDを確認できませんでした。"
+        );
+        return;
+    }
+
+    if (!memberName) {
+        alert("氏名を入力してください。");
+        memberNameInput.focus();
+        return;
+    }
+
+    let updatedBy = "";
+
+    if (
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMemberData ===
+            "function"
+    ) {
+        const loginData =
+            window.V4Session.getLoggedInMemberData();
+
+        updatedBy =
+            loginData &&
+            loginData.memberId
+                ? String(loginData.memberId)
+                : "";
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "保存中...";
+
+    try {
+        
+        console.log(
+    "編集画面の保存予定内容:",
+    {
+        memberId:
+            memberId,
+
+        memberName:
+            memberName,
+
+        memberRole:
+            memberRole,
+
+        updatedBy:
+            updatedBy
+    }
+);
+
+        const result =
+    await postUpdateMemberName({
+        memberId:
+            memberId,
+
+        memberName:
+            memberName,
+
+        role:
+            memberRole,
+
+        updatedBy:
+            updatedBy
+    });
+
+        console.log(
+            "氏名更新API結果:",
+            result
+        );
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "氏名を更新できませんでした。"
+            );
+        }
+
+        alert(
+            result.message ||
+            "氏名を更新しました。"
+        );
+
+        window.location.href =
+            "project-zero-admin-members.html";
+    } catch (error) {
+        console.error(
+            "氏名更新に失敗しました:",
+            error
+        );
+
+        alert(
+            error && error.message
+                ? error.message
+                : "氏名の更新中にエラーが発生しました。"
+        );
+    } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "保存";
+    }
+}
+
+
+/**
+ * 氏名更新APIへ送信する
+ */
+async function postUpdateMemberName(
+    memberData
+) {
+    if (
+        typeof V4_GAS_API_URL !== "string" ||
+        V4_GAS_API_URL.trim() === ""
+    ) {
+        throw new Error(
+            "GAS API URLが設定されていません。"
+        );
+    }
+
+    const response =
+        await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                body: JSON.stringify({
+    action:
+        "updateMemberName",
+
+    memberId:
+        memberData.memberId,
+
+    memberName:
+        memberData.memberName,
+
+    role:
+        memberData.role,
+
+    updatedBy:
+        memberData.updatedBy
+})
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            `氏名更新に失敗しました。HTTP ${response.status}`
+        );
+    }
+
+    const responseText =
+        await response.text();
+
+    if (!responseText) {
+        throw new Error(
+            "氏名更新APIから応答がありません。"
+        );
+    }
+
+    try {
+        return JSON.parse(responseText);
+    } catch (error) {
+        console.error(
+            "氏名更新APIの応答:",
+            responseText
+        );
+
+        throw new Error(
+            "氏名更新APIの応答形式が正しくありません。"
+        );
+    }
+}
+
+    </script>
+</body>
+</html>

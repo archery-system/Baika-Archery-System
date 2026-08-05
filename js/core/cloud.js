@@ -62,6 +62,75 @@
         return result.practice;
     }
 
+/**
+ * GASから大会記録一覧だけを取得する
+ *
+ * practice・metadataは取得しない。
+ *
+ * @returns {Promise<Array>}
+ */
+async function loadMatchRecords() {
+    if (
+        typeof V4_GAS_API_URL !==
+            "string" ||
+        V4_GAS_API_URL.trim() === ""
+    ) {
+        throw new Error(
+            "GAS API URLが設定されていません。"
+        );
+    }
+
+    const separator =
+        V4_GAS_API_URL.includes("?")
+            ? "&"
+            : "?";
+
+    const requestUrl =
+        `${V4_GAS_API_URL}` +
+        `${separator}` +
+        "action=getMatchRecords";
+
+    const response =
+        await fetch(
+            requestUrl,
+            {
+                method: "GET",
+                cache: "no-store"
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            "大会記録の取得に失敗しました。"
+        );
+    }
+
+    const result =
+        await response.json();
+
+    if (
+        !result ||
+        typeof result !== "object"
+    ) {
+        throw new Error(
+            "大会記録APIから不正なデータが返されました。"
+        );
+    }
+
+    if (result.success === false) {
+        throw new Error(
+            result.message ||
+            "大会記録を取得できませんでした。"
+        );
+    }
+
+    if (!Array.isArray(result.match)) {
+        return [];
+    }
+
+    return result.match;
+}
+
     /**
  * 練習記録をクラウドへ全件保存する
  *
@@ -150,10 +219,192 @@ async function overwritePracticeRecords(records) {
     }
 }
 
+/**
+ * 大会記録をクラウドへ全件保存する
+ *
+ * @param {Array} records
+ * @returns {Promise<Object>}
+ */
+async function overwriteMatchRecords(records) {
+    if (!Array.isArray(records)) {
+        throw new TypeError(
+            "保存する大会記録が配列ではありません。"
+        );
+    }
+
+    if (!V4_GAS_API_URL) {
+        throw new Error(
+            "GAS API URLが設定されていません。"
+        );
+    }
+
+    const cleanRecords =
+        records.map(function (record) {
+            if (
+                !record ||
+                typeof record !== "object"
+            ) {
+                return {};
+            }
+
+            return {
+                ...record
+            };
+        });
+
+    const payload = {
+        mode: "match",
+        data: cleanRecords
+    };
+
+    const response =
+        await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+
+                body:
+                    JSON.stringify(payload)
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            "大会記録をクラウドへ保存できませんでした。"
+        );
+    }
+
+    const responseText =
+        await response.text();
+
+    if (!responseText) {
+        return {
+            success: true
+        };
+    }
+
+    let result;
+
+    try {
+        result =
+            JSON.parse(responseText);
+    } catch (error) {
+        throw new Error(
+            "大会記録保存APIの応答を解析できませんでした。"
+        );
+    }
+
+    if (
+        result &&
+        result.success === false
+    ) {
+        throw new Error(
+            result.message ||
+            "大会記録を保存できませんでした。"
+        );
+    }
+
+    return result;
+}
+
+/**
+ * 大会記録1件をクラウドへ追加または更新する。
+ *
+ * @param {Object} record
+ * @returns {Promise<Object>}
+ */
+async function saveMatchRecord(record) {
+    if (
+        !record ||
+        typeof record !== "object"
+    ) {
+        throw new TypeError(
+            "保存する大会記録が指定されていません。"
+        );
+    }
+
+    if (
+        typeof V4_GAS_API_URL !==
+            "string" ||
+        V4_GAS_API_URL.trim() === ""
+    ) {
+        throw new Error(
+            "GAS API URLが設定されていません。"
+        );
+    }
+
+    const response =
+        await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+
+                body:
+                    JSON.stringify({
+                        action:
+                            "saveMatchRecord",
+
+                        record:
+                            record
+                    })
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            "大会記録の保存通信に失敗しました。"
+        );
+    }
+
+    const result =
+        await response.json();
+
+    if (
+        !result ||
+        typeof result !== "object"
+    ) {
+        throw new Error(
+            "大会記録保存APIから不正な応答が返されました。"
+        );
+    }
+
+    if (result.success === false) {
+        throw new Error(
+            result.message ||
+            "大会記録を保存できませんでした。"
+        );
+    }
+
+    return result;
+}
+
     window.BAS_CLOUD = {
-    loadAllData: loadAllData,
-    loadPracticeRecords: loadPracticeRecords,
+    loadAllData:
+        loadAllData,
+
+    loadPracticeRecords:
+        loadPracticeRecords,
+
+    loadMatchRecords:
+        loadMatchRecords,
+
     overwritePracticeRecords:
-        overwritePracticeRecords
+        overwritePracticeRecords,
+
+    overwriteMatchRecords:
+    overwriteMatchRecords,
+
+saveMatchRecord:
+    saveMatchRecord
 };
 })();

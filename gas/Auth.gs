@@ -25,21 +25,172 @@
  * 新形式へ統一して返す。
  */
 function getMemberMaster() {
-  const metadata = readSheetData(SHEET_NAMES.METADATA);
+  /*
+   * 1. membersシートを優先して読み込む。
+   */
+  const memberRows =
+    readSheetData(
+      SHEET_NAMES.MEMBERS
+    );
 
-  const memberRow = metadata.find(function(row) {
-    return row.key === "memberMaster";
-  });
+  const membersFromSheet =
+    memberRows
+      .filter(function(row) {
+        if (
+          !row ||
+          typeof row !== "object"
+        ) {
+          return false;
+        }
 
-  let memberMaster = DEFAULT_DATA.MEMBERS;
+        const memberId =
+          String(
+            row.memberId || ""
+          ).trim();
 
-  if (memberRow && memberRow.json) {
-    memberMaster = parseMetadataJson_(memberRow.json);
+        const memberName =
+          String(
+            row.memberName ||
+            row.name ||
+            row.displayName ||
+            ""
+          ).trim();
+
+        return Boolean(
+          memberId &&
+          memberName
+        );
+      })
+      .map(function(row) {
+        const memberName =
+          String(
+            row.memberName ||
+            row.name ||
+            row.displayName ||
+            ""
+          ).trim();
+
+        return {
+          memberId:
+            String(
+              row.memberId || ""
+            ).trim(),
+
+          name:
+            memberName,
+
+          displayName:
+            String(
+              row.displayName ||
+              memberName
+            ).trim(),
+
+          role:
+  normalizeRole_(
+    String(row.role || "").trim()
+  ),
+
+          active:
+            normalizeBooleanValue_(
+              row.active,
+              true
+            ),
+
+          updatedAt:
+            String(
+              row.updatedAt || ""
+            ).trim(),
+
+          updatedBy:
+            String(
+              row.updatedBy || ""
+            ).trim()
+        };
+      });
+
+  if (membersFromSheet.length > 0) {
+    return normalizeMemberMaster(
+      membersFromSheet
+    );
   }
 
-  return normalizeMemberMaster(memberMaster);
+  /*
+   * 2. membersシートに有効なデータがない場合は、
+   *    既存のmetadataへ戻る。
+   */
+  const metadata =
+    readSheetData(
+      SHEET_NAMES.METADATA
+    );
+
+  const memberRow =
+    metadata.find(function(row) {
+      return (
+        row &&
+        row.key === "memberMaster"
+      );
+    });
+
+  if (
+    memberRow &&
+    memberRow.json
+  ) {
+    const memberMaster =
+      parseMetadataJson_(
+        memberRow.json
+      );
+
+    return normalizeMemberMaster(
+      memberMaster
+    );
+  }
+
+  /*
+   * 3. どちらにもデータがない場合は既定値を使う。
+   */
+  return normalizeMemberMaster(
+    DEFAULT_DATA.MEMBERS
+  );
 }
 
+/**
+ * スプレッドシート由来の値を真偽値へ変換する。
+ */
+function normalizeBooleanValue_(
+  value,
+  defaultValue
+) {
+  if (value === true) {
+    return true;
+  }
+
+  if (value === false) {
+    return false;
+  }
+
+  const normalizedValue =
+    String(value || "")
+      .trim()
+      .toLowerCase();
+
+  if (
+    normalizedValue === "true" ||
+    normalizedValue === "1" ||
+    normalizedValue === "yes"
+  ) {
+    return true;
+  }
+
+  if (
+    normalizedValue === "false" ||
+    normalizedValue === "0" ||
+    normalizedValue === "no"
+  ) {
+    return false;
+  }
+
+  return defaultValue;
+}
 
 /**
  * 部員IDまたは部員名から部員を検索する。
@@ -72,21 +223,114 @@ function findMember(memberIdentifier) {
  * 部員名をキーとする形式にも対応する。
  */
 function getMemberPasswords() {
-  const metadata = readSheetData(SHEET_NAMES.METADATA);
+  /*
+   * 既存metadataのパスワードを
+   * フォールバック用として先に取得する。
+   */
+  const metadata =
+    readSheetData(
+      SHEET_NAMES.METADATA
+    );
 
-  const passwordRow = metadata.find(function(row) {
-    return row.key === "memberPasswords";
+  const passwordRow =
+    metadata.find(function(row) {
+      return (
+        row &&
+        row.key === "memberPasswords"
+      );
+    });
+
+  let passwords = {};
+
+  if (
+    passwordRow &&
+    passwordRow.json
+  ) {
+    const metadataPasswords =
+      parseMetadataJson_(
+        passwordRow.json
+      );
+
+    if (
+      metadataPasswords &&
+      typeof metadataPasswords === "object" &&
+      !Array.isArray(metadataPasswords)
+    ) {
+      passwords = {
+        ...metadataPasswords
+      };
+    }
+  }
+
+  /*
+   * membersシートに保存されている
+   * パスワードを優先して反映する。
+   */
+  const memberRows =
+    readSheetData(
+      SHEET_NAMES.MEMBERS
+    );
+
+  memberRows.forEach(function(row) {
+    if (
+      !row ||
+      typeof row !== "object"
+    ) {
+      return;
+    }
+
+    const memberId =
+      String(
+        row.memberId || ""
+      ).trim();
+
+    const memberName =
+      String(
+        row.memberName ||
+        row.name ||
+        ""
+      ).trim();
+
+    const displayName =
+      String(
+        row.displayName ||
+        memberName
+      ).trim();
+
+    const password =
+      String(
+        row.password ||
+        row.initialPassword ||
+        ""
+      );
+
+    if (
+      !memberId ||
+      !password
+    ) {
+      return;
+    }
+
+    /*
+     * memberIdを正式なキーとして保存する。
+     */
+    passwords[memberId] =
+      password;
+
+    /*
+     * 旧形式との互換性を保つため、
+     * 氏名でも検索できる状態を残す。
+     */
+    if (memberName) {
+      passwords[memberName] =
+        password;
+    }
+
+    if (displayName) {
+      passwords[displayName] =
+        password;
+    }
   });
-
-  if (!passwordRow || !passwordRow.json) {
-    return {};
-  }
-
-  const passwords = parseMetadataJson_(passwordRow.json);
-
-  if (!passwords || typeof passwords !== "object" || Array.isArray(passwords)) {
-    return {};
-  }
 
   return passwords;
 }

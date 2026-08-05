@@ -35,16 +35,25 @@ try {
 
     renderMemberTable(members);
 } catch (error) {
+    console.error(
+        "部員一覧の読み込みに失敗しました:",
+        error
+    );
 
-            console.error(
-                "部員一覧の読み込みに失敗しました:",
-                error
-            );
+    if (
+        error &&
+        error.name === "AbortError"
+    ) {
+        renderErrorRow(
+            "部員情報の読み込みに時間がかかっています。再読み込みしてください。"
+        );
+        return;
+    }
 
-            renderErrorRow(
-                "部員情報を読み込めませんでした。"
-            );
-        }
+    renderErrorRow(
+        "部員情報を読み込めませんでした。再読み込みしてください。"
+    );
+}
     }
 
     /**
@@ -264,10 +273,17 @@ async function saveNewMember() {
     const memberName =
         nameInput.value.trim();
 
-    const role =
-        roleInput.value === "admin"
-            ? "admin"
-            : "member";
+    const selectedRole =
+    String(roleInput.value || "");
+
+const role =
+    selectedRole === "admin"
+        ? "admin"
+        : (
+            selectedRole === "coach"
+                ? "coach"
+                : "member"
+        );
 
     const password =
         passwordInput.value;
@@ -429,13 +445,34 @@ async function loadMembers() {
     const requestUrl =
         `${V4_GAS_API_URL}${separator}action=getMembers`;
 
-    const response = await fetch(
-        requestUrl,
-        {
-            method: "GET",
-            cache: "no-store"
-        }
+    const controller =
+    new AbortController();
+
+const timeoutId =
+    window.setTimeout(
+        function () {
+            controller.abort();
+        },
+        15000
     );
+
+let response;
+
+try {
+    response =
+        await fetch(
+            requestUrl,
+            {
+                method: "GET",
+                cache: "no-store",
+                signal: controller.signal
+            }
+        );
+} finally {
+    window.clearTimeout(
+        timeoutId
+    );
+}
 
     if (!response.ok) {
         throw new Error(
@@ -617,18 +654,18 @@ editButton.dataset.memberId =
     member.memberId;
 
     editButton.addEventListener(
-        "click",
-        function () {
-            console.log(
-                "編集対象の部員:",
-                member
+    "click",
+    function () {
+        const memberId =
+            encodeURIComponent(
+                member.memberId
             );
 
-            alert(
-                `${member.displayName}さんの編集機能は準備中です。`
-            );
-        }
-    );
+        window.location.href =
+            "project-zero-admin-member-edit.html" +
+            `?memberId=${memberId}`;
+    }
+);
 
     cell.appendChild(editButton);
 
@@ -658,10 +695,16 @@ editButton.dataset.memberId =
      * 権限を日本語表示へ変換する
      */
     function formatRole(role) {
-        return role === "admin"
-            ? "管理者"
-            : "部員";
+    if (role === "admin") {
+        return "管理者";
     }
+
+    if (role === "coach") {
+        return "監督";
+    }
+
+    return "部員";
+}
 
     /**
      * 読み込み中の表示
@@ -685,8 +728,58 @@ editButton.dataset.memberId =
      * エラー表示
      */
     function renderErrorRow(message) {
-        renderMessageRow(message);
+    const tableBody =
+        document.getElementById(
+            "memberTableBody"
+        );
+
+    if (!tableBody) {
+        return;
     }
+
+    tableBody.innerHTML = "";
+
+    const row =
+        document.createElement("tr");
+
+    const cell =
+        document.createElement("td");
+
+    cell.colSpan = 5;
+    cell.style.padding = "24px";
+    cell.style.textAlign = "center";
+
+    const messageText =
+        document.createElement("p");
+
+    messageText.textContent =
+        String(message || "");
+
+    const retryButton =
+        document.createElement("button");
+
+    retryButton.type = "button";
+    retryButton.className = "bas-button";
+    retryButton.textContent = "再読み込み";
+
+    retryButton.addEventListener(
+        "click",
+        function () {
+            window.location.reload();
+        }
+    );
+
+    cell.appendChild(
+        messageText
+    );
+
+    cell.appendChild(
+        retryButton
+    );
+
+    row.appendChild(cell);
+    tableBody.appendChild(row);
+}
 
     /**
      * テーブル全体を使って案内を表示する

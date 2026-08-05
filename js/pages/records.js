@@ -933,7 +933,6 @@ function initializeGroupingComparison() {
  * タブを初期化する
  */
 function initializeTabs() {
-
     const practiceTab =
         document.getElementById(
             "practiceRecordsTab"
@@ -944,7 +943,10 @@ function initializeTabs() {
             "groupingRecordsTab"
         );
 
-    if (!practiceTab || !groupingTab) {
+    if (
+        !practiceTab ||
+        !groupingTab
+    ) {
         return;
     }
 
@@ -961,51 +963,75 @@ function initializeTabs() {
             showGroupingTab();
         }
     );
-}function showPracticeTab() {
+}
 
+/**
+ * 練習記録タブを表示する
+ */
+function showPracticeTab() {
     document
-        .getElementById("recordsListSection")
+        .getElementById(
+            "recordsListSection"
+        )
         .hidden = false;
 
     document
-        .getElementById("groupingRecordsSection")
+        .getElementById(
+            "groupingRecordsSection"
+        )
         .hidden = true;
 
     document
-        .getElementById("practiceRecordsTab")
+        .getElementById(
+            "practiceRecordsTab"
+        )
         .classList.add(
             "bas-records__tab--active"
         );
 
     document
-        .getElementById("groupingRecordsTab")
+        .getElementById(
+            "groupingRecordsTab"
+        )
         .classList.remove(
             "bas-records__tab--active"
         );
+}
 
-}function showGroupingTab() {
-
+/**
+ * グルーピング記録タブを表示する
+ */
+function showGroupingTab() {
     document
-        .getElementById("recordsListSection")
+        .getElementById(
+            "recordsListSection"
+        )
         .hidden = true;
 
     document
-        .getElementById("groupingRecordsSection")
+        .getElementById(
+            "groupingRecordsSection"
+        )
         .hidden = false;
 
     document
-        .getElementById("practiceRecordsTab")
+        .getElementById(
+            "practiceRecordsTab"
+        )
         .classList.remove(
             "bas-records__tab--active"
         );
 
     document
-        .getElementById("groupingRecordsTab")
+        .getElementById(
+            "groupingRecordsTab"
+        )
         .classList.add(
             "bas-records__tab--active"
         );
+}
 
-}function loadGroupingRecords() {
+function loadGroupingRecords() {
 
     if (
         !window.V4Session ||

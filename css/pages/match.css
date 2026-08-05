@@ -1,0 +1,326 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * 大会記録入力画面
+ */
+
+/*
+ * スマホ縦画面でも、
+ * ページ全体を縦へスクロールできるようにする。
+ */
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.bas-app {
+    min-height: 100vh;
+}
+
+.bas-app__main {
+    overflow: visible;
+}
+
+.bas-app__content {
+    padding-bottom: var(--bas-space-8);
+}
+
+/*
+ * 基本情報フォーム
+ */
+#matchRecordForm {
+    display: grid;
+    gap: var(--bas-space-5);
+}
+
+#matchRecordForm > div {
+    display: grid;
+    gap: var(--bas-space-2);
+}
+
+#matchRecordForm label {
+    font-weight: 700;
+}
+
+#matchRecordForm input,
+#matchRecordForm select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid rgb(70 40 70 / 22%);
+    border-radius: 10px;
+    font: inherit;
+    background: var(--bas-color-white);
+}
+
+/*
+ * 基本情報と得点入力のボタン領域
+ */
+.bas-match-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bas-space-3);
+    align-items: center;
+}
+
+/*
+ * 大会情報の確認欄
+ */
+#matchSummary {
+    display: grid;
+    gap: var(--bas-space-2);
+    margin-bottom: var(--bas-space-5);
+    padding: var(--bas-space-4);
+    border: 1px solid rgb(120 50 110 / 14%);
+    border-radius: 12px;
+    background: rgb(250 244 249);
+}
+
+#matchSummary p {
+    margin: 0;
+}
+
+/*
+ * 前半・後半のブロック
+ */
+#matchEndInputs {
+    display: grid;
+    gap: var(--bas-space-6);
+}
+
+.bas-match-half {
+    overflow: hidden;
+    border: 1px solid rgb(120 50 110 / 18%);
+    border-radius: 14px;
+    background: var(--bas-color-white);
+}
+
+.bas-match-half > h3 {
+    margin: 0;
+    padding: 12px 16px;
+    color: var(--bas-color-white);
+    background:
+        linear-gradient(
+            135deg,
+            var(--bas-color-primary-800),
+            var(--bas-color-primary-600)
+        );
+}
+
+/*
+ * 各エンドの得点欄
+ *
+ * PC・スマホ横は6列、
+ * スマホ縦は2列にする。
+ */
+.bas-match-half__inputs {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            6,
+            minmax(78px, 1fr)
+        );
+    gap: 10px;
+    padding: 16px;
+}
+
+.bas-match-end-field {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.bas-match-end-field__label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--bas-color-primary-800);
+}
+
+.bas-match-score-input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 6px 8px;
+    border: 1px solid rgb(80 40 80 / 25%);
+    border-radius: 8px;
+    text-align: center;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--bas-color-white);
+}
+
+.bas-match-score-input:focus {
+    border-color: var(--bas-color-primary-600);
+    outline: 3px solid rgb(155 47 117 / 14%);
+}
+
+/*
+ * 前半・後半の集計欄
+ */
+.bas-match-half__summary {
+    display: grid;
+    grid-template-columns:
+        minmax(120px, 1fr)
+        auto
+        auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid rgb(120 50 110 / 14%);
+    background: rgb(251 247 250);
+}
+
+.bas-match-half__total {
+    margin: 0;
+    font-weight: 700;
+}
+
+.bas-match-compact-field {
+    display: grid;
+    grid-template-columns: auto 58px;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.bas-match-compact-input {
+    box-sizing: border-box;
+    width: 58px;
+    min-height: 38px;
+    padding: 5px 6px;
+    border: 1px solid rgb(80 40 80 / 25%);
+    border-radius: 8px;
+    text-align: center;
+    font: inherit;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: var(--bas-color-white);
+}
+
+/*
+ * 総合計
+ */
+.bas-match-grand-total {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(90px, 1fr)
+        );
+    gap: 12px;
+    margin-block: var(--bas-space-6);
+}
+
+.bas-match-grand-total__item {
+    margin: 0;
+    padding: 14px;
+    border: 1px solid rgb(120 50 110 / 16%);
+    border-radius: 12px;
+    text-align: center;
+    background: rgb(250 244 249);
+}
+
+.bas-match-grand-total__item strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 1.35rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+ * スマホ縦画面
+ */
+@media (max-width: 600px) {
+    .bas-app__content {
+        padding-inline: 12px;
+        padding-bottom: 80px;
+    }
+
+    .bas-match-half__inputs {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .bas-match-half__summary {
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto
+            auto;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .bas-match-compact-field {
+        grid-template-columns: auto 48px;
+        gap: 4px;
+        font-size: 0.9rem;
+    }
+
+    .bas-match-compact-input {
+        width: 48px;
+    }
+
+    .bas-match-grand-total {
+        grid-template-columns:
+            repeat(
+                3,
+                minmax(0, 1fr)
+            );
+        gap: 8px;
+    }
+
+    .bas-match-grand-total__item {
+        padding: 10px 4px;
+        font-size: 0.86rem;
+    }
+
+    .bas-match-grand-total__item strong {
+        font-size: 1.15rem;
+    }
+
+    .bas-match-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-actions .bas-button {
+        width: 100%;
+    }
+}
+
+/*
+ * スマホ横画面
+ */
+@media
+(orientation: landscape)
+and (max-width: 950px) {
+    .bas-match-half__inputs {
+        grid-template-columns:
+            repeat(
+                6,
+                minmax(76px, 1fr)
+            );
+    }
+}
