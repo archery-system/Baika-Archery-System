@@ -1,0 +1,100 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Profile Page
+ */
+
+.bas-profile {
+    display: grid;
+    gap: var(--bas-space-5);
+}
+
+.bas-profile__section {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-profile__section-header {
+    display: grid;
+    gap: var(--bas-space-2);
+}
+
+.bas-profile__section-header h2,
+.bas-profile__section-header p {
+    margin: 0;
+}
+
+.bas-profile__form {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-profile__field {
+    display: grid;
+    gap: var(--bas-space-2);
+}
+
+.bas-profile__field label {
+    font-weight: var(--bas-font-weight-bold);
+}
+
+.bas-profile__field input {
+    width: 100%;
+    min-height: 46px;
+    padding:
+        var(--bas-space-3)
+        var(--bas-space-4);
+    border: 1px solid var(--bas-color-border);
+    border-radius: var(--bas-radius-md);
+    color: var(--bas-color-text);
+    background: var(--bas-color-surface);
+}
+
+.bas-profile__field input:focus {
+    outline: 2px solid var(--bas-color-focus);
+    outline-offset: 2px;
+    border-color: var(--bas-color-primary-500);
+}
+
+.bas-profile__field input[readonly] {
+    color: var(--bas-color-text-muted);
+    background: var(--bas-color-surface-soft);
+}
+
+.bas-profile__field-note {
+    margin: 0;
+    color: var(--bas-color-text-muted);
+    font-size: var(--bas-font-size-sm);
+    line-height: 1.6;
+}
+
+.bas-profile__message {
+    margin: 0;
+    padding: var(--bas-space-3);
+    border-radius: var(--bas-radius-md);
+    background: var(--bas-color-surface-soft);
+}
+
+.bas-profile__message[data-message-type="success"] {
+    border: 1px solid var(--bas-color-success);
+}
+
+.bas-profile__message[data-message-type="error"] {
+    border: 1px solid var(--bas-color-danger);
+}
+
+.bas-profile__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bas-space-3);
+}
+
+@media (max-width: 640px) {
+    .bas-profile__actions {
+        display: grid;
+    }
+
+    .bas-profile__actions .bas-button {
+        width: 100%;
+    }
+}

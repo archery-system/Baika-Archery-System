@@ -41,6 +41,17 @@
         rel="stylesheet"
         href="css/components/card.css"
     >
+
+<link
+    rel="stylesheet"
+    href="css/components/button.css"
+>
+
+<link
+    rel="stylesheet"
+    href="css/pages/profile.css"
+>
+
 </head>
 
 <body>
@@ -50,18 +61,25 @@
         <main class="bas-app__main">
             <div id="page-header"></div>
 
-            <section class="bas-card">
-                <h2>
-                    基本情報
-                </h2>
+            <div class="bas-profile">
 
-                <p>
-                    ログイン中の部員情報を確認し、
-                    表示名とニックネームを設定します。
-                </p>
+            <section class="bas-card bas-profile__section">
+                <div class="bas-profile__section-header">
+                   <h2>
+                       👤 基本情報
+                   </h2>
 
-                <form id="profileBasicForm">
-                    <div>
+                   <p class="bas-profile__field-note">
+                      ログイン中の部員情報を確認し、
+                      表示名とニックネームを設定します。
+                  </p>
+               </div>
+
+                <form
+                    id="profileBasicForm"
+                    class="bas-profile__form"
+                >
+                    <div class="bas-profile__field">
                         <label for="profileMemberId">
                             memberId
                         </label>
@@ -74,13 +92,13 @@
                             readonly
                         >
 
-                        <p>
+                        <p class="bas-profile__field-note">
                             memberIdは記録との紐付けに使用するため、
                             変更できません。
                         </p>
                     </div>
 
-                    <div>
+                    <div class="bas-profile__field">
                         <label for="profileOfficialName">
                             正式氏名
                         </label>
@@ -93,13 +111,13 @@
                             readonly
                         >
 
-                        <p>
+                        <p class="bas-profile__field-note">
                             正式氏名は管理用の情報です。
                             本人による変更はできません。
                         </p>
                     </div>
 
-                    <div>
+                    <div class="bas-profile__field">
                         <label for="profileDisplayName">
                             表示名
                         </label>
@@ -113,7 +131,7 @@
                         >
                     </div>
 
-                    <div>
+                    <div class="bas-profile__field">
                         <label for="profileNickname">
                             ニックネーム
                         </label>
@@ -126,7 +144,7 @@
                         >
                     </div>
 
-                <div>
+                <div class="bas-profile__field">
                     <label for="profileRole">
                         権限
                     </label>
@@ -139,13 +157,13 @@
                         readonly
                     >
 
-                    <p>
+                    <p class="bas-profile__field-note">
                         権限は管理者が管理するため、
                         この画面では変更できません。
                     </p>
                 </div>
 
-                <div>
+                <div class="bas-profile__field">
                     <label for="profileBasicCurrentPassword">
                         現在のパスワード
                     </label>
@@ -158,38 +176,49 @@
                         autocomplete="current-password"
                     >
 
-                    <p>
+                    <p class="bas-profile__field-note">
                         本人確認のため、
                         保存時に現在のパスワードを入力してください。
                     </p>
                 </div>
 
-                <button
-                    id="profileBasicSaveButton"
-                    type="submit"
-                >
-                    基本情報を保存
-                </button>
+                <div class="bas-profile__actions">
+             <button
+                 id="profileBasicSaveButton"
+                 type="submit"
+                 class="bas-button bas-button--primary"
+              >
+                 基本情報を保存
+              </button>
+            </div>
             </form>
 
-            <p id="profileBasicMessage">
+            <p
+              id="profileBasicMessage"
+              class="bas-profile__message"
+            >
                 表示名とニックネームを変更できます。
                 保存時は現在のパスワードを入力してください。
             </p>
         </section>
 
-            <section class="bas-card">
-                <h2>
-                    パスワード変更
-                </h2>
+            <section class="bas-card bas-profile__section">
+                <div class="bas-profile__section-header">
+                  <h2>
+                     🔒 パスワード変更
+                  </h2>
 
-                <p>
-                    パスワード変更時は、
-                    現在のパスワードを再確認します。
-                </p>
+                  <p>
+                      パスワード変更時は、
+                      現在のパスワードを再確認します。
+                  </p>
+                </div>
 
-            <form id="profilePasswordForm">
-                <div>
+            <form
+                id="profilePasswordForm"
+                class="bas-profile__form"
+            >
+                <div class="bas-profile__field">
                     <label for="profileCurrentPassword">
                         現在のパスワード
                     </label>
@@ -203,7 +232,7 @@
                     >
                 </div>
 
-                <div>
+                <div class="bas-profile__field">
                     <label for="profileNewPassword">
                         新しいパスワード
                     </label>
@@ -217,7 +246,7 @@
                     >
                 </div>
 
-                <div>
+                <div class="bas-profile__field">
                     <label for="profileConfirmPassword">
                         確認用パスワード
                     </label>
@@ -231,28 +260,39 @@
                     >
                 </div>
 
-                <button
-                    id="profilePasswordSaveButton"
-                    type="submit"
-                >
-                    パスワードを変更
-                </button>
+                <div class="bas-profile__actions">
+                  <button
+                       id="profilePasswordSaveButton"
+                       type="submit"
+                       class="bas-button bas-button--primary"
+                   >
+                       パスワードを変更
+                 </button>
+                </div>
             </form>
 
-            <p id="profilePasswordMessage">
+            <p
+              id="profilePasswordMessage"
+              class="bas-profile__message"
+            >
                 現在のパスワードを確認したうえで、
                 新しいパスワードへ変更できます。
             </p>
             </section>
 
             <section class="bas-card">
-                <a href="project-zero-home.html">
-                    ホームへ戻る
-                </a>
+                <div class="bas-profile__actions">
+                  <a
+                     href="project-zero-home.html"
+                     class="bas-button bas-button--secondary"
+                   >
+                     ホームへ戻る
+                  </a>
+                </div>
             </section>
+          </div>
         </main>
-    </div>
-
+    
         <!-- Login Session -->
     <script src="js/v4-session.js"></script>
 
