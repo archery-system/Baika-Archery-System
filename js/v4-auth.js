@@ -363,6 +363,7 @@ saveLogin(memberData = {}) {
         memberId: memberData.memberId || "",
         memberName: memberName || "",
         displayName: displayName || "",
+        nickname: memberData.nickname || "",
         role: memberData.role || "member",
         savedAt: new Date().toISOString()
     };

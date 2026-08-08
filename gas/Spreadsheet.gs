@@ -158,6 +158,9 @@ function syncMembersSheet(
 
   displayName: displayName,
 
+  nickname:
+    String(member.nickname || ""),
+
   role:
   member.role === ROLE_NAMES.ADMIN
     ? ROLE_NAMES.ADMIN
@@ -411,6 +414,7 @@ function overwriteSheet(sheetName, data) {
   "memberId",
   "memberName",
   "displayName",
+  "nickname",
   "role",
   "active",
   "initialPassword",

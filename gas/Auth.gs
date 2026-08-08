@@ -85,6 +85,11 @@ function getMemberMaster() {
               memberName
             ).trim(),
 
+          nickname:
+            String(
+              row.nickname || ""
+            ).trim(),
+
           role:
   normalizeRole_(
     String(row.role || "").trim()
@@ -403,6 +408,7 @@ function authenticateMember(memberIdentifier, password) {
       memberId: member.memberId,
       memberName: member.name,
       displayName: member.displayName,
+      nickname: member.nickname || "",
       role: member.role
     }
   };

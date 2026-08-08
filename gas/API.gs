@@ -85,6 +85,25 @@ if (action === "getMemberDetails") {
 }
 
 /*
+ * 本人用プロフィール設定画面。
+ *
+ * 管理者用のgetMemberDetailsとは異なり、
+ * パスワードをレスポンスへ含めない。
+ */
+if (action === "getMyProfile") {
+  const memberId =
+    e && e.parameter
+      ? String(
+          e.parameter.memberId || ""
+        ).trim()
+      : "";
+
+  return handleGetMyProfileAction_(
+    memberId
+  );
+}
+
+/*
  * 未対応の取得処理。
  */
 return createJsonResponse({
@@ -167,6 +186,11 @@ function handleGetMemberDetailsAction_(
           ""
         ),
 
+      nickname:
+        String(
+          member.nickname || ""
+        ),
+
       role:
   member.role === ROLE_NAMES.ADMIN
     ? ROLE_NAMES.ADMIN
@@ -181,6 +205,79 @@ function handleGetMemberDetailsAction_(
 
       password:
         String(currentPassword || "")
+    }
+  });
+}
+
+
+/**
+ * 本人用プロフィール設定画面へ
+ * パスワードを含まない部員情報を返す。
+ *
+ * @param {string} memberId
+ * @returns {GoogleAppsScript.Content.TextOutput}
+ */
+function handleGetMyProfileAction_(
+  memberId
+) {
+  const normalizedMemberId =
+    String(memberId || "").trim();
+
+  if (!normalizedMemberId) {
+    return createJsonResponse({
+      success: false,
+      message: "部員IDが指定されていません。"
+    });
+  }
+
+  const member =
+    findMember(normalizedMemberId);
+
+  if (!member) {
+    return createJsonResponse({
+      success: false,
+      message: "指定された部員が見つかりません。"
+    });
+  }
+
+  if (member.active === false) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "このアカウントは現在利用できません。"
+    });
+  }
+
+  return createJsonResponse({
+    success: true,
+
+    member: {
+      memberId:
+        String(member.memberId || ""),
+
+      memberName:
+        String(member.name || ""),
+
+      displayName:
+        String(
+          member.displayName ||
+          member.name ||
+          ""
+        ),
+
+      nickname:
+        String(
+          member.nickname || ""
+        ),
+
+      role:
+        member.role === ROLE_NAMES.ADMIN
+          ? ROLE_NAMES.ADMIN
+          : (
+              member.role === ROLE_NAMES.COACH
+                ? ROLE_NAMES.COACH
+                : ROLE_NAMES.MEMBER
+            )
     }
   });
 }
@@ -281,6 +378,24 @@ if (action === "addMember") {
 
 if (action === "updateMemberName") {
   return handleUpdateMemberNameAction_(payload);
+}
+
+/*
+ * 本人用プロフィール更新。
+ */
+if (action === "updateMyProfile") {
+  return handleUpdateMyProfileAction_(
+    payload
+  );
+}
+
+/*
+ * 本人用パスワード変更。
+ */
+if (action === "changeMyPassword") {
+  return handleChangeMyPasswordAction_(
+    payload
+  );
 }
 
 /*
@@ -659,6 +774,388 @@ const newRole =
     message: "氏名を更新しました。",
     member: updatedMember,
     members: updatedMembers
+  });
+}
+
+/**
+ * 本人用プロフィール更新要求を処理する。
+ *
+ * 更新できる項目:
+ * - displayName
+ * - nickname
+ *
+ * 更新できない項目:
+ * - memberId
+ * - name
+ * - role
+ * - active
+ *
+ * @param {Object} payload
+ * @returns {GoogleAppsScript.Content.TextOutput}
+ */
+function handleUpdateMyProfileAction_(
+  payload
+) {
+  const memberId =
+    String(
+      payload.memberId || ""
+    ).trim();
+
+  const displayName =
+    String(
+      payload.displayName || ""
+    ).trim();
+
+  const nickname =
+    String(
+      payload.nickname || ""
+    ).trim();
+
+  const currentPassword =
+    String(
+      payload.currentPassword || ""
+    );
+
+  if (!memberId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "部員IDを確認できませんでした。"
+    });
+  }
+
+  if (!displayName) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "表示名を入力してください。"
+    });
+  }
+
+  if (!currentPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "現在のパスワードを入力してください。"
+    });
+  }
+
+  /*
+   * 現在のパスワードで本人確認する。
+   */
+  const authenticationResult =
+    authenticateMember(
+      memberId,
+      currentPassword
+    );
+
+  if (
+    !authenticationResult ||
+    authenticationResult.success !== true
+  ) {
+    return createJsonResponse({
+      success: false,
+      message:
+        authenticationResult &&
+        authenticationResult.message
+          ? authenticationResult.message
+          : "本人確認に失敗しました。"
+    });
+  }
+
+  const members =
+    getMemberMaster();
+
+  const targetIndex =
+    members.findIndex(
+      function(member) {
+        return (
+          String(
+            member.memberId || ""
+          ).trim() === memberId
+        );
+      }
+    );
+
+  if (targetIndex < 0) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "指定された部員が見つかりません。"
+    });
+  }
+
+  /*
+   * 他の部員と表示名が重複しないか確認する。
+   *
+   * ログイン検索でもdisplayNameを使用するため、
+   * 重複を許可しない。
+   */
+  const duplicateMember =
+    members.find(
+      function(member) {
+        return (
+          String(
+            member.memberId || ""
+          ).trim() !== memberId &&
+          String(
+            member.displayName ||
+            ""
+          ).trim() === displayName
+        );
+      }
+    );
+
+  if (duplicateMember) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "同じ表示名の部員が既に登録されています。"
+    });
+  }
+
+  const previousMember =
+    members[targetIndex];
+
+  const updatedAt =
+    Utilities.formatDate(
+      new Date(),
+      "Asia/Tokyo",
+      "yyyy-MM-dd HH:mm:ss"
+    );
+
+  const updatedMember = {
+    ...previousMember,
+
+    displayName:
+      displayName,
+
+    nickname:
+      nickname,
+
+    updatedAt:
+      updatedAt,
+
+    updatedBy:
+      memberId
+  };
+
+  const updatedMembers =
+    members.map(
+      function(member, index) {
+        return index === targetIndex
+          ? updatedMember
+          : member;
+      }
+    );
+
+  const passwords =
+    getMemberPasswords();
+
+  upsertMetadataValue(
+    "memberMaster",
+    updatedMembers
+  );
+
+  syncMembersSheet(
+    updatedMembers,
+    passwords
+  );
+
+  return createJsonResponse({
+    success: true,
+
+    message:
+      "プロフィールを更新しました。",
+
+    member: {
+      memberId:
+        String(
+          updatedMember.memberId || ""
+        ),
+
+      memberName:
+        String(
+          updatedMember.name || ""
+        ),
+
+      displayName:
+        String(
+          updatedMember.displayName ||
+          updatedMember.name ||
+          ""
+        ),
+
+      nickname:
+        String(
+          updatedMember.nickname || ""
+        ),
+
+      role:
+        String(
+          updatedMember.role ||
+          ROLE_NAMES.MEMBER
+        )
+    }
+  });
+}
+
+/**
+ * 本人用パスワード変更要求を処理する。
+ *
+ * @param {Object} payload
+ * @returns {GoogleAppsScript.Content.TextOutput}
+ */
+function handleChangeMyPasswordAction_(
+  payload
+) {
+  const memberId =
+    String(
+      payload.memberId || ""
+    ).trim();
+
+  const currentPassword =
+    String(
+      payload.currentPassword || ""
+    );
+
+  const newPassword =
+    String(
+      payload.newPassword || ""
+    );
+
+  const confirmPassword =
+    String(
+      payload.confirmPassword || ""
+    );
+
+  if (!memberId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "部員IDを確認できませんでした。"
+    });
+  }
+
+  if (!currentPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "現在のパスワードを入力してください。"
+    });
+  }
+
+  if (!newPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "新しいパスワードを入力してください。"
+    });
+  }
+
+  if (!confirmPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "確認用パスワードを入力してください。"
+    });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "新しいパスワードと確認用パスワードが一致しません。"
+    });
+  }
+
+  if (newPassword === currentPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "新しいパスワードは現在のパスワードと異なるものを設定してください。"
+    });
+  }
+
+  const authenticationResult =
+    authenticateMember(
+      memberId,
+      currentPassword
+    );
+
+  if (
+    !authenticationResult ||
+    authenticationResult.success !== true
+  ) {
+    return createJsonResponse({
+      success: false,
+      message:
+        authenticationResult &&
+        authenticationResult.message
+          ? authenticationResult.message
+          : "本人確認に失敗しました。"
+    });
+  }
+
+  const members =
+    getMemberMaster();
+
+  const targetMember =
+    members.find(function(member) {
+      return (
+        String(
+          member.memberId || ""
+        ).trim() === memberId
+      );
+    });
+
+  if (!targetMember) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "指定された部員が見つかりません。"
+    });
+  }
+
+  const passwords =
+    getMemberPasswords();
+
+  /*
+   * memberIdを正式なキーとして更新する。
+   */
+  passwords[memberId] =
+    newPassword;
+
+  /*
+   * 旧形式との互換性維持のため、
+   * 正式氏名・表示名のキーも同じ値へ更新する。
+   */
+  if (targetMember.name) {
+    passwords[
+      String(targetMember.name)
+    ] = newPassword;
+  }
+
+  if (targetMember.displayName) {
+    passwords[
+      String(targetMember.displayName)
+    ] = newPassword;
+  }
+
+  upsertMetadataValue(
+    "memberPasswords",
+    passwords
+  );
+
+  syncMembersSheet(
+    members,
+    passwords
+  );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      "パスワードを変更しました。"
   });
 }
 

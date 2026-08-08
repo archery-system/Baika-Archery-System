@@ -217,11 +217,10 @@ function isAdminLoggedIn() {
         navigation.className = "bas-header__nav";
         navigation.setAttribute("aria-label", "主要メニュー");
 
-        const navigationItems = [...HEADER_ITEMS];
-
-if (isAdminLoggedIn()) {
-    navigationItems.push(ADMIN_HEADER_ITEM);
-}
+const navigationItems = [
+    ...HEADER_ITEMS,
+    ADMIN_HEADER_ITEM
+];
 
 navigationItems.forEach(function (item) {
     navigation.append(

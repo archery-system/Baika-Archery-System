@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        プロフィール設定 | Baika Archery System
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/tokens.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/foundation/base.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/layouts/app-layout.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/page-header.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/components/card.css"
+    >
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div id="page-header"></div>
+
+            <section class="bas-card">
+                <h2>
+                    基本情報
+                </h2>
+
+                <p>
+                    ログイン中の部員情報を確認し、
+                    表示名とニックネームを設定します。
+                </p>
+
+                <form id="profileBasicForm">
+                    <div>
+                        <label for="profileMemberId">
+                            memberId
+                        </label>
+
+                        <input
+                            id="profileMemberId"
+                            name="memberId"
+                            type="text"
+                            value=""
+                            readonly
+                        >
+
+                        <p>
+                            memberIdは記録との紐付けに使用するため、
+                            変更できません。
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="profileOfficialName">
+                            正式氏名
+                        </label>
+
+                        <input
+                            id="profileOfficialName"
+                            name="officialName"
+                            type="text"
+                            value=""
+                            readonly
+                        >
+
+                        <p>
+                            正式氏名は管理用の情報です。
+                            本人による変更はできません。
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="profileDisplayName">
+                            表示名
+                        </label>
+
+                        <input
+                            id="profileDisplayName"
+                            name="displayName"
+                            type="text"
+                            value=""
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="profileNickname">
+                            ニックネーム
+                        </label>
+
+                        <input
+                            id="profileNickname"
+                            name="nickname"
+                            type="text"
+                            value=""
+                        >
+                    </div>
+
+                <div>
+                    <label for="profileRole">
+                        権限
+                    </label>
+
+                    <input
+                        id="profileRole"
+                        name="role"
+                        type="text"
+                        value=""
+                        readonly
+                    >
+
+                    <p>
+                        権限は管理者が管理するため、
+                        この画面では変更できません。
+                    </p>
+                </div>
+
+                <div>
+                    <label for="profileBasicCurrentPassword">
+                        現在のパスワード
+                    </label>
+
+                    <input
+                        id="profileBasicCurrentPassword"
+                        name="currentPassword"
+                        type="password"
+                        value=""
+                        autocomplete="current-password"
+                    >
+
+                    <p>
+                        本人確認のため、
+                        保存時に現在のパスワードを入力してください。
+                    </p>
+                </div>
+
+                <button
+                    id="profileBasicSaveButton"
+                    type="submit"
+                >
+                    基本情報を保存
+                </button>
+            </form>
+
+            <p id="profileBasicMessage">
+                表示名とニックネームを変更できます。
+                保存時は現在のパスワードを入力してください。
+            </p>
+        </section>
+
+            <section class="bas-card">
+                <h2>
+                    パスワード変更
+                </h2>
+
+                <p>
+                    パスワード変更時は、
+                    現在のパスワードを再確認します。
+                </p>
+
+            <form id="profilePasswordForm">
+                <div>
+                    <label for="profileCurrentPassword">
+                        現在のパスワード
+                    </label>
+
+                    <input
+                        id="profileCurrentPassword"
+                        name="currentPassword"
+                        type="password"
+                        value=""
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <div>
+                    <label for="profileNewPassword">
+                        新しいパスワード
+                    </label>
+
+                    <input
+                        id="profileNewPassword"
+                        name="newPassword"
+                        type="password"
+                        value=""
+                        autocomplete="new-password"
+                    >
+                </div>
+
+                <div>
+                    <label for="profileConfirmPassword">
+                        確認用パスワード
+                    </label>
+
+                    <input
+                        id="profileConfirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        value=""
+                        autocomplete="new-password"
+                    >
+                </div>
+
+                <button
+                    id="profilePasswordSaveButton"
+                    type="submit"
+                >
+                    パスワードを変更
+                </button>
+            </form>
+
+            <p id="profilePasswordMessage">
+                現在のパスワードを確認したうえで、
+                新しいパスワードへ変更できます。
+            </p>
+            </section>
+
+            <section class="bas-card">
+                <a href="project-zero-home.html">
+                    ホームへ戻る
+                </a>
+            </section>
+        </main>
+    </div>
+
+        <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+
+    <!-- Project Zero Pages -->
+    <script src="js/pages/profile.js"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    !window.V4Session ||
+                    typeof window.V4Session.requireLogin !==
+                        "function" ||
+                    !window.V4Session.requireLogin()
+                ) {
+                    return;
+                }
+
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER.render ===
+                        "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        currentRoute: "profile"
+                    });
+                }
+
+                                if (
+                    window.BAS_PAGE_HEADER &&
+                    typeof window.BAS_PAGE_HEADER.render ===
+                        "function"
+                ) {
+                    window.BAS_PAGE_HEADER.render({
+                        eyebrow: "ACCOUNT",
+                        title: "プロフィール設定",
+                        description:
+                            "表示名、ニックネーム、パスワードを管理します。"
+                    });
+                }
+
+                if (
+                    window.BAS_PROFILE &&
+                    typeof window.BAS_PROFILE.initialize ===
+                        "function"
+                ) {
+                    window.BAS_PROFILE.initialize();
+                }
+            }
+        );
+    </script>
+</body>
+</html>

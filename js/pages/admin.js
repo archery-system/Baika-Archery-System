@@ -16,25 +16,58 @@
      * 管理者画面を初期化する
      */
     function initializeAdminPage() {
-        if (
-            !window.V4Session ||
-            typeof window.V4Session.requireAdmin !== "function"
-        ) {
-            console.error(
-                "管理者権限の確認機能を読み込めませんでした。"
+    if (
+        !window.V4Session ||
+        typeof window.V4Session
+            .getLoggedInMemberData !== "function"
+    ) {
+        console.error(
+            "ログイン情報の確認機能を読み込めませんでした。"
+        );
+
+        window.location.replace("index.html");
+        return;
+    }
+
+    const loginData =
+        window.V4Session.getLoggedInMemberData();
+
+    if (!loginData) {
+        window.location.replace("index.html");
+        return;
+    }
+
+    renderHeader();
+    renderAdminInformation();
+    updateAdminOnlyMenu(loginData);
+    initializeAdminMenu();
+}
+
+    /**
+     * 管理者専用メニューの表示状態を更新する。
+     *
+     * @param {Object} loginData
+     */
+    function updateAdminOnlyMenu(loginData) {
+        const adminOnlyMenu =
+            document.getElementById(
+                "adminOnlyMenu"
             );
 
-            window.location.replace("index.html");
+        if (!adminOnlyMenu) {
             return;
         }
 
-        if (!window.V4Session.requireAdmin()) {
-            return;
-        }
+        const role =
+            String(
+                loginData &&
+                loginData.role
+                    ? loginData.role
+                    : ""
+            ).trim();
 
-        renderHeader();
-        renderAdminInformation();
-        initializeAdminMenu();
+        adminOnlyMenu.hidden =
+            role !== "admin";
     }
 
     /**
@@ -87,7 +120,15 @@
             "adminMemberRole",
             loginData.role === "admin"
                 ? "管理者"
-                : loginData.role || "未設定"
+                : (
+                    loginData.role === "coach"
+                        ? "監督"
+                        : (
+                            loginData.role === "member"
+                                ? "部員"
+                                : loginData.role || "未設定"
+                        )
+                )
         );
     }
 

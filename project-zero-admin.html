@@ -55,11 +55,11 @@
                     </p>
 
                     <h1 id="adminPageTitle">
-                        ⚙️ 管理者
+                        ⚙️ 管理
                     </h1>
 
                     <p>
-                        部員情報や練習記録などを管理します。
+                        プロフィール設定や各種管理機能を利用します。
                     </p>
                 </section>
 
@@ -69,7 +69,7 @@
                     aria-labelledby="adminAccountTitle"
                 >
                     <h2 id="adminAccountTitle">
-                        管理者情報
+                        アカウント情報
                     </h2>
 
                     <dl>
@@ -100,25 +100,45 @@
                 </section>
 
                 <section aria-labelledby="adminMenuTitle">
-                    <h2 id="adminMenuTitle">
-                        管理メニュー
-                    </h2>
+                <h2 id="adminMenuTitle">
+                    管理メニュー
+                </h2>
 
-                    <div>
+                <div>
+                    <article class="bas-card">
+                        <h3>👤 プロフィール設定</h3>
+
+                        <p>
+                            表示名・ニックネーム・パスワードなど、
+                            自分のプロフィールを設定します。
+                        </p>
+
+                        <a
+                            class="bas-button"
+                            href="project-zero-profile.html"
+                        >
+                            開く
+                        </a>
+                    </article>
+
+                    <div
+                        id="adminOnlyMenu"
+                        hidden
+                    >
                         <article class="bas-card">
                             <h3>👥 部員管理</h3>
 
                             <p>
-    部員ID・氏名・権限・利用状態を管理します。
-</p>
+                                部員ID・氏名・権限・利用状態を管理します。
+                            </p>
 
-    <button
-    type="button"
-    class="bas-button"
-    id="openMemberManager"
->
-    開く
-</button>
+                            <button
+                                type="button"
+                                class="bas-button"
+                                id="openMemberManager"
+                            >
+                                開く
+                            </button>
                         </article>
 
                         <article class="bas-card">
@@ -128,13 +148,13 @@
                                 練習記録の修正や削除を行います。
                             </p>
 
-                           <button
-    type="button"
-    class="bas-button"
-    id="openRecordManager"
->
-    開く
-</button>
+                            <button
+                                type="button"
+                                class="bas-button"
+                                id="openRecordManager"
+                            >
+                                開く
+                            </button>
                         </article>
 
                         <article class="bas-card">
@@ -169,7 +189,8 @@
                             </button>
                         </article>
                     </div>
-                </section>
+                </div>
+            </section>
             </div>
         </main>
     </div>

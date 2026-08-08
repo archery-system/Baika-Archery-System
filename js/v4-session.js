@@ -41,23 +41,32 @@
                 return null;
             }
 
-            return {
-                member,
-                memberId: String(loginData.memberId || "").trim(),
-                memberName: String(
-                    loginData.memberName ||
-                    loginData.displayName ||
-                    member
-                ).trim(),
-                displayName: String(
-                    loginData.displayName ||
-                    loginData.memberName ||
-                    member
-                ).trim(),
-                role: String(loginData.role || "member").trim(),
-                savedAt: String(loginData.savedAt || "").trim()
-            };
-        } catch (error) {
+        return {
+            member,
+            memberId: String(
+                loginData.memberId || ""
+            ).trim(),
+            memberName: String(
+                loginData.memberName ||
+                loginData.displayName ||
+                member
+            ).trim(),
+            displayName: String(
+                loginData.displayName ||
+                loginData.memberName ||
+                member
+            ).trim(),
+            nickname: String(
+                loginData.nickname || ""
+            ).trim(),
+            role: String(
+                loginData.role || "member"
+            ).trim(),
+            savedAt: String(
+                loginData.savedAt || ""
+            ).trim()
+        };
+    } catch (error) {
             console.warn(
                 "ログイン情報を読み込めませんでした:",
                 error
@@ -68,6 +77,64 @@
         }
     }
 
+/**
+ * ログイン中の部員情報を更新する。
+ *
+ * memberIdは現在のログイン情報を維持し、
+ * プロフィール画面から変更可能な項目だけを更新する。
+ *
+ * @param {Object} memberData
+ * @returns {Object|null}
+ */
+function updateLoggedInMemberData(
+    memberData = {}
+) {
+    const currentData =
+        readLoginData();
+
+    if (!currentData) {
+        return null;
+    }
+
+    const nextDisplayName =
+        String(
+            memberData.displayName ||
+            currentData.displayName ||
+            currentData.memberName ||
+            currentData.member ||
+            ""
+        ).trim();
+
+    const nextNickname =
+        String(
+            memberData.nickname !== undefined
+                ? memberData.nickname
+                : currentData.nickname || ""
+        ).trim();
+
+    const updatedData = {
+        ...currentData,
+
+        member:
+            nextDisplayName,
+
+        displayName:
+            nextDisplayName,
+
+        nickname:
+            nextNickname,
+
+        savedAt:
+            new Date().toISOString()
+    };
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(updatedData)
+    );
+
+    return updatedData;
+}
 
     /**
      * ログイン中の部員名を取得
@@ -178,6 +245,7 @@ function requireAdmin() {
      */
     window.V4Session = {
     readLoginData,
+    updateLoggedInMemberData,
     getLoggedInMember,
     getLoggedInMemberId,
     getLoggedInMemberData,

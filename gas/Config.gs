@@ -87,6 +87,9 @@ function normalizeMemberMaster(memberMaster) {
   displayName:
     member,
 
+  nickname:
+    "",
+
   role:
     ROLE_NAMES.MEMBER,
 
@@ -127,6 +130,9 @@ function normalizeMemberMaster(memberMaster) {
   displayName:
     String(member.displayName || "").trim() ||
     name,
+
+  nickname:
+    String(member.nickname || "").trim(),
 
   role:
     normalizeRole_(member.role),
