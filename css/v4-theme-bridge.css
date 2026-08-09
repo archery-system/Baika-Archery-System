@@ -147,9 +147,14 @@ html[class*="bas-theme-"] .v4-nav a:hover {
 html[class*="bas-theme-"] .v4-nav a.active {
     color: var(--v4-theme-inverse);
 
-    border-color: rgba(255, 255, 255, 0.35);
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.35);
 
-    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.18);
 
     box-shadow: none;
 }
@@ -277,7 +282,7 @@ html[class*="bas-theme-"] .v4-brand-icon {
 
     gap: 4px !important;
 
-    font-size: 12px !important;
+    font-size: 11px !important;
     font-weight: 600 !important;
 
     line-height: 1 !important;
@@ -290,7 +295,7 @@ html[class*="bas-theme-"] .v4-brand-icon {
             1px solid
             rgba(255, 255, 255, 0.35) !important;
 
-        border-radius: 12px !important;
+        border-radius: 10px !important;
 
         background:
             rgba(255, 255, 255, 0.18) !important;
@@ -307,8 +312,9 @@ html[class*="bas-theme-"] .v4-brand-icon {
     html[class*="bas-theme-"] .v4-header-nav-label {
     display: block !important;
 
-    font-size: 12px !important;
+    font-size: 11px !important;
     line-height: 1 !important;
+    white-space: nowrap !important;
     }
 }
 
