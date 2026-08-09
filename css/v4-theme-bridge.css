@@ -92,6 +92,28 @@ html.bas-theme-dark {
 }
 
 /* ========================================
+   Project Zero Theme Surface Bridge
+   各テーマの共通画面色を練習入力へ接続
+======================================== */
+
+html[class*="bas-theme-"] {
+    --v4-theme-background:
+        var(--v4-theme-soft);
+
+    --v4-theme-surface-soft:
+        var(--v4-card);
+
+    --v4-theme-border:
+        var(--v4-border);
+
+    --v4-theme-text:
+        var(--v4-text);
+
+    --v4-theme-muted:
+        var(--v4-muted);
+}
+
+/* ========================================
    Practice Header Theme
    レイアウト寸法には触れない
 ======================================== */
@@ -564,5 +586,197 @@ html[class*="bas-theme-"] .v4-header-logout:hover {
 
     html.v4-is-landscape-layout .v4-header-account {
         display: none !important;
+    }
+}
+
+/* ========================================
+   Project Zero Practice Surface
+   練習入力画面を共通テーマへ統一
+======================================== */
+
+html[class*="bas-theme-"] body {
+    background:
+        linear-gradient(
+            180deg,
+            var(--v4-theme-surface-soft) 0%,
+            var(--v4-theme-background) 100%
+        ) !important;
+}
+
+/* メインヒーロー
+   Project Zero共通カードデザイン */
+html[class*="bas-theme-"] .v4-hero {
+    position: relative;
+
+    color:
+        var(--v4-theme-text) !important;
+
+    background:
+        rgba(255, 255, 255, 0.96) !important;
+
+    border:
+        1px solid
+        var(--v4-theme-border) !important;
+
+    box-shadow:
+        0 8px 24px
+        rgba(76, 29, 149, 0.07) !important;
+
+    overflow: hidden;
+}
+
+/* 上端テーマカラーライン */
+html[class*="bas-theme-"] .v4-hero::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 6px;
+
+    background:
+        var(--v4-purple) !important;
+
+    /* 練習入力タイトルをProject Zero共通カードへ合わせる */
+    html[class*="bas-theme-"] .v4-hero h1 {
+       font-size: 1.35rem !important;
+       line-height: 1.3 !important;
+    }
+
+}
+
+/* 基本カード */
+html[class*="bas-theme-"] .v4-card {
+    background:
+        rgba(255, 255, 255, 0.96) !important;
+
+    border:
+        1px solid
+        var(--v4-theme-border) !important;
+
+    box-shadow:
+        0 8px 24px
+        rgba(76, 29, 149, 0.07) !important;
+}
+
+/* カードタイトル */
+html[class*="bas-theme-"] .v4-card-title {
+    color:
+        var(--v4-theme-text) !important;
+}
+
+/* カード補足文字 */
+html[class*="bas-theme-"] .v4-card-subtitle {
+    color:
+        var(--v4-theme-muted) !important;
+}
+
+/* ========================================
+   Project Zero Practice Hero Final
+   Project Zero共通カード仕様
+======================================== */
+
+html[class*="bas-theme-"] .v4-hero {
+    position: relative !important;
+    overflow: hidden !important;
+
+    padding: 1.5rem !important;
+
+    color: var(--v4-text) !important;
+    background: var(--v4-card) !important;
+
+    border:
+        1px solid
+        var(--v4-border) !important;
+
+    border-radius: 1rem !important;
+
+    box-shadow:
+        0 2px 8px
+        rgb(17 24 39 / 8%) !important;
+}
+
+/* 共通カードと同じ上端4pxライン */
+html[class*="bas-theme-"] .v4-hero::before {
+    content: "" !important;
+
+    display: block !important;
+    position: absolute !important;
+
+    top: 0 !important;
+    right: 0 !important;
+    left: 0 !important;
+
+    width: auto !important;
+    height: 4px !important;
+
+    border-radius: 0 !important;
+
+    background:
+        var(--v4-purple) !important;
+}
+
+/* 旧Ver4の装飾円を消す */
+html[class*="bas-theme-"] .v4-hero::after {
+    display: none !important;
+}
+
+/* PRACTICE WORKSPACE */
+html[class*="bas-theme-"] .v4-eyebrow {
+    color:
+        var(--v4-muted) !important;
+
+    border-color:
+        var(--v4-border) !important;
+
+    background:
+        var(--v4-theme-soft) !important;
+}
+
+/* 練習入力タイトル */
+html[class*="bas-theme-"] .v4-hero h1 {
+    margin:
+        0 0 0.5rem !important;
+
+    color:
+        var(--v4-text) !important;
+
+    font-size:
+        1.5rem !important;
+
+    font-weight:
+        700 !important;
+
+    line-height:
+        1.3 !important;
+}
+
+/* 説明文 */
+html[class*="bas-theme-"] .v4-hero p {
+    display: block !important;
+
+    max-width: 650px !important;
+    margin: 0 !important;
+
+    color:
+        var(--v4-muted) !important;
+
+    font-size:
+        0.875rem !important;
+
+    line-height:
+        1.6 !important;
+}
+
+/* スマホ */
+@media (max-width: 600px) {
+    html[class*="bas-theme-"] .v4-hero {
+        padding: 1rem !important;
+    }
+
+    html[class*="bas-theme-"] .v4-hero::before {
+        height: 3px !important;
     }
 }
