@@ -1,0 +1,561 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Ver4 Practice Theme Bridge
+ *
+ * 練習入力の既存レイアウト・写真座標系には触れず、
+ * 色テーマだけをProject Zeroへ接続するための橋渡しCSS。
+ */
+
+/* ========================================
+   Baika Pink
+======================================== */
+
+html.bas-theme-baika-pink {
+    --v4-purple-dark: #a83268;
+    --v4-purple: #d94f8a;
+    --v4-purple-light: #f08ab5;
+    --v4-pink: #f08ab5;
+
+    --v4-text: #2f2530;
+    --v4-muted: #766a73;
+    --v4-border: #ead4df;
+    --v4-card: #ffffff;
+
+    --v4-theme-soft: #fff0f6;
+    --v4-theme-shadow: rgba(168, 50, 104, 0.18);
+    --v4-theme-shadow-strong: rgba(125, 35, 77, 0.25);
+    --v4-theme-inverse: #ffffff;
+}
+
+/* ========================================
+   Blue
+======================================== */
+
+html.bas-theme-blue {
+    --v4-purple-dark: #245493;
+    --v4-purple: #3777c8;
+    --v4-purple-light: #65a5ed;
+    --v4-pink: #65a5ed;
+
+    --v4-text: #243247;
+    --v4-muted: #66758a;
+    --v4-border: #cddced;
+    --v4-card: #ffffff;
+
+    --v4-theme-soft: #edf5ff;
+    --v4-theme-shadow: rgba(55, 119, 200, 0.18);
+    --v4-theme-shadow-strong: rgba(36, 84, 147, 0.25);
+    --v4-theme-inverse: #ffffff;
+}
+
+/* ========================================
+   Green
+======================================== */
+
+html.bas-theme-green {
+    --v4-purple-dark: #27664a;
+    --v4-purple: #3a8d68;
+    --v4-purple-light: #68b78e;
+    --v4-pink: #68b78e;
+
+    --v4-text: #25372f;
+    --v4-muted: #64756c;
+    --v4-border: #c9ded2;
+    --v4-card: #ffffff;
+
+    --v4-theme-soft: #ecf8f1;
+    --v4-theme-shadow: rgba(58, 141, 104, 0.18);
+    --v4-theme-shadow-strong: rgba(39, 102, 74, 0.25);
+    --v4-theme-inverse: #ffffff;
+}
+
+/* ========================================
+   Dark
+======================================== */
+
+html.bas-theme-dark {
+    --v4-purple-dark: #b94679;
+    --v4-purple: #d86b9d;
+    --v4-purple-light: #ef92bb;
+    --v4-pink: #ef92bb;
+
+    --v4-text: #f7edf2;
+    --v4-muted: #c7b9c0;
+    --v4-border: #493d45;
+    --v4-card: #242025;
+
+    --v4-theme-soft: #302830;
+    --v4-theme-shadow: rgba(216, 107, 157, 0.18);
+    --v4-theme-shadow-strong: rgba(185, 70, 121, 0.25);
+    --v4-theme-inverse: #ffffff;
+}
+
+/* ========================================
+   Practice Header Theme
+   レイアウト寸法には触れない
+======================================== */
+
+html[class*="bas-theme-"] .v4-header {
+    width: calc(100% + 32px);
+    max-width: none;
+    margin:
+        -16px
+        -16px
+        0;
+    border: 0;
+    border-radius: 0;
+
+    color: var(--v4-theme-inverse);
+
+    background:
+    linear-gradient(
+        135deg,
+        #7d234d,
+        #a83268
+    );
+
+    box-shadow:
+        0 4px 14px var(--v4-theme-shadow);
+}
+
+html[class*="bas-theme-"] .v4-brand {
+    color: var(--v4-theme-inverse);
+}
+
+html[class*="bas-theme-"] .v4-brand-icon {
+    color: var(--v4-theme-inverse);
+
+    background: rgba(255, 255, 255, 0.12);
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+
+    box-shadow: none;
+}
+
+html[class*="bas-theme-"] .v4-nav a {
+    color: rgba(255, 255, 255, 0.86);
+    background: transparent;
+    border-color: transparent;
+}
+
+html[class*="bas-theme-"] .v4-nav a:hover {
+    color: var(--v4-theme-inverse);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+html[class*="bas-theme-"] .v4-nav a.active {
+    color: var(--v4-theme-inverse);
+
+    border-color: rgba(255, 255, 255, 0.35);
+
+    background: rgba(255, 255, 255, 0.18);
+
+    box-shadow: none;
+}
+
+/* ========================================
+   Practice Header Typography Tokens
+======================================== */
+
+html[class*="bas-theme-"] {
+    --v4-header-brand-size-desktop: 20px;
+    --v4-header-nav-size-desktop: 15px;
+
+    --v4-header-brand-size-mobile: 18px;
+    --v4-header-nav-size-mobile: 14px;
+
+    --v4-header-nav-size-landscape: 11px;
+}
+
+/* ========================================
+   Practice Header Typography
+   横向き48pxレイアウトには影響させない
+======================================== */
+
+html[class*="bas-theme-"] .v4-brand {
+    font-size:
+        var(--v4-header-brand-size-desktop) !important;
+    font-weight: 500 !important;
+}
+
+html[class*="bas-theme-"] .v4-nav a {
+    font-size:
+        var(--v4-header-nav-size-desktop) !important;
+    font-weight: 500 !important;
+}
+
+html[class*="bas-theme-"] .v4-nav {
+    flex: 0 1 auto;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+html[class*="bas-theme-"] .v4-header-right {
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: flex-end;
+
+    min-width: 0;
+    margin-left: auto;
+
+    gap: 14px;
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+    html[class*="bas-theme-"] .v4-brand {
+        font-size: var(--v4-header-brand-size-mobile);
+    }
+
+    html[class*="bas-theme-"] .v4-nav a {
+        font-size: var(--v4-header-nav-size-mobile);
+    }
+
+    html[class*="bas-theme-"] .v4-header-right {
+    display: flex !important;
+    flex-direction: column !important;
+
+    width: 100% !important;
+    margin-left: 0 !important;
+
+    gap: 6px !important;
+    }
+
+}
+
+/* ========================================
+   Practice Header Compact Landscape
+   小型端末横向き専用
+======================================== */
+
+/* ========================================
+   Practice Header Mobile Portrait
+   1段目：6メニュー
+   2段目：ログイン情報
+======================================== */
+
+@media (max-width: 600px) and (orientation: portrait) {
+    html[class*="bas-theme-"] .v4-brand {
+    position: static !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 100% !important;
+    gap: 8px !important;
+
+    font-size: 18px !important;
+    font-weight: 500 !important;
+
+    text-align: center !important;
+}
+
+html[class*="bas-theme-"] .v4-brand-icon {
+    position: static !important;
+    left: auto !important;
+    flex: 0 0 auto !important;
+}   
+    
+    html[class*="bas-theme-"] .v4-nav {
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        width: 100% !important;
+        gap: 4px !important;
+    }
+
+    html[class*="bas-theme-"] .v4-nav a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+
+    min-width: 0 !important;
+    min-height: 50px !important;
+    padding: 6px 1px !important;
+
+    gap: 4px !important;
+
+    font-size: 12px !important;
+    font-weight: 600 !important;
+
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+    html[class*="bas-theme-"] .v4-nav a.active {
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.35) !important;
+
+        border-radius: 12px !important;
+
+        background:
+            rgba(255, 255, 255, 0.18) !important;
+    }
+
+    html[class*="bas-theme-"] .v4-header-nav-icon {
+    display: block !important;
+    margin: 0 !important;
+
+    font-size: 17px !important;
+    line-height: 1 !important;
+    }
+
+    html[class*="bas-theme-"] .v4-header-nav-label {
+    display: block !important;
+
+    font-size: 12px !important;
+    line-height: 1 !important;
+    }
+}
+
+    html[class*="bas-theme-"] .v4-header-nav-icon {
+        margin-right: 1px !important;
+    }
+
+    html[class*="bas-theme-"] .v4-header-nav-label {
+        font-size: inherit !important;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    html.v4-is-landscape-layout .v4-header {
+        flex-wrap: nowrap !important;
+    }
+
+    html.v4-is-landscape-layout .v4-brand {
+        flex: 0 0 auto !important;
+        width: auto !important;
+    }
+
+    html.v4-is-landscape-layout .v4-brand > span {
+        display: none !important;
+    }
+
+    html.v4-is-landscape-layout .v4-brand-icon {
+        width: 34px !important;
+        height: 34px !important;
+        flex: 0 0 34px !important;
+    }
+
+    html.v4-is-landscape-layout .v4-nav {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        flex-wrap: nowrap !important;
+        justify-content: flex-end !important;
+        min-width: 0 !important;
+    }
+
+  html.v4-is-landscape-layout .v4-nav a {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    padding: 5px 5px !important;
+    font-size:
+        var(--v4-header-nav-size-landscape) !important;
+    white-space: nowrap !important;
+   }
+
+  html.v4-is-landscape-layout .v4-header-right {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    align-items: center !important;
+
+    min-width: 0 !important;
+    margin-left: auto !important;
+
+    gap: 0 !important;
+   }
+
+   html.v4-is-landscape-layout .v4-nav {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-wrap: nowrap !important;
+
+    width: auto !important;
+    min-width: 0 !important;
+
+    justify-content: flex-end !important;
+   }
+
+}
+
+/* ========================================
+   Practice Header Account
+======================================== */
+
+html[class*="bas-theme-"] .v4-header-account {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+}
+
+html[class*="bas-theme-"] .v4-header-member {
+    color: rgba(255, 255, 255, 0.90);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+html[class*="bas-theme-"] .v4-header-logout {
+    min-height: 34px;
+    padding: 6px 10px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.35);
+    border-radius: 10px;
+
+    color: #ffffff;
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+html[class*="bas-theme-"] .v4-header-logout:hover {
+    background:
+        rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 600px) and (orientation: portrait) {
+    html[class*="bas-theme-"] .v4-header-account {
+        width: 100%;
+        justify-content: center;
+        padding-top: 2px;
+    }
+
+    html[class*="bas-theme-"] .v4-header-member {
+        font-size: 11px;
+    }
+
+    html[class*="bas-theme-"] .v4-header-logout {
+        min-height: 34px;
+        padding: 5px 10px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+    html.v4-is-landscape-layout .v4-header-account {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   Practice Header Final Layout
+   PC / Landscape
+======================================== */
+
+/* PC：メニュー＋アカウントを中央寄せ */
+@media (min-width: 901px) {
+    html[class*="bas-theme-"] .v4-header-right {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        align-items: center !important;
+        justify-content: center !important;
+
+        min-width: 0 !important;
+        margin-left: 0 !important;
+
+        gap: 16px !important;
+    }
+
+    html[class*="bas-theme-"] .v4-nav {
+        display: flex !important;
+        flex: 0 0 auto !important;
+
+        justify-content: center !important;
+
+        gap: 22px !important;
+    }
+
+    html[class*="bas-theme-"] .v4-header-account {
+        flex: 0 0 auto !important;
+    }
+}
+
+
+/* スマホ・小型タブレット横向き：必ず48pxの1段 */
+@media (max-width: 900px) and (orientation: landscape) {
+    html.v4-is-landscape-layout .v4-header {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+
+        align-items: center !important;
+        justify-content: flex-start !important;
+
+        height: var(--v4-step66-header-height) !important;
+        min-height: var(--v4-step66-header-height) !important;
+    }
+
+    html.v4-is-landscape-layout .v4-brand {
+        display: flex !important;
+        flex: 0 0 34px !important;
+
+        width: 34px !important;
+        min-width: 34px !important;
+
+        margin: 0 !important;
+    }
+
+    html.v4-is-landscape-layout .v4-brand > span {
+        display: none !important;
+    }
+
+    html.v4-is-landscape-layout .v4-header-right {
+        display: flex !important;
+        flex: 1 1 0 !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+
+        align-items: center !important;
+
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+
+        gap: 0 !important;
+    }
+
+    html.v4-is-landscape-layout .v4-nav {
+        display: flex !important;
+        flex: 1 1 0 !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+
+        width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+
+        gap: 2px !important;
+    }
+
+    html.v4-is-landscape-layout .v4-nav a {
+        display: inline-flex !important;
+        flex: 1 1 0 !important;
+        flex-direction: row !important;
+
+        min-width: 0 !important;
+        min-height: 34px !important;
+
+        padding: 4px 3px !important;
+
+        font-size:
+            var(--v4-header-nav-size-landscape) !important;
+
+        white-space: nowrap !important;
+    }
+
+    html.v4-is-landscape-layout .v4-header-account {
+        display: none !important;
+    }
+}
