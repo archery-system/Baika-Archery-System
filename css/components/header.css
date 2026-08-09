@@ -214,23 +214,28 @@
         width: 100%;
     }
 
-        .bas-header__nav {
+  .bas-header__nav {
     display: grid;
     grid-template-columns:
-        repeat(auto-fit, minmax(52px, 1fr));
-    gap: var(--bas-space-1);
+        repeat(6, minmax(0, 1fr));
+    gap: 2px;
     width: 100%;
-}
+   }
 
-        .bas-header__nav-link {
-        flex-direction: column;
-        gap: var(--bas-space-1);
-        min-width: 0;
-        padding:
-            var(--bas-space-2)
-            var(--bas-space-1);
-        font-size: var(--bas-font-size-xs);
-    }
+  .bas-header__nav-link {
+    flex-direction: column;
+    gap: var(--bas-space-1);
+    min-width: 0;
+    padding:
+        var(--bas-space-2)
+        1px;
+
+    font-size: 0.72rem;
+
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+   }
 
     .bas-header__account {
         justify-content: center;
