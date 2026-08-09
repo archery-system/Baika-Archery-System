@@ -106,7 +106,9 @@
  * ヘッダーが2段になる場合の上余白を確保
  */
 @media (
-    max-width: 900px
+    max-width: 1024px
+) and (
+    max-height: 600px
 ) and (
     orientation: landscape
 ) {
