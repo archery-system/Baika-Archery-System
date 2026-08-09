@@ -185,11 +185,18 @@ function syncMembersSheet(
     });
 
   overwriteSheet(
-    SHEET_NAMES.MEMBERS,
-    rows
-  );
+  SHEET_NAMES.MEMBERS,
+  rows
+);
 
-  return rows;
+if (
+  typeof clearMemberAuthCache_ ===
+    "function"
+) {
+  clearMemberAuthCache_();
+}
+
+return rows;
 }
 
 /**

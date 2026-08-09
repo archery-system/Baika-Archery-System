@@ -6,6 +6,11 @@
  */
 
 const V4_AUTH_STORAGE_KEY = "baikaArcheryVer4Login";
+const V4_MEMBER_CACHE_KEY =
+    "baikaArcheryMemberCache";
+
+const V4_MEMBER_CACHE_TTL =
+    5 * 60 * 1000;
 const V4_DEFAULT_PASSWORD = "baika";
 
 const V4Auth = {
@@ -17,69 +22,156 @@ const V4Auth = {
      * ログイン画面の初期化
      */
     async init() {
-        this.restoreLogin();
+    this.restoreLogin();
 
-        try {
-            await this.loadMemberData();
-        } catch (error) {
-            console.error("部員データの読み込みに失敗しました:", error);
-            this.showMessage(
-                "部員データを読み込めませんでした。通信環境を確認してください。",
-                "error"
-            );
-        }
+    /*
+     * ログイン状態を最優先で画面へ反映する。
+     * 部員データ通信を待たないことで、
+     * ログイン済みなのに旧ログイン画面が
+     * 一瞬表示される現象を防ぐ。
+     */
+    this.bindEvents();
+    this.updateScreen();
 
-        this.renderMemberDropdown();
-        this.bindEvents();
-        this.updateScreen();
-    },
+    try {
+        await this.loadMemberData();
+    } catch (error) {
+        console.error(
+            "部員データの読み込みに失敗しました:",
+            error
+        );
+
+        this.showMessage(
+            "部員データを読み込めませんでした。通信環境を確認してください。",
+            "error"
+        );
+    }
+
+    this.renderMemberDropdown();
+},
 
     /**
      * GASから部員一覧・パスワード情報を取得
      */
     async loadMemberData() {
-        if (typeof GAS_API_URL === "undefined" || !GAS_API_URL) {
-            throw new Error("GAS_API_URLが設定されていません");
+    if (
+        typeof GAS_API_URL === "undefined" ||
+        !GAS_API_URL
+    ) {
+        throw new Error(
+            "GAS_API_URLが設定されていません"
+        );
+    }
+
+    const cachedMembers =
+       this.loadMemberCache();
+
+    if (cachedMembers) {
+       this.members = cachedMembers;
+       this.memberPasswords = {};
+       return;
+    }
+
+    const url =
+        GAS_API_URL +
+        (GAS_API_URL.includes("?") ? "&" : "?") +
+        "action=getMembers";
+
+    const response = await fetch(url, {
+        method: "GET",
+        cache: "no-store"
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `HTTPエラー: ${response.status}`
+        );
+    }
+
+    const data = await response.json();
+
+    if (
+        data &&
+        data.success === true &&
+        Array.isArray(data.members)
+    ) {
+        this.members = data.members;
+        this.saveMemberCache(
+        data.members
+        );
+    } else {
+        this.members = [];
+    }
+
+    this.memberPasswords = {};
+},
+
+loadMemberCache() {
+    try {
+        const saved =
+            localStorage.getItem(
+                V4_MEMBER_CACHE_KEY
+            );
+
+        if (!saved) {
+            return null;
         }
 
-        const response = await fetch(GAS_API_URL, {
-            method: "GET",
-            cache: "no-store"
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTPエラー: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const metadata = {};
-
-        if (Array.isArray(data.metadata)) {
-            data.metadata.forEach(item => {
-                if (!item || !item.key) return;
-
-                metadata[item.key] = this.parseJson(item.json);
-            });
-        }
+        const cacheData =
+            JSON.parse(saved);
 
         if (
-            Array.isArray(metadata.memberMaster) &&
-            metadata.memberMaster.length > 0
+            !cacheData ||
+            !Array.isArray(
+                cacheData.members
+            ) ||
+            !cacheData.savedAt
         ) {
-            this.members = metadata.memberMaster;
-        } else {
-            this.members = ["部員A", "部員B", "部員C"];
+            return null;
         }
 
+        const age =
+            Date.now() -
+            Number(cacheData.savedAt);
+
         if (
-            metadata.memberPasswords &&
-            typeof metadata.memberPasswords === "object"
+            !Number.isFinite(age) ||
+            age > V4_MEMBER_CACHE_TTL
         ) {
-            this.memberPasswords = metadata.memberPasswords;
-        } else {
-            this.memberPasswords = {};
+            localStorage.removeItem(
+                V4_MEMBER_CACHE_KEY
+            );
+
+            return null;
         }
-    },
+
+        return cacheData.members;
+    } catch (error) {
+        console.warn(
+            "部員キャッシュを読み込めませんでした:",
+            error
+        );
+
+        return null;
+    }
+},
+
+saveMemberCache(members) {
+    try {
+        localStorage.setItem(
+            V4_MEMBER_CACHE_KEY,
+            JSON.stringify({
+                members,
+                savedAt: Date.now()
+            })
+        );
+    } catch (error) {
+        console.warn(
+            "部員キャッシュを保存できませんでした:",
+            error
+        );
+    }
+},
 
     /**
      * JSON文字列ならオブジェクトへ変換

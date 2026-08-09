@@ -25,6 +25,28 @@
  * 新形式へ統一して返す。
  */
 function getMemberMaster() {
+
+  const cache =
+    CacheService.getScriptCache();
+
+  const cachedValue =
+    cache.get("bas_member_master");
+
+  if (cachedValue) {
+    try {
+      const cachedMembers =
+        JSON.parse(cachedValue);
+
+      if (Array.isArray(cachedMembers)) {
+        return cachedMembers;
+      }
+    } catch (error) {
+      console.warn(
+        "部員マスターキャッシュの解析に失敗しました:",
+        error
+      );
+    }
+  }
   /*
    * 1. membersシートを優先して読み込む。
    */
@@ -114,10 +136,19 @@ function getMemberMaster() {
       });
 
   if (membersFromSheet.length > 0) {
-    return normalizeMemberMaster(
+  const normalizedMembers =
+    normalizeMemberMaster(
       membersFromSheet
     );
-  }
+
+  cache.put(
+    "bas_member_master",
+    JSON.stringify(normalizedMembers),
+    300
+  );
+
+  return normalizedMembers;
+}
 
   /*
    * 2. membersシートに有効なデータがない場合は、
@@ -145,17 +176,35 @@ function getMemberMaster() {
         memberRow.json
       );
 
-    return normalizeMemberMaster(
-      memberMaster
-    );
+    const normalizedMembers =
+  normalizeMemberMaster(
+    memberMaster
+  );
+
+cache.put(
+  "bas_member_master",
+  JSON.stringify(normalizedMembers),
+  300
+);
+
+return normalizedMembers;
   }
 
   /*
    * 3. どちらにもデータがない場合は既定値を使う。
    */
-  return normalizeMemberMaster(
+  const defaultMembers =
+  normalizeMemberMaster(
     DEFAULT_DATA.MEMBERS
   );
+
+cache.put(
+  "bas_member_master",
+  JSON.stringify(defaultMembers),
+  300
+);
+
+return defaultMembers;
 }
 
 /**
@@ -228,6 +277,33 @@ function findMember(memberIdentifier) {
  * 部員名をキーとする形式にも対応する。
  */
 function getMemberPasswords() {
+
+  const cache =
+    CacheService.getScriptCache();
+
+  const cachedValue =
+    cache.get("bas_member_passwords");
+
+  if (cachedValue) {
+    try {
+      const cachedPasswords =
+        JSON.parse(cachedValue);
+
+      if (
+        cachedPasswords &&
+        typeof cachedPasswords === "object" &&
+        !Array.isArray(cachedPasswords)
+      ) {
+        return cachedPasswords;
+      }
+    } catch (error) {
+      console.warn(
+        "部員パスワードキャッシュの解析に失敗しました:",
+        error
+      );
+    }
+  }
+
   /*
    * 既存metadataのパスワードを
    * フォールバック用として先に取得する。
@@ -336,6 +412,12 @@ function getMemberPasswords() {
         password;
     }
   });
+
+    cache.put(
+    "bas_member_passwords",
+    JSON.stringify(passwords),
+    300
+  );
 
   return passwords;
 }
@@ -448,6 +530,7 @@ function isAdminMember(memberIdentifier) {
  * readSheetData()ですでにオブジェクトになっている場合は
  * そのまま返す。
  */
+
 function parseMetadataJson_(value) {
   if (value === null || value === undefined || value === "") {
     return null;
@@ -469,6 +552,24 @@ function parseMetadataJson_(value) {
   }
 }
 
+/**
+ * 部員認証用キャッシュを削除する。
+ *
+ * 部員追加・編集・削除・パスワード変更後に
+ * 古い認証情報が残らないようにする。
+ */
+function clearMemberAuthCache_() {
+  const cache =
+    CacheService.getScriptCache();
+
+  cache.remove(
+    "bas_member_master"
+  );
+
+  cache.remove(
+    "bas_member_passwords"
+  );
+}
 
 /**
  * 認証処理の確認用テスト。
