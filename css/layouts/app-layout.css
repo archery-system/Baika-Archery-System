@@ -111,8 +111,6 @@
     orientation: landscape
 ) {
     .bas-app__main {
-        padding-top: calc(
-            var(--bas-header-height) + 108px
-        );
+        padding-top: 56px;
     }
 }
