@@ -30,7 +30,7 @@ const GROUPING_DRAFT_STORAGE_PREFIX =
 function getGroupingDraftMemberKey() {
     const sessionMember =
         window.V4Session &&
-        typeof window.V4Session.getLoggedInMember ===
+            typeof window.V4Session.getLoggedInMember ===
             "function"
             ? window.V4Session.getLoggedInMember()
             : null;
@@ -168,7 +168,7 @@ function getGroupingHistoryStorageKey() {
 
     const memberId =
         window.V4Session &&
-        typeof window.V4Session.getLoggedInMemberId ===
+            typeof window.V4Session.getLoggedInMemberId ===
             "function"
             ? window.V4Session.getLoggedInMemberId()
             : "";
@@ -229,8 +229,8 @@ function syncCurrentPracticeInputToProjectZero() {
 
     const previousPractice =
         typeof getState === "function" &&
-        getState("practice") &&
-        typeof getState("practice") === "object"
+            getState("practice") &&
+            typeof getState("practice") === "object"
             ? getState("practice")
             : {};
 
@@ -599,12 +599,12 @@ function handleTargetClick(event) {
 
     const arrow = calculateArrowScore(realX, realY);
 
-currentArrows.push(arrow);
+    currentArrows.push(arrow);
 
-updateCurrentEndDisplay();
-updateScoreInputState();
-resetTargetZoom();
-updateScoreInputState();
+    updateCurrentEndDisplay();
+    updateScoreInputState();
+    resetTargetZoom();
+    updateScoreInputState();
 }
 
 /**
@@ -619,7 +619,7 @@ function calculateArrowScore(x, y) {
  * 線の太さや画面表示の誤差を考慮し、
  * 得点判定には1pxの補正を加える。
  */
-const PIN_RADIUS = 6.5;
+    const PIN_RADIUS = 6.5;
 
     const distanceFromCenter = Math.hypot(
         x - TARGET_CENTER,
@@ -712,7 +712,7 @@ function resetTargetZoom() {
     }
 
     renderTargetPins();
-     renderGroupingPins();
+    renderGroupingPins();
 }
 
 /**
@@ -734,55 +734,55 @@ function renderTargetPins() {
             : currentArrows;
 
     targetSource.forEach(function (arrow, index) {
-if (
-    arrow.x == null ||
-    arrow.y == null
-) {
-    return;
-}
+        if (
+            arrow.x == null ||
+            arrow.y == null
+        ) {
+            return;
+        }
 
         /*
  * 得点判定に使用する白い外周。
  * calculateArrowScore() の PIN_RADIUS = 5 と一致させる。
  */
-const pinOuter = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "circle"
-);
+        const pinOuter = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
 
-pinOuter.setAttribute("cx", String(arrow.x));
-pinOuter.setAttribute("cy", String(arrow.y));
-pinOuter.setAttribute("r", "5");
-pinOuter.setAttribute("fill", "#ffffff");
-pinOuter.setAttribute("stroke", "#374151");
-pinOuter.setAttribute("stroke-width", "0.6");
-pinOuter.setAttribute(
-    "data-target-pin-index",
-    String(index)
-);
-pinOuter.style.cursor = "grab";
-pinOuter.style.pointerEvents = "all";
-pinOuter.style.touchAction = "none";
+        pinOuter.setAttribute("cx", String(arrow.x));
+        pinOuter.setAttribute("cy", String(arrow.y));
+        pinOuter.setAttribute("r", "5");
+        pinOuter.setAttribute("fill", "#ffffff");
+        pinOuter.setAttribute("stroke", "#374151");
+        pinOuter.setAttribute("stroke-width", "0.6");
+        pinOuter.setAttribute(
+            "data-target-pin-index",
+            String(index)
+        );
+        pinOuter.style.cursor = "grab";
+        pinOuter.style.pointerEvents = "all";
+        pinOuter.style.touchAction = "none";
 
-/*
- * 着弾位置の中心を示す小さい赤丸。
- */
-const pin = document.createElementNS(
-    "http://www.w3.org/2000/svg",
-    "circle"
-);
+        /*
+         * 着弾位置の中心を示す小さい赤丸。
+         */
+        const pin = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
 
-pin.setAttribute("cx", String(arrow.x));
-pin.setAttribute("cy", String(arrow.y));
-pin.setAttribute("r", "3");
-pin.setAttribute("fill", "#ec4899");
-pin.setAttribute(
-    "data-target-pin-index",
-    String(index)
-);
-pin.style.cursor = "grab";
-pin.style.pointerEvents = "all";
-pin.style.touchAction = "none";
+        pin.setAttribute("cx", String(arrow.x));
+        pin.setAttribute("cy", String(arrow.y));
+        pin.setAttribute("r", "3");
+        pin.setAttribute("fill", "#ec4899");
+        pin.setAttribute(
+            "data-target-pin-index",
+            String(index)
+        );
+        pin.style.cursor = "grab";
+        pin.style.pointerEvents = "all";
+        pin.style.touchAction = "none";
         pin.setAttribute(
             "data-target-pin-index",
             String(index)
@@ -823,8 +823,8 @@ pin.style.touchAction = "none";
         pinHitArea.style.touchAction = "none";
 
         pinsGroup.appendChild(pinHitArea);
-　　　　 pinsGroup.appendChild(pinOuter);
-　　　　 pinsGroup.appendChild(pin);
+        pinsGroup.appendChild(pinOuter);
+        pinsGroup.appendChild(pin);
 
         const pinNumber = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -977,13 +977,13 @@ function renderGroupingPins() {
         registeredGroupingArrows.concat(activeArrows);
 
     groupingSource.forEach(function (arrow, index) {
-if (
-    arrow.val === "M" ||
-    arrow.x == null ||
-    arrow.y == null
-) {
-    return;
-}
+        if (
+            arrow.val === "M" ||
+            arrow.x == null ||
+            arrow.y == null
+        ) {
+            return;
+        }
 
         const pin = document.createElementNS(
             "http://www.w3.org/2000/svg",
@@ -1229,7 +1229,7 @@ function syncPhotoPinsToGrouping(
 
             const photoTargetX =
                 calibration &&
-                calibration.ready
+                    calibration.ready
                     ? (
                         150 +
                         (
@@ -1246,7 +1246,7 @@ function syncPhotoPinsToGrouping(
 
             const photoTargetY =
                 calibration &&
-                calibration.ready
+                    calibration.ready
                     ? (
                         150 +
                         (
@@ -1298,11 +1298,11 @@ function syncPhotoPinsToGrouping(
     renderGroupingPins();
     updateCurrentEndDisplay();
 
-/*
- * 写真上のピン入力結果を
- * Project Zero の practice.arrows へ同期する。
- */
-syncCurrentPracticeInputToProjectZero();
+    /*
+     * 写真上のピン入力結果を
+     * Project Zero の practice.arrows へ同期する。
+     */
+    syncCurrentPracticeInputToProjectZero();
 }
 
 window.syncPhotoPinsToGrouping =
@@ -1405,13 +1405,13 @@ function updateCurrentEndDisplay() {
  * キーパッドから得点を入力する
  */
 function handleScoreKeypadInput(value, score) {
-currentArrows.push({
-    val: value,
-    score: score,
-    x: null,
-    y: null,
-    inputType: "keypad"
-});
+    currentArrows.push({
+        val: value,
+        score: score,
+        x: null,
+        y: null,
+        inputType: "keypad"
+    });
 
     updateCurrentEndDisplay();
     renderTargetPins();
@@ -1444,34 +1444,34 @@ function syncPracticeToProjectZero(
     }
 
     const samePracticeRecords =
-    practiceData.filter(function (record) {
-        if (!record) {
-            return false;
-        }
+        practiceData.filter(function (record) {
+            if (!record) {
+                return false;
+            }
 
-        const savedMemberId =
-            String(savedRecord.memberId || "").trim();
+            const savedMemberId =
+                String(savedRecord.memberId || "").trim();
 
-        const recordMemberId =
-            String(record.memberId || "").trim();
+            const recordMemberId =
+                String(record.memberId || "").trim();
 
-        /*
-         * 新しい記録はmemberIdで部員を識別する。
-         * 過去データにmemberIdがない場合だけ、
-         * memberNameで比較する。
-         */
-        const isSameMember =
-            savedMemberId && recordMemberId
-                ? recordMemberId === savedMemberId
-                : record.memberName ===
+            /*
+             * 新しい記録はmemberIdで部員を識別する。
+             * 過去データにmemberIdがない場合だけ、
+             * memberNameで比較する。
+             */
+            const isSameMember =
+                savedMemberId && recordMemberId
+                    ? recordMemberId === savedMemberId
+                    : record.memberName ===
                     savedRecord.memberName;
 
-        return (
-            record.date === savedRecord.date &&
-            isSameMember &&
-            record.distance === savedRecord.distance
-        );
-    });
+            return (
+                record.date === savedRecord.date &&
+                isSameMember &&
+                record.distance === savedRecord.distance
+            );
+        });
 
     const totalScore =
         samePracticeRecords.reduce(
@@ -1531,7 +1531,7 @@ function syncPracticeToProjectZero(
         arrowCount: arrowCount,
         memo:
             previousLastPractice &&
-            typeof previousLastPractice.memo === "string"
+                typeof previousLastPractice.memo === "string"
                 ? previousLastPractice.memo
                 : ""
     });
@@ -1547,16 +1547,320 @@ function syncPracticeToProjectZero(
         photoMode: true
     });
 
+}
+
+/**
+ * 高速保存した1件をProject ZeroのStateへ同期する
+ *
+ * GASから全練習記録を再取得せず、
+ * 現在のlastPracticeへ今回の記録を加算する。
+ *
+ * @param {Object} savedRecord
+ */
+function syncAppendedPracticeToProjectZero(
+    savedRecord
+) {
+    if (
+        typeof setState !== "function" ||
+        !savedRecord
+    ) {
+        return;
+    }
+
+    const previousLastPractice =
+        typeof getState === "function"
+            ? getState("lastPractice")
+            : null;
+
+    const isSamePractice =
+        previousLastPractice &&
+        previousLastPractice.date ===
+        savedRecord.date &&
+        previousLastPractice.distance ===
+        savedRecord.distance;
+
+    const previousTotalScore =
+        isSamePractice
+            ? Number(
+                previousLastPractice.totalScore ||
+                0
+            )
+            : 0;
+
+    const previousArrowCount =
+        isSamePractice
+            ? Number(
+                previousLastPractice.arrowCount ||
+                0
+            )
+            : 0;
+
+    const savedTotalScore =
+        Number(
+            savedRecord.total || 0
+        );
+
+    const savedArrowCount =
+        Array.isArray(savedRecord.pins)
+            ? savedRecord.pins.length
+            : [
+                "a1",
+                "a2",
+                "a3",
+                "a4",
+                "a5",
+                "a6"
+            ].filter(function (key) {
+                return (
+                    savedRecord[key] !== undefined &&
+                    savedRecord[key] !== null &&
+                    savedRecord[key] !== ""
+                );
+            }).length;
+
+    const totalScore =
+        previousTotalScore +
+        savedTotalScore;
+
+    const arrowCount =
+        previousArrowCount +
+        savedArrowCount;
+
+    const averageScore =
+        arrowCount > 0
+            ? Number(
+                (
+                    totalScore /
+                    arrowCount
+                ).toFixed(2)
+            )
+            : 0;
+
+    setState("lastPractice", {
+        date:
+            savedRecord.date,
+
+        distance:
+            savedRecord.distance,
+
+        totalScore:
+            totalScore,
+
+        averageScore:
+            averageScore,
+
+        arrowCount:
+            arrowCount,
+
+        memo:
+            previousLastPractice &&
+                typeof previousLastPractice.memo ===
+                "string"
+                ? previousLastPractice.memo
+                : ""
+    });
+
+    setState("practice", {
+        date:
+            savedRecord.date,
+
+        distance:
+            savedRecord.distance,
+
+        arrows:
+            Array.isArray(savedRecord.pins)
+                ? savedRecord.pins.map(
+                    function (arrow) {
+                        return {
+                            ...arrow
+                        };
+                    }
+                )
+                : [],
+
+        photoMode:
+            true
+    });
+
     console.log(
-        "[Project Zero] 練習データを同期しました。",
+        "[Project Zero] 高速保存データを同期しました。",
         {
-            date: savedRecord.date,
-            distance: savedRecord.distance,
-            totalScore: totalScore,
-            averageScore: averageScore,
-            arrowCount: arrowCount
+            date:
+                savedRecord.date,
+
+            distance:
+                savedRecord.distance,
+
+            totalScore:
+                totalScore,
+
+            averageScore:
+                averageScore,
+
+            arrowCount:
+                arrowCount
         }
     );
+}
+
+const PRACTICE_SAVE_QUEUE_KEY =
+    "baikaPracticeSaveQueue";
+
+let isPracticeSaveQueueRunning =
+    false;
+
+function loadPracticeSaveQueue() {
+    try {
+        const raw =
+            localStorage.getItem(
+                PRACTICE_SAVE_QUEUE_KEY
+            );
+
+        if (!raw) {
+            return [];
+        }
+
+        const parsed =
+            JSON.parse(raw);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+    } catch (error) {
+        console.error(
+            "[練習保存キュー] 読み込み失敗:",
+            error
+        );
+
+        return [];
+    }
+}
+
+function savePracticeSaveQueue(
+    queue
+) {
+    try {
+        localStorage.setItem(
+            PRACTICE_SAVE_QUEUE_KEY,
+            JSON.stringify(queue)
+        );
+    } catch (error) {
+        console.error(
+            "[練習保存キュー] 保存失敗:",
+            error
+        );
+    }
+}
+
+function enqueuePracticeRecord(
+    record
+) {
+    const queue =
+        loadPracticeSaveQueue();
+
+    queue.push({
+        id:
+            typeof crypto !== "undefined" &&
+                typeof crypto.randomUUID ===
+                "function"
+                ? crypto.randomUUID()
+                : [
+                    "practice",
+                    Date.now(),
+                    Math.random()
+                        .toString(36)
+                        .slice(2)
+                ].join("-"),
+
+        record:
+            record
+    });
+
+    savePracticeSaveQueue(
+        queue
+    );
+
+    processPracticeSaveQueue();
+}
+
+async function processPracticeSaveQueue() {
+    if (isPracticeSaveQueueRunning) {
+        return;
+    }
+
+    isPracticeSaveQueueRunning =
+        true;
+
+    try {
+        while (true) {
+            const queue =
+                loadPracticeSaveQueue();
+
+            if (queue.length === 0) {
+                break;
+            }
+
+            const item =
+                queue[0];
+
+            const payload = {
+                action:
+                    "appendPracticeRecord",
+
+                record:
+                    item.record
+            };
+
+            const response =
+                await fetch(
+                    V4_GAS_API_URL,
+                    {
+                        method:
+                            "POST",
+
+                        body:
+                            JSON.stringify(
+                                payload
+                            )
+                    }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "クラウドへ保存できませんでした。"
+                );
+            }
+
+            const result =
+                await response.json();
+
+            if (
+                !result ||
+                result.success !== true
+            ) {
+                throw new Error(
+                    result &&
+                        result.message
+                        ? result.message
+                        : "練習記録を保存できませんでした。"
+                );
+            }
+
+            queue.shift();
+
+            savePracticeSaveQueue(
+                queue
+            );
+        }
+    } catch (error) {
+        console.error(
+            "[練習保存キュー] 送信失敗:",
+            error
+        );
+    } finally {
+        isPracticeSaveQueueRunning =
+            false;
+    }
 }
 
 async function registerPhotoPracticeEnd(photoPins) {
@@ -1646,69 +1950,69 @@ async function registerPhotoPracticeEnd(photoPins) {
     }
 
     const arrows =
-    photoPins.map(function (pin) {
-        const rawLabel =
-            pin && pin.val != null
-                ? pin.val
-                : pin && pin.score != null
-                    ? pin.score
-                    : "M";
+        photoPins.map(function (pin) {
+            const rawLabel =
+                pin && pin.val != null
+                    ? pin.val
+                    : pin && pin.score != null
+                        ? pin.score
+                        : "M";
 
-        const label =
-            String(rawLabel).toUpperCase();
+            const label =
+                String(rawLabel).toUpperCase();
 
-        let numericScore = 0;
+            let numericScore = 0;
 
-        if (
-            label === "X" ||
-            label === "10"
-        ) {
-            numericScore = 10;
-        } else if (label !== "M") {
-            numericScore = Number(label);
-        }
+            if (
+                label === "X" ||
+                label === "10"
+            ) {
+                numericScore = 10;
+            } else if (label !== "M") {
+                numericScore = Number(label);
+            }
 
-        const hasTargetPosition =
-            pin &&
-            pin.x != null &&
-            pin.y != null;
-
-        const hasPhotoPosition =
-            pin &&
-            pin.photoX != null &&
-            pin.photoY != null;
-
-        return {
-            val: label,
-            score: numericScore,
-
-            x: hasTargetPosition
-                ? Number(pin.x)
-                : null,
-
-            y: hasTargetPosition
-                ? Number(pin.y)
-                : null,
-
-            inputType:
+            const hasTargetPosition =
                 pin &&
-                typeof pin.inputType === "string"
-                    ? pin.inputType
-                    : "photo",
+                pin.x != null &&
+                pin.y != null;
 
-            photoX: hasPhotoPosition
-                ? Number(pin.photoX)
-                : null,
+            const hasPhotoPosition =
+                pin &&
+                pin.photoX != null &&
+                pin.photoY != null;
 
-            photoY: hasPhotoPosition
-                ? Number(pin.photoY)
-                : null
-        };
-    });
+            return {
+                val: label,
+                score: numericScore,
 
-        const memberId =
+                x: hasTargetPosition
+                    ? Number(pin.x)
+                    : null,
+
+                y: hasTargetPosition
+                    ? Number(pin.y)
+                    : null,
+
+                inputType:
+                    pin &&
+                        typeof pin.inputType === "string"
+                        ? pin.inputType
+                        : "photo",
+
+                photoX: hasPhotoPosition
+                    ? Number(pin.photoX)
+                    : null,
+
+                photoY: hasPhotoPosition
+                    ? Number(pin.photoY)
+                    : null
+            };
+        });
+
+    const memberId =
         window.V4Session &&
-        typeof window.V4Session.getLoggedInMemberId === "function"
+            typeof window.V4Session.getLoggedInMemberId === "function"
             ? window.V4Session.getLoggedInMemberId()
             : "";
 
@@ -1738,101 +2042,73 @@ async function registerPhotoPracticeEnd(photoPins) {
     );
 
     try {
-        const getResponse =
-            await fetch(V4_GAS_API_URL);
-
-        if (!getResponse.ok) {
-            throw new Error(
-                "クラウドデータを取得できませんでした。"
-            );
-        }
-
-        const cloudData =
-            await getResponse.json();
-
-        const practiceData =
-            Array.isArray(cloudData.practice)
-                ? cloudData.practice
-                : [];
-
-        practiceData.push(record);
-
-        const payload = {
-            mode: "practice",
-            data: practiceData
-        };
-
-        const saveResponse =
-            await fetch(
-                V4_GAS_API_URL,
-                {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                }
-            );
-
-        if (!saveResponse.ok) {
-            throw new Error(
-                "クラウドへ保存できませんでした。"
-            );
-        }
-
-        await saveResponse.text();
-
-        syncPracticeToProjectZero(
-    practiceData,
-    record
-);
-
-/*
- * ピン位置を持つ6射は、
- * 点取り保存と同時にグルーピングにも追加する
+        /*
+ * 練習記録を端末内の保存キューへ登録する。
+ *
+ * GASの保存完了は待たず、
+ * 画面側はすぐ次の6射入力へ進める。
  */
-const groupingArrows =
-    photoPins.filter(function (arrow) {
-        return (
-            arrow &&
-            arrow.x != null &&
-            arrow.y != null
-        );
-    });
-
-if (groupingArrows.length > 0) {
-    registeredGroupingArrows =
-        registeredGroupingArrows.concat(
-            groupingArrows.map(function (arrow) {
-                return {
-                    ...arrow
-                };
-            })
+        enqueuePracticeRecord(
+            record
         );
 
-    saveGroupingDraft();
-
-    isGroupingSaved = false;
-
-    const groupingSaveMessage =
-        document.getElementById(
-            "v4GroupingSaveMessage"
+        /*
+         * ホーム表示用の状態は
+         * クラウド保存を待たず即時更新する。
+         */
+        syncAppendedPracticeToProjectZero(
+            record
         );
 
-    if (groupingSaveMessage) {
-        groupingSaveMessage.textContent =
-            "未保存";
-    }
-}
+        /*
+         * ピン位置を持つ6射は、
+         * 点取り保存と同時にグルーピングにも追加する
+         */
+        const groupingArrows =
+            photoPins.filter(function (arrow) {
+                return (
+                    arrow &&
+                    arrow.x != null &&
+                    arrow.y != null
+                );
+            });
 
-currentArrows = [];
-photoGroupingArrows = [];
+        if (groupingArrows.length > 0) {
+            registeredGroupingArrows =
+                registeredGroupingArrows.concat(
+                    groupingArrows.map(function (arrow) {
+                        return {
+                            ...arrow
+                        };
+                    })
+                );
 
-resetTargetZoom();
-updateCurrentEndDisplay();
-renderTargetPins();
-renderGroupingPins();
-updateScoreInputState();
-syncCurrentPracticeInputToProjectZero();
+            saveGroupingDraft();
 
-return true;
+            isGroupingSaved = false;
+
+            const groupingSaveMessage =
+                document.getElementById(
+                    "v4GroupingSaveMessage"
+                );
+
+            if (groupingSaveMessage) {
+                groupingSaveMessage.textContent =
+                    "未保存";
+            }
+        }
+
+        currentArrows = [];
+        photoGroupingArrows = [];
+
+        resetTargetZoom();
+        updateCurrentEndDisplay();
+        renderTargetPins();
+        renderGroupingPins();
+        updateScoreInputState();
+        syncCurrentPracticeInputToProjectZero();
+
+        return true;
     } catch (error) {
         console.error(
             "Photo practice save failed:",
@@ -1850,11 +2126,11 @@ return true;
 window.registerPhotoPracticeEnd =
     registerPhotoPracticeEnd;
 
-    /**
- * 通常入力の6射を正式な練習記録として保存する
- *
- * @returns {Promise<boolean>}
- */
+/**
+* 通常入力の6射を正式な練習記録として保存する
+*
+* @returns {Promise<boolean>}
+*/
 async function registerCurrentPracticeEnd() {
     const arrows =
         getActiveInputArrows();
@@ -2023,7 +2299,7 @@ function undoLastArrow() {
     if (
         window.baikaTargetGesture &&
         typeof window.baikaTargetGesture.clearPinSelection ===
-            "function"
+        "function"
     ) {
         window.baikaTargetGesture.clearPinSelection();
     }
@@ -2070,20 +2346,20 @@ function clearAllArrows() {
 
     isGroupingSaved = false;
 
-const groupingSaveMessage =
-    document.getElementById(
-        "v4GroupingSaveMessage"
-    );
+    const groupingSaveMessage =
+        document.getElementById(
+            "v4GroupingSaveMessage"
+        );
 
-if (groupingSaveMessage) {
-    groupingSaveMessage.textContent =
-        "グルーピングがありません";
-}
+    if (groupingSaveMessage) {
+        groupingSaveMessage.textContent =
+            "グルーピングがありません";
+    }
 
     if (
         window.baikaTargetGesture &&
         typeof window.baikaTargetGesture.clearPinSelection ===
-            "function"
+        "function"
     ) {
         window.baikaTargetGesture.clearPinSelection();
     }
@@ -2117,75 +2393,75 @@ function updateScoreInputState() {
     });
 
     const registerButton =
-    document.getElementById(
-        "v4RegisterCurrentEnd"
-    );
+        document.getElementById(
+            "v4RegisterCurrentEnd"
+        );
 
-if (registerButton) {
-    registerButton.disabled =
-        !hasArrows;
-}
+    if (registerButton) {
+        registerButton.disabled =
+            !hasArrows;
+    }
 
-const adjustedRegisterButton =
-    document.getElementById(
-        "v4RegisterAdjustedArrows"
-    );
+    const adjustedRegisterButton =
+        document.getElementById(
+            "v4RegisterAdjustedArrows"
+        );
 
-if (adjustedRegisterButton) {
-    adjustedRegisterButton.disabled =
-        !hasArrows;
-}
+    if (adjustedRegisterButton) {
+        adjustedRegisterButton.disabled =
+            !hasArrows;
+    }
 
-const saveButton =
-    document.getElementById(
-        "v4SaveCurrentEnd"
-    );
+    const saveButton =
+        document.getElementById(
+            "v4SaveCurrentEnd"
+        );
 
-if (saveButton) {
-    saveButton.disabled =
-        arrows.length !== 6;
-}
+    if (saveButton) {
+        saveButton.disabled =
+            arrows.length !== 6;
+    }
 
-const undoButton =
-    document.getElementById(
-        "v4UndoLastArrow"
-    );
+    const undoButton =
+        document.getElementById(
+            "v4UndoLastArrow"
+        );
 
-if (undoButton) {
-    undoButton.disabled =
-        !hasArrows;
-}
+    if (undoButton) {
+        undoButton.disabled =
+            !hasArrows;
+    }
 
-const clearButton =
-    document.getElementById(
-        "v4ClearCurrentEnd"
-    );
+    const clearButton =
+        document.getElementById(
+            "v4ClearCurrentEnd"
+        );
 
-if (clearButton) {
-    clearButton.disabled =
-        !hasArrows;
-}
+    if (clearButton) {
+        clearButton.disabled =
+            !hasArrows;
+    }
 
-const clearAllButton =
-    document.getElementById(
-        "v4ClearAllArrows"
-    );
+    const clearAllButton =
+        document.getElementById(
+            "v4ClearAllArrows"
+        );
 
-if (clearAllButton) {
-    clearAllButton.disabled =
-        !hasArrows &&
-        registeredGroupingArrows.length === 0;
-}
-const saveGroupingButton =
-    document.getElementById(
-        "v4SaveGrouping"
-    );
+    if (clearAllButton) {
+        clearAllButton.disabled =
+            !hasArrows &&
+            registeredGroupingArrows.length === 0;
+    }
+    const saveGroupingButton =
+        document.getElementById(
+            "v4SaveGrouping"
+        );
 
-if (saveGroupingButton) {
-    saveGroupingButton.disabled =
-        registeredGroupingArrows.length === 0 ||
-        isGroupingSaved;
-}
+    if (saveGroupingButton) {
+        saveGroupingButton.disabled =
+            registeredGroupingArrows.length === 0 ||
+            isGroupingSaved;
+    }
 }
 
 function registerCurrentGrouping() {
@@ -2193,30 +2469,30 @@ function registerCurrentGrouping() {
     if (arrows.length === 0) return false;
 
     registeredGroupingArrows =
-    registeredGroupingArrows.concat(
-        arrows.map(function (arrow) {
-            return {
-                ...arrow
-            };
-        })
-    );
+        registeredGroupingArrows.concat(
+            arrows.map(function (arrow) {
+                return {
+                    ...arrow
+                };
+            })
+        );
 
-saveGroupingDraft();
+    saveGroupingDraft();
 
-isGroupingSaved = false;
+    isGroupingSaved = false;
 
-const groupingSaveMessage =
-    document.getElementById(
-        "v4GroupingSaveMessage"
-    );
+    const groupingSaveMessage =
+        document.getElementById(
+            "v4GroupingSaveMessage"
+        );
 
-if (groupingSaveMessage) {
-    groupingSaveMessage.textContent =
-        "未保存";
-}
+    if (groupingSaveMessage) {
+        groupingSaveMessage.textContent =
+            "未保存";
+    }
 
-currentArrows = [];
-photoGroupingArrows = [];
+    currentArrows = [];
+    photoGroupingArrows = [];
 
     if (window.baikaTargetGesture && typeof window.baikaTargetGesture.clearPinSelection === "function") {
         window.baikaTargetGesture.clearPinSelection();
@@ -2288,7 +2564,7 @@ function bindClearActionButtons() {
     if (
         clearAllButton &&
         clearAllButton.dataset.clearAllBound !==
-            "true"
+        "true"
     ) {
         clearAllButton.dataset.clearAllBound =
             "true";
@@ -2344,196 +2620,207 @@ function bindGroupingSaveButton() {
     }
 
     button.addEventListener(
-    "click",
-    function () {
+        "click",
+        function () {
 
-        if (
-            registeredGroupingArrows.length === 0
-        ) {
-            return;
-        }
-
-        const memberNameElement =
-            document.getElementById(
-                "v4LoggedInMemberName"
-            );
-
-        const dateElement =
-            document.getElementById(
-                "v4PracticeDate"
-            );
-
-        const distanceElement =
-            document.getElementById(
-                "v4DistanceSelect"
-            );
-
-        const memberName =
-            memberNameElement
-                ? memberNameElement.textContent.trim()
-                : "";
-
-        const practiceDate =
-            dateElement
-                ? dateElement.value
-                : "";
-
-                const memberId =
-    window.V4Session &&
-    typeof window.V4Session.getLoggedInMemberId ===
-        "function"
-        ? window.V4Session.getLoggedInMemberId()
-        : "";
-
-        if (!memberId) {
-    window.alert(
-        "部員IDを取得できません。いったんログインし直してください。"
-    );
-
-    return;
-}
-
-        const distance =
-            distanceElement
-                ? distanceElement.value
-                : "";
-
-        if (
-            !memberName ||
-            memberName === "未ログイン" ||
-            memberName === "ログイン情報を確認中"
-        ) {
-            window.alert(
-                "ログイン中の部員を確認してください。"
-            );
-
-            return;
-        }
-
-        if (!practiceDate) {
-            window.alert(
-                "練習日を選択してください。"
-            );
-
-            return;
-        }
-
-        const conditionFeeling =
-    document.getElementById(
-        "v4ConditionFeeling"
-    )?.value || "";
-
-const conditionWeather =
-    document.getElementById(
-        "v4ConditionWeather"
-    )?.value || "";
-
-const conditionWindStrength =
-    document.getElementById(
-        "v4ConditionWindStrength"
-    )?.value || "";
-
-const conditionWindDirection =
-    document.getElementById(
-        "v4ConditionWindDirectionValue"
-    )?.value || "";
-
-const conditionTheme =
-    document.getElementById(
-        "v4ConditionTheme"
-    )?.value.trim() || "";
-
-const conditionMemo =
-    document.getElementById(
-        "v4ConditionMemo"
-    )?.value.trim() || "";
-
-        if (!distance) {
-            window.alert(
-                "距離を選択してください。"
-            );
-
-            return;
-        }
-
-        const history =
-            loadGroupingHistory();
-
-        const savedAt =
-            new Date().toISOString();
-
-        const record = {
-    id:
-        "grouping-" +
-        Date.now(),
-
-    savedAt:
-        savedAt,
-
-    memberId:
-        memberId,
-
-    memberName:
-        memberName,
-
-    practiceDate:
-        practiceDate,
-
-    distance:
-        distance,
-
-    conditionFeeling:
-        conditionFeeling,
-
-    conditionWeather:
-        conditionWeather,
-
-    conditionWindStrength:
-        conditionWindStrength,
-
-    conditionWindDirection:
-        conditionWindDirection,
-
-    conditionTheme:
-        conditionTheme,
-
-    conditionMemo:
-        conditionMemo,
-
-    arrows:
-        registeredGroupingArrows.map(
-            function (arrow) {
-                return {
-                    ...arrow
-                };
+            if (
+                registeredGroupingArrows.length === 0
+            ) {
+                return;
             }
-        )
-};
 
-        history.push(record);
+            const memberNameElement =
+                document.getElementById(
+                    "v4LoggedInMemberName"
+                );
 
-        saveGroupingHistory(history);
+            const dateElement =
+                document.getElementById(
+                    "v4PracticeDate"
+                );
 
-        isGroupingSaved = true;
+            const distanceElement =
+                document.getElementById(
+                    "v4DistanceSelect"
+                );
 
-        const message =
-            document.getElementById(
-                "v4GroupingSaveMessage"
+            const memberName =
+                memberNameElement
+                    ? memberNameElement.textContent.trim()
+                    : "";
+
+            const practiceDate =
+                dateElement
+                    ? dateElement.value
+                    : "";
+
+            const memberId =
+                window.V4Session &&
+                    typeof window.V4Session.getLoggedInMemberId ===
+                    "function"
+                    ? window.V4Session.getLoggedInMemberId()
+                    : "";
+
+            if (!memberId) {
+                window.alert(
+                    "部員IDを取得できません。いったんログインし直してください。"
+                );
+
+                return;
+            }
+
+            const distance =
+                distanceElement
+                    ? distanceElement.value
+                    : "";
+
+            if (
+                !memberName ||
+                memberName === "未ログイン" ||
+                memberName === "ログイン情報を確認中"
+            ) {
+                window.alert(
+                    "ログイン中の部員を確認してください。"
+                );
+
+                return;
+            }
+
+            if (!practiceDate) {
+                window.alert(
+                    "練習日を選択してください。"
+                );
+
+                return;
+            }
+
+            const conditionFeeling =
+                document.getElementById(
+                    "v4ConditionFeeling"
+                )?.value || "";
+
+            const conditionWeather =
+                document.getElementById(
+                    "v4ConditionWeather"
+                )?.value || "";
+
+            const conditionWindStrength =
+                document.getElementById(
+                    "v4ConditionWindStrength"
+                )?.value || "";
+
+            const conditionWindDirection =
+                document.getElementById(
+                    "v4ConditionWindDirectionValue"
+                )?.value || "";
+
+            const conditionTheme =
+                document.getElementById(
+                    "v4ConditionTheme"
+                )?.value.trim() || "";
+
+            const conditionMemo =
+                document.getElementById(
+                    "v4ConditionMemo"
+                )?.value.trim() || "";
+
+            if (!distance) {
+                window.alert(
+                    "距離を選択してください。"
+                );
+
+                return;
+            }
+
+            const history =
+                loadGroupingHistory();
+
+            const savedAt =
+                new Date().toISOString();
+
+            const record = {
+                id:
+                    "grouping-" +
+                    Date.now(),
+
+                savedAt:
+                    savedAt,
+
+                memberId:
+                    memberId,
+
+                memberName:
+                    memberName,
+
+                practiceDate:
+                    practiceDate,
+
+                distance:
+                    distance,
+
+                conditionFeeling:
+                    conditionFeeling,
+
+                conditionWeather:
+                    conditionWeather,
+
+                conditionWindStrength:
+                    conditionWindStrength,
+
+                conditionWindDirection:
+                    conditionWindDirection,
+
+                conditionTheme:
+                    conditionTheme,
+
+                conditionMemo:
+                    conditionMemo,
+
+                arrows:
+                    registeredGroupingArrows.map(
+                        function (arrow) {
+                            return {
+                                ...arrow
+                            };
+                        }
+                    )
+            };
+
+            history.push(record);
+
+            saveGroupingHistory(history);
+
+            isGroupingSaved = true;
+
+            registeredGroupingArrows = [];
+            photoGroupingArrows = [];
+            currentArrows = [];
+
+            clearGroupingDraft();
+
+            renderTargetPins();
+            renderGroupingPins();
+            updateCurrentEndDisplay();
+            updateScoreInputState();
+
+            const message =
+                document.getElementById(
+                    "v4GroupingSaveMessage"
+                );
+
+            if (message) {
+                message.textContent =
+                    "✅ 保存済み";
+            }
+
+            updateScoreInputState();
+
+            console.log(
+                "グルーピング履歴を保存しました。",
+                record
             );
-
-        if (message) {
-            message.textContent =
-                "✅ 保存済み";
         }
-
-        updateScoreInputState();
-
-        console.log(
-            "グルーピング履歴を保存しました。",
-            record
-        );
-    }
-);
+    );
 
 }
 

@@ -1,292 +1,260 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>
-Baika Archery System
-</title>
+    <title>
+        Baika Archery System
+    </title>
 
-<link rel="stylesheet" href="css/foundation/tokens.css">
-<link rel="stylesheet" href="css/foundation/base.css">
-<link rel="stylesheet" href="css/layouts/app-layout.css">
-<link rel="stylesheet" href="css/components/header.css">
-<link rel="stylesheet" href="css/components/page-header.css">
-<link rel="stylesheet" href="css/components/card.css">
-<link rel="stylesheet" href="css/components/ai-dashboard.css">
-<link rel="stylesheet" href="css/components/ai-coach.css">
-<link rel="stylesheet" href="css/pages/home.css">
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+    <link rel="stylesheet" href="css/foundation/base.css">
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
+    <link rel="stylesheet" href="css/components/header.css">
+    <link rel="stylesheet" href="css/components/page-header.css">
+    <link rel="stylesheet" href="css/components/card.css">
+    <link rel="stylesheet" href="css/components/ai-dashboard.css">
+    <link rel="stylesheet" href="css/components/ai-coach.css">
+    <link rel="stylesheet" href="css/pages/home.css">
 </head>
 
 <body>
 
-<div class="bas-app">
+    <div class="bas-app">
 
-<div id="app-header"></div>
+        <div id="app-header"></div>
 
-<main class="bas-app__main">
+        <main class="bas-app__main">
 
-<div id="page-header"></div>
+            <div id="page-header"></div>
 
-<div class="bas-home">
+            <div class="bas-home">
 
-<section class="bas-card">
+                <section class="bas-card">
 
-<div class="bas-home__welcome">
+                    <div class="bas-home__welcome">
 
-    <div class="bas-home__user">
+                        <div class="bas-home__user">
 
-        <p class="bas-home__label">
-            ログイン中
-        </p>
+                            <p class="bas-home__label">
+                                ログイン中
+                            </p>
 
-        <h2
-            id="homeUserName"
-            class="bas-home__name"
-        >
-            ゲストユーザー
-        </h2>
+                            <h2 id="homeUserName" class="bas-home__name">
+                                ゲストユーザー
+                            </h2>
 
-        <p
-            id="homeGreeting"
-            class="bas-home__greeting"
-        >
-            こんばんは
-        </p>
+                            <p id="homeGreeting" class="bas-home__greeting">
+                                こんばんは
+                            </p>
 
-        <p class="bas-home__message">
-        今日も練習の記録と振り返りで成長へ
-        
-        </p>
- 
-</div>
+                            <p class="bas-home__message">
+                                今日も練習の記録と振り返りで成長へ
 
-</div>
+                            </p>
 
-<div class="bas-home__last-practice">
+                        </div>
 
-<div class="bas-home__last-practice-header">
+                    </div>
 
-    <div>
-        <p class="bas-home__last-practice-label">
-            前回の練習
-        </p>
+                    <div class="bas-home__last-practice">
 
-        <p
-            id="homeLastPracticeDate"
-            class="bas-home__last-practice-date"
-        >
-            2026年7月20日
-        </p>
-    </div>
+                        <div class="bas-home__last-practice-header">
 
-    <span
-        id="homeLastPracticeDistance"
-        class="bas-home__distance-badge"
-    >
-        70m
-    </span>
+                            <div>
+                                <p class="bas-home__last-practice-label">
+                                    前回の練習
+                                </p>
 
-</div>
+                                <p id="homeLastPracticeDate" class="bas-home__last-practice-date">
+                                    2026年7月20日
+                                </p>
+                            </div>
 
-    <div class="bas-home__stats">
+                            <span id="homeLastPracticeDistance" class="bas-home__distance-badge">
+                                70m
+                            </span>
 
-        <div class="bas-home__stat">
+                        </div>
 
-            <span class="bas-home__stat-label">
-                総得点
-            </span>
+                        <div class="bas-home__stats">
 
-            <strong
-                id="homeLastPracticeScore"
-                class="bas-home__stat-value"
-            >
-                652
-            </strong>
+                            <div class="bas-home__stat">
 
-            <span class="bas-home__stat-unit">
-                点
-            </span>
+                                <span class="bas-home__stat-label">
+                                    総得点
+                                </span>
 
-        </div>
+                                <strong id="homeLastPracticeScore" class="bas-home__stat-value">
+                                    －
+                                </strong>
 
-        <div class="bas-home__stat">
+                                <span class="bas-home__stat-unit">
+                                    点
+                                </span>
 
-            <span class="bas-home__stat-label">
-                平均
-            </span>
+                            </div>
 
-            <strong
-                id="homeLastPracticeAverage"
-                class="bas-home__stat-value"
-            >
-                9.06
-            </strong>
+                            <div class="bas-home__stat">
 
-            <span class="bas-home__stat-unit">
-                点
-            </span>
+                                <span class="bas-home__stat-label">
+                                    平均
+                                </span>
 
-        </div>
+                                <strong id="homeLastPracticeAverage" class="bas-home__stat-value">
+                                    －
+                                </strong>
 
-        <div class="bas-home__stat">
+                                <span class="bas-home__stat-unit">
+                                    点
+                                </span>
 
-            <span class="bas-home__stat-label">
-                射数
-            </span>
+                            </div>
 
-            <strong
-                id="homeLastPracticeArrowCount"
-                class="bas-home__stat-value"
-            >
-                72
-            </strong>
+                            <div class="bas-home__stat">
 
-            <span class="bas-home__stat-unit">
-                射
-            </span>
+                                <span class="bas-home__stat-label">
+                                    射数
+                                </span>
 
-        </div>
+                                <strong id="homeLastPracticeArrowCount" class="bas-home__stat-value">
+                                    －
+                                </strong>
 
-    </div>
+                                <span class="bas-home__stat-unit">
+                                    射
+                                </span>
 
-</div>
+                            </div>
 
-</div>
+                        </div>
 
-<section class="bas-home__dashboard">
+                    </div>
 
-    <div class="bas-home__dashboard-card">
+            </div>
 
-        <h3 class="bas-home__dashboard-title">
-            📝 前回のメモ
-        </h3>
+            <section class="bas-home__dashboard">
 
-        <p
-            id="homeLastMemo"
-            class="bas-home__dashboard-text"
-        >
-            クリックで力みが出た。
-            後半は肩の位置を意識するとグルーピングが改善した。
-        </p>
+                <div class="bas-home__dashboard-card">
 
-        </div>
+                    <h3 class="bas-home__dashboard-title">
+                        📝 前回のメモ
+                    </h3>
 
-    <section class="bas-home-section">
-        <div id="home-ai-dashboard"></div>
-    </section>
+                    <p id="homeLastMemo" class="bas-home__dashboard-text">
+                        クリックで力みが出た。
+                        後半は肩の位置を意識するとグルーピングが改善した。
+                    </p>
 
-    <section class="bas-home-section">
-        <div id="home-ai-coach"></div>
-    </section>
+                </div>
 
-    <div
-    id="home-today-practice"
-    class="bas-home__dashboard-card"
->
+                <section class="bas-home-section">
+                    <div id="home-ai-dashboard"></div>
+                </section>
 
-    <h3 class="bas-home__dashboard-title">
-        🎯 今日の目標
-    </h3>
+                <section class="bas-home-section">
+                    <div id="home-ai-coach"></div>
+                </section>
 
-        <ul
-            id="homeTodayGoals"
-            class="bas-home__goal-list"
-        >
+                <div id="home-today-practice" class="bas-home__dashboard-card">
 
-            <li>□ リリースを丁寧に</li>
+                    <h3 class="bas-home__dashboard-title">
+                        🎯 今日の目標
+                    </h3>
 
-            <li>□ 左肩を下げない</li>
+                    <ul id="homeTodayGoals" class="bas-home__goal-list">
 
-            <li>□ 70m 660点以上</li>
+                        <li>□ リリースを丁寧に</li>
 
-        </ul>
+                        <li>□ 左肩を下げない</li>
+
+                        <li>□ 70m 660点以上</li>
+
+                    </ul>
+
+                </div>
+
+            </section>
+
+            </section>
+
+            <section class="bas-home__section">
+
+                <h2 class="bas-home__section-title">
+
+                    メニュー
+
+                </h2>
+
+                <div id="homeFeatureCards" class="bas-home__grid">
+
+                </div>
+
+            </section>
 
     </div>
 
-</section>
+    </main>
 
-</section>
+    </div>
 
-<section class="bas-home__section">
+    <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+    <script src="js/auth/api.js"></script>
 
-<h2 class="bas-home__section-title">
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/core/theme.js"></script>
+    <script src="js/core/state.js"></script>
+    <script src="js/core/cloud.js?v=1"></script>
 
-メニュー
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+    <script src="js/components/card.js"></script>
+    <script src="js/components/dashboard.js?v=2"></script>
+    <script src="js/components/today-practice.js"></script>
+    <script src="js/core/trend-analyzer.js"></script>
+    <script src="js/components/ai-dashboard.js"></script>
+    <script src="js/core/ai-engine.js"></script>
+    <script src="js/components/ai-coach.js"></script>
 
-</h2>
+    <!-- Project Zero Pages -->
+    <script src="js/pages/home.js"></script>
 
-<div
-id="homeFeatureCards"
-class="bas-home__grid">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (
+                !window.V4Session ||
+                typeof window.V4Session.requireLogin !== "function" ||
+                !window.V4Session.requireLogin()
+            ) {
+                return;
+            }
 
-</div>
+            if (
+                window.BAS_HEADER &&
+                typeof window.BAS_HEADER.render === "function"
+            ) {
+                window.BAS_HEADER.render({
+                    currentRoute: "home"
+                });
+            }
 
-</section>
-
-</div>
-
-</main>
-
-</div>
-
-<!-- Login Session -->
-<script src="js/v4-session.js"></script>
-<script src="js/auth/api.js"></script>
-
-<!-- Project Zero Core -->
-<script src="js/core/config.js"></script>
-<script src="js/core/organization.js"></script>
-<script src="js/core/theme.js"></script>
-<script src="js/core/state.js"></script>
-<script src="js/core/cloud.js?v=1"></script>
-
-<!-- Project Zero Components -->
-<script src="js/components/header.js"></script>
-<script src="js/components/page-header.js"></script>
-<script src="js/components/card.js"></script>
-<script src="js/components/dashboard.js?v=2"></script>
-<script src="js/components/today-practice.js"></script>
-<script src="js/core/trend-analyzer.js"></script>
-<script src="js/components/ai-dashboard.js"></script>
-<script src="js/core/ai-engine.js"></script>
-<script src="js/components/ai-coach.js"></script>
-
-<!-- Project Zero Pages -->
-<script src="js/pages/home.js"></script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        if (
-            !window.V4Session ||
-            typeof window.V4Session.requireLogin !== "function" ||
-            !window.V4Session.requireLogin()
-        ) {
-            return;
-        }
-
-        if (
-            window.BAS_HEADER &&
-            typeof window.BAS_HEADER.render === "function"
-        ) {
-            window.BAS_HEADER.render({
-                currentRoute: "home"
-            });
-        }
-
-        if (
-            window.BAS_HOME &&
-            typeof window.BAS_HOME.initialize === "function"
-        ) {
-            window.BAS_HOME.initialize();
-        }
-    });
-</script>
+            if (
+                window.BAS_HOME &&
+                typeof window.BAS_HOME.initialize === "function"
+            ) {
+                window.BAS_HOME.initialize();
+            }
+        });
+    </script>
 
 </body>
+
 </html>

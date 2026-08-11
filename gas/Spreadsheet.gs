@@ -384,12 +384,171 @@ function upsertMatchRecord(record) {
       ]);
 
     return {
-      recordId: recordId,
-      rowNumber: targetRow,
+  recordId: recordId,
+  rowNumber: targetRow,
+  operation:
+    isUpdate
+      ? "updated"
+      : "inserted"
+};
+} finally {
+  lock.releaseLock();
+}
+}
+
+/**
+ * 練習記録をpracticeシートへ1件追加する
+ *
+ * 全件上書きせず、
+ * 新しい練習記録1件だけを末尾へ追加する。
+ *
+ * @param {Object} record
+ * @returns {Object}
+ */
+function appendPracticeRecord(record) {
+  if (
+    !record ||
+    typeof record !== "object"
+  ) {
+    throw new Error(
+      "保存する練習記録が指定されていません。"
+    );
+  }
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.PRACTICE
+      );
+
+    const lastColumn =
+      sheet.getLastColumn();
+
+    let headers =
+      lastColumn > 0
+        ? sheet
+            .getRange(
+              1,
+              1,
+              1,
+              lastColumn
+            )
+            .getValues()[0]
+            .map(function (header) {
+              return String(
+                header || ""
+              ).trim();
+            })
+        : [];
+
+    /*
+     * 空シートまたは見出しがない場合
+     */
+    if (
+      headers.length === 0 ||
+      headers.every(function (header) {
+        return !header;
+      })
+    ) {
+      headers = [
+        "date",
+        "memberId",
+        "memberName",
+        "distance",
+        "a1",
+        "a2",
+        "a3",
+        "a4",
+        "a5",
+        "a6",
+        "total",
+        "pins"
+      ];
+    }
+
+    /*
+     * 今回の記録に新しい項目があれば
+     * 見出しへ追加する
+     */
+    Object.keys(record).forEach(
+      function (key) {
+        if (!headers.includes(key)) {
+          headers.push(key);
+        }
+      }
+    );
+
+    /*
+     * 見出しを書き込む
+     */
+    sheet
+      .getRange(
+        1,
+        1,
+        1,
+        headers.length
+      )
+      .setValues([
+        headers
+      ]);
+
+    const rowValues =
+      headers.map(function (header) {
+        let value =
+          Object.prototype
+            .hasOwnProperty.call(
+              record,
+              header
+            )
+            ? record[header]
+            : "";
+
+        if (header === "date") {
+          value =
+            normalizeDateText(
+              value
+            );
+        }
+
+        if (
+          value &&
+          typeof value === "object"
+        ) {
+          return JSON.stringify(
+            value
+          );
+        }
+
+        return value;
+      });
+
+    const targetRow =
+      Math.max(
+        sheet.getLastRow() + 1,
+        2
+      );
+
+    sheet
+      .getRange(
+        targetRow,
+        1,
+        1,
+        headers.length
+      )
+      .setValues([
+        rowValues
+      ]);
+
+    return {
+      rowNumber:
+        targetRow,
       operation:
-        isUpdate
-          ? "updated"
-          : "inserted"
+        "inserted"
     };
   } finally {
     lock.releaseLock();

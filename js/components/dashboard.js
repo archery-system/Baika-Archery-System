@@ -8,7 +8,7 @@
     "use strict";
 
     const HOME_CARDS = [
-                {
+        {
             icon: "📝",
             title: "練習入力",
             description: "得点や着弾位置を記録します。",
@@ -128,11 +128,11 @@
         element.textContent = value;
     }
 
-        function getCurrentUserName() {
+    function getCurrentUserName() {
         if (
             window.V4Session &&
             typeof window.V4Session.getLoggedInMemberData ===
-                "function"
+            "function"
         ) {
             const loginData =
                 window.V4Session.getLoggedInMemberData();
@@ -155,7 +155,7 @@
         if (
             window.V4Session &&
             typeof window.V4Session.getLoggedInMember ===
-                "function"
+            "function"
         ) {
             const memberName =
                 window.V4Session.getLoggedInMember();
@@ -247,252 +247,266 @@
     }
 
     async function renderLastPractice() {
-    if (
-        !window.BAS_CLOUD ||
-        typeof window.BAS_CLOUD.loadPracticeRecords !==
-            "function"
-    ) {
-        console.error(
-            "[Baika Dashboard] クラウド機能を読み込めません。"
-        );
-
-        renderEmptyLastPractice();
-        return;
-    }
-
-    if (
-        !window.V4Session ||
-        typeof window.V4Session.getLoggedInMemberData !==
-            "function"
-    ) {
-        console.error(
-            "[Baika Dashboard] ログイン情報を取得できません。"
-        );
-
-        renderEmptyLastPractice();
-        return;
-    }
-
-    setTextContent(
-        "homeLastPracticeDate",
-        "読込中..."
-    );
-
-    try {
-        const records =
-            await window.BAS_CLOUD.loadPracticeRecords();
-
-        const loginMember =
-            window.V4Session.getLoggedInMemberData();
-
         if (
-            !Array.isArray(records) ||
-            !loginMember
+            !window.BAS_CLOUD ||
+            typeof window.BAS_CLOUD.loadPracticeRecords !==
+            "function"
         ) {
-            renderEmptyLastPractice();
-            return;
-        }
-
-        const memberId =
-            typeof loginMember.memberId === "string"
-                ? loginMember.memberId.trim()
-                : "";
-
-        const memberName =
-            typeof loginMember.memberName === "string"
-                ? loginMember.memberName.trim()
-                : "";
-
-        const myRecords =
-            records.filter(function (record) {
-                if (!record) {
-                    return false;
-                }
-
-                const recordMemberId =
-                    typeof record.memberId === "string"
-                        ? record.memberId.trim()
-                        : "";
-
-                const recordMemberName =
-                    typeof record.memberName === "string"
-                        ? record.memberName.trim()
-                        : "";
-
-                if (
-                    memberId !== "" &&
-                    recordMemberId === memberId
-                ) {
-                    return true;
-                }
-
-                return (
-                    recordMemberId === "" &&
-                    memberName !== "" &&
-                    recordMemberName === memberName
-                );
-            });
-
-        if (myRecords.length === 0) {
-            renderEmptyLastPractice();
-            return;
-        }
-
-        const latestDate =
-            myRecords
-                .map(function (record) {
-                    return typeof record.date === "string"
-                        ? record.date.trim()
-                        : "";
-                })
-                .filter(function (date) {
-                    return date !== "";
-                })
-                .sort()
-                .at(-1);
-
-        if (!latestDate) {
-            renderEmptyLastPractice();
-            return;
-        }
-
-        const latestRecords =
-            myRecords.filter(function (record) {
-                return record.date === latestDate;
-            });
-
-        let totalScore = 0;
-        let arrowCount = 0;
-
-        latestRecords.forEach(function (record) {
-            [
-                "a1",
-                "a2",
-                "a3",
-                "a4",
-                "a5",
-                "a6"
-            ].forEach(function (key) {
-                const rawValue = record[key];
-
-                if (
-                    rawValue === "" ||
-                    rawValue === null ||
-                    typeof rawValue === "undefined"
-                ) {
-                    return;
-                }
-
-                const score = Number(rawValue);
-
-                if (!Number.isFinite(score)) {
-                    return;
-                }
-
-                totalScore += score;
-                arrowCount += 1;
-            });
-        });
-
-        const averageScore =
-            arrowCount > 0
-                ? totalScore / arrowCount
-                : null;
-
-        const distances =
-            Array.from(
-                new Set(
-                    latestRecords
-                        .map(function (record) {
-                            return typeof record.distance ===
-                                "string"
-                                ? record.distance.trim()
-                                : "";
-                        })
-                        .filter(function (distance) {
-                            return distance !== "";
-                        })
-                )
+            console.error(
+                "[Baika Dashboard] クラウド機能を読み込めません。"
             );
 
-        const memoRecord =
-            latestRecords
-                .slice()
-                .reverse()
-                .find(function (record) {
-                    return (
-                        typeof record.memo === "string" &&
-                        record.memo.trim() !== ""
-                    );
-                });
+            renderEmptyLastPractice();
+            return;
+        }
+
+        if (
+            !window.V4Session ||
+            typeof window.V4Session.getLoggedInMemberData !==
+            "function"
+        ) {
+            console.error(
+                "[Baika Dashboard] ログイン情報を取得できません。"
+            );
+
+            renderEmptyLastPractice();
+            return;
+        }
 
         setTextContent(
             "homeLastPracticeDate",
-            formatPracticeDate(latestDate)
+            "読込中..."
         );
 
-        setTextContent(
-            "homeLastPracticeDistance",
-            distances.length > 0
-                ? distances.join(" / ")
-                : "-"
-        );
+        try {
+            const records =
+                await window.BAS_CLOUD.loadPracticeRecords();
 
-        setTextContent(
-            "homeLastPracticeScore",
-            arrowCount > 0
-                ? String(totalScore)
-                : "-"
-        );
+            const loginMember =
+                window.V4Session.getLoggedInMemberData();
 
-        setTextContent(
-            "homeLastPracticeAverage",
-            Number.isFinite(averageScore)
-                ? averageScore.toFixed(2)
-                : "-"
-        );
-
-        setTextContent(
-            "homeLastPracticeArrowCount",
-            arrowCount > 0
-                ? String(arrowCount)
-                : "-"
-        );
-
-        setTextContent(
-            "homeLastMemo",
-            memoRecord
-                ? memoRecord.memo.trim()
-                : "前回の練習メモはありません。"
-        );
-
-        console.log(
-            "[Baika Dashboard] 最新練習を表示しました。",
-            {
-                memberId: memberId,
-                memberName: memberName,
-                latestDate: latestDate,
-                endCount: latestRecords.length,
-                totalScore: totalScore,
-                averageScore: averageScore,
-                arrowCount: arrowCount
+            if (
+                !Array.isArray(records) ||
+                !loginMember
+            ) {
+                renderEmptyLastPractice();
+                return;
             }
-        );
-    } catch (error) {
-        console.error(
-            "[Baika Dashboard] 最新練習の読込に失敗しました。",
-            error
-        );
 
-        renderEmptyLastPractice();
+            const memberId =
+                typeof loginMember.memberId === "string"
+                    ? loginMember.memberId.trim()
+                    : "";
+
+            const memberName =
+                typeof loginMember.memberName === "string"
+                    ? loginMember.memberName.trim()
+                    : "";
+
+            const myRecords =
+                records.filter(function (record) {
+                    if (!record) {
+                        return false;
+                    }
+
+                    const recordMemberId =
+                        typeof record.memberId === "string"
+                            ? record.memberId.trim()
+                            : "";
+
+                    const recordMemberName =
+                        typeof record.memberName === "string"
+                            ? record.memberName.trim()
+                            : "";
+
+                    if (
+                        memberId !== "" &&
+                        recordMemberId === memberId
+                    ) {
+                        return true;
+                    }
+
+                    return (
+                        recordMemberId === "" &&
+                        memberName !== "" &&
+                        recordMemberName === memberName
+                    );
+                });
+
+            if (myRecords.length === 0) {
+                renderEmptyLastPractice();
+                return;
+            }
+
+            const latestDate =
+                myRecords
+                    .map(function (record) {
+                        return typeof record.date === "string"
+                            ? record.date.trim()
+                            : "";
+                    })
+                    .filter(function (date) {
+                        return date !== "";
+                    })
+                    .sort()
+                    .at(-1);
+
+            if (!latestDate) {
+                renderEmptyLastPractice();
+                return;
+            }
+
+            const latestRecords =
+                myRecords.filter(function (record) {
+                    return record.date === latestDate;
+                });
+
+            let totalScore = 0;
+            let arrowCount = 0;
+
+            latestRecords.forEach(function (record) {
+                [
+                    "a1",
+                    "a2",
+                    "a3",
+                    "a4",
+                    "a5",
+                    "a6"
+                ].forEach(function (key) {
+                    const rawValue = record[key];
+
+                    if (
+                        rawValue === "" ||
+                        rawValue === null ||
+                        typeof rawValue === "undefined"
+                    ) {
+                        return;
+                    }
+
+                    const normalizedValue =
+                        String(rawValue)
+                            .trim()
+                            .toUpperCase();
+
+                    let score = 0;
+
+                    if (normalizedValue === "X") {
+                        score = 10;
+                    } else if (normalizedValue === "M") {
+                        score = 0;
+                    } else {
+                        score =
+                            Number(normalizedValue);
+
+                        if (!Number.isFinite(score)) {
+                            return;
+                        }
+                    }
+
+                    totalScore += score;
+                    arrowCount += 1;
+                });
+            });
+
+            const averageScore =
+                arrowCount > 0
+                    ? totalScore / arrowCount
+                    : null;
+
+            const distances =
+                Array.from(
+                    new Set(
+                        latestRecords
+                            .map(function (record) {
+                                return typeof record.distance ===
+                                    "string"
+                                    ? record.distance.trim()
+                                    : "";
+                            })
+                            .filter(function (distance) {
+                                return distance !== "";
+                            })
+                    )
+                );
+
+            const memoRecord =
+                latestRecords
+                    .slice()
+                    .reverse()
+                    .find(function (record) {
+                        return (
+                            typeof record.memo === "string" &&
+                            record.memo.trim() !== ""
+                        );
+                    });
+
+            setTextContent(
+                "homeLastPracticeDate",
+                formatPracticeDate(latestDate)
+            );
+
+            setTextContent(
+                "homeLastPracticeDistance",
+                distances.length > 0
+                    ? distances.join(" / ")
+                    : "-"
+            );
+
+            setTextContent(
+                "homeLastPracticeScore",
+                arrowCount > 0
+                    ? String(totalScore)
+                    : "-"
+            );
+
+            setTextContent(
+                "homeLastPracticeAverage",
+                Number.isFinite(averageScore)
+                    ? averageScore.toFixed(2)
+                    : "-"
+            );
+
+            setTextContent(
+                "homeLastPracticeArrowCount",
+                arrowCount > 0
+                    ? String(arrowCount)
+                    : "-"
+            );
+
+            setTextContent(
+                "homeLastMemo",
+                memoRecord
+                    ? memoRecord.memo.trim()
+                    : "前回の練習メモはありません。"
+            );
+
+            console.log(
+                "[Baika Dashboard] 最新練習を表示しました。",
+                {
+                    memberId: memberId,
+                    memberName: memberName,
+                    latestDate: latestDate,
+                    endCount: latestRecords.length,
+                    totalScore: totalScore,
+                    averageScore: averageScore,
+                    arrowCount: arrowCount
+                }
+            );
+        } catch (error) {
+            console.error(
+                "[Baika Dashboard] 最新練習の読込に失敗しました。",
+                error
+            );
+
+            renderEmptyLastPractice();
+        }
     }
-}
 
     function renderHomeCards() {
         if (
             !window.BAS_CARD ||
             typeof window.BAS_CARD.renderAll !==
-                "function"
+            "function"
         ) {
             console.error(
                 "[Baika Dashboard] Cardコンポーネントを読み込めません。"
@@ -508,15 +522,15 @@
     }
 
     async function initializeDashboard() {
-    renderCurrentUser();
-    renderHomeCards();
+        renderCurrentUser();
+        renderHomeCards();
 
-    await renderLastPractice();
+        await renderLastPractice();
 
-    console.log(
-        "[Baika Dashboard] ダッシュボードを初期化しました。"
-    );
-}
+        console.log(
+            "[Baika Dashboard] ダッシュボードを初期化しました。"
+        );
+    }
 
     window.BAS_DASHBOARD = {
         initialize: initializeDashboard,

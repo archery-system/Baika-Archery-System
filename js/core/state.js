@@ -6,28 +6,28 @@
 
 const BAS_STATE = {
     currentUser: {
-    id: "test-user",
-    name: "テスト部員",
-    role: "member"
-},
+        id: "test-user",
+        name: "テスト部員",
+        role: "member"
+    },
 
     currentPage: "home",
 
     practice: {
-    date: null,
-    distance: null,
+        date: null,
+        distance: null,
 
-    goalScore: 660,
+        goalScore: 660,
 
-    missions: [
-        "リリースを丁寧にする",
-        "クリッカー後も伸び続ける",
-        "平均9.2点以上を目指す"
-    ],
+        missions: [
+            "リリースを丁寧にする",
+            "クリッカー後も伸び続ける",
+            "平均9.2点以上を目指す"
+        ],
 
-    arrows: [],
-    photoMode: false
-},
+        arrows: [],
+        photoMode: false
+    },
 
     currentPracticeSession: {
         active: false,
@@ -45,53 +45,9 @@ const BAS_STATE = {
 
     photoSessions: [],
 
-    lastPractice: {
-    date: "2026-07-20",
-    distance: "70m",
-    totalScore: 652,
-    averageScore: 9.06,
-    arrowCount: 72,
-    memo:
-        "今日はリリースで右肩が痛かった。押し手を意識する。"
-},
+    lastPractice: null,
 
-practiceHistory: [
-    {
-        date: "2026-07-06",
-        distance: "70m",
-        totalScore: 642,
-        averageScore: 8.92,
-        arrowCount: 72
-    },
-    {
-        date: "2026-07-10",
-        distance: "70m",
-        totalScore: 647,
-        averageScore: 8.99,
-        arrowCount: 72
-    },
-    {
-        date: "2026-07-14",
-        distance: "70m",
-        totalScore: 655,
-        averageScore: 9.10,
-        arrowCount: 72
-    },
-    {
-        date: "2026-07-17",
-        distance: "70m",
-        totalScore: 658,
-        averageScore: 9.14,
-        arrowCount: 72
-    },
-    {
-        date: "2026-07-20",
-        distance: "70m",
-        totalScore: 652,
-        averageScore: 9.06,
-        arrowCount: 72
-    }
-],
+    practiceHistory: [],
 
     analysis: {
         isRunning: false,
@@ -126,11 +82,11 @@ function setState(key, value) {
         return;
     }
 
-BAS_STATE[key] = value;
+    BAS_STATE[key] = value;
 
-saveStateToStorage();
+    saveStateToStorage();
 
-if (typeof BAS_CONFIG !== "undefined" && BAS_CONFIG.debug) {
+    if (typeof BAS_CONFIG !== "undefined" && BAS_CONFIG.debug) {
         console.log(`[Baika State] ${key} を更新しました`, value);
     }
 }
@@ -187,7 +143,7 @@ function restoreCurrentUserFromVer4Login() {
         BAS_STATE.currentUser = {
             id:
                 typeof loginData.id === "string" &&
-                loginData.id.trim()
+                    loginData.id.trim()
                     ? loginData.id.trim()
                     : loginData.member.trim(),
 
@@ -195,7 +151,7 @@ function restoreCurrentUserFromVer4Login() {
 
             role:
                 typeof loginData.role === "string" &&
-                loginData.role.trim()
+                    loginData.role.trim()
                     ? loginData.role.trim()
                     : "member"
         };
@@ -289,10 +245,10 @@ function startPracticeSession(settings = {}) {
     const now = new Date().toISOString();
 
     BAS_STATE.currentPracticeSession = {
-    id: createPracticeSessionId(),
-    active: true,
-    startedAt: now,
-    endedAt: null,
+        id: createPracticeSessionId(),
+        active: true,
+        startedAt: now,
+        endedAt: null,
 
         distance: String(settings.distance || "").trim(),
         weather: String(settings.weather || "").trim(),
@@ -398,59 +354,59 @@ function addPhotoSession(photoData = {}) {
         new Date().toISOString();
 
     const photoSession = {
-    id:
-        createPhotoSessionId(),
+        id:
+            createPhotoSessionId(),
 
-    capturedAt:
-        now,
+        capturedAt:
+            now,
 
-    practiceSessionId:
-        session.id || null,
+        practiceSessionId:
+            session.id || null,
 
-    localPhotoId:
-        photoData.localPhotoId ?? null,
+        localPhotoId:
+            photoData.localPhotoId ?? null,
 
-    practiceStartedAt:
-        session.startedAt || null,
+        practiceStartedAt:
+            session.startedAt || null,
 
-    distance:
-        String(
-            photoData.distance ??
-            session.distance ??
-            ""
-        ).trim(),
+        distance:
+            String(
+                photoData.distance ??
+                session.distance ??
+                ""
+            ).trim(),
 
-    weather:
-        String(
-            photoData.weather ??
-            session.weather ??
-            ""
-        ).trim(),
+        weather:
+            String(
+                photoData.weather ??
+                session.weather ??
+                ""
+            ).trim(),
 
-    windDirection:
-        String(
-            photoData.windDirection ??
-            session.windDirection ??
-            ""
-        ).trim(),
+        windDirection:
+            String(
+                photoData.windDirection ??
+                session.windDirection ??
+                ""
+            ).trim(),
 
-    windSpeed:
-        String(
-            photoData.windSpeed ??
-            session.windSpeed ??
-            ""
-        ).trim(),
+        windSpeed:
+            String(
+                photoData.windSpeed ??
+                session.windSpeed ??
+                ""
+            ).trim(),
 
-    condition:
-        String(
-            photoData.condition ??
-            session.condition ??
-            ""
-        ).trim(),
+        condition:
+            String(
+                photoData.condition ??
+                session.condition ??
+                ""
+            ).trim(),
 
-    status:
-        "unprocessed"
-};
+        status:
+            "unprocessed"
+    };
 
     BAS_STATE.photoSessions.push(
         photoSession
@@ -542,16 +498,16 @@ function loadStateFromStorage() {
 
                 ...(
                     parsedState.currentPracticeSession &&
-                    typeof parsedState.currentPracticeSession === "object"
+                        typeof parsedState.currentPracticeSession === "object"
                         ? parsedState.currentPracticeSession
                         : {}
                 )
             };
 
             BAS_STATE.photoSessions =
-           Array.isArray(parsedState.photoSessions)
-        ? parsedState.photoSessions
-        : [];
+                Array.isArray(parsedState.photoSessions)
+                    ? parsedState.photoSessions
+                    : [];
 
         }
     } catch (error) {

@@ -407,18 +407,56 @@ if (action === "saveMatchRecord") {
   );
 }
 
-    /*
-     * ここから下は既存互換処理。
-     *
-     * 現在のcloud.jsは、
-     * {
-     *   mode: "practice",
-     *   data: [...]
-     * }
-     *
-     * の形式で送信しているため、
-     * 既存機能を壊さないよう残す。
-     */
+/*
+ * 練習記録1件を高速保存する。
+ *
+ * practiceシート全体を書き直さず、
+ * 新しい1件だけを末尾へ追加する。
+ */
+if (action === "appendPracticeRecord") {
+  const record =
+    payload &&
+    payload.record &&
+    typeof payload.record === "object"
+      ? payload.record
+      : null;
+
+  if (!record) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "保存する練習記録が指定されていません。"
+    });
+  }
+
+  const result =
+    appendPracticeRecord(
+      record
+    );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      "練習記録を追加しました。",
+    operation:
+      result.operation,
+    rowNumber:
+      result.rowNumber
+  });
+}
+
+/*
+ * ここから下は既存互換処理。
+ *
+ * 現在のcloud.jsは、
+ * {
+ *   mode: "practice",
+ *   data: [...]
+ * }
+ *
+ * の形式で送信しているため、
+ * 既存機能を壊さないよう残す。
+ */
     const mode = String(payload.mode || "").trim();
     const data = Array.isArray(payload.data)
       ? payload.data

@@ -38,7 +38,7 @@
             href: "camera-center.html"
         },
         {
-            label: "管理",
+            label: "設定",
             icon: "⚙️",
             href: "project-zero-admin.html"
         }
