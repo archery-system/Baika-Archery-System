@@ -34,17 +34,17 @@
             icon: "📊",
             href: "analysis.html"
         },
-        {
+                {
             route: "cameraCenter",
             label: "撮影",
             icon: "📷",
             href: "camera-center.html"
-        }
+        }, 
     ];
 
 const ADMIN_HEADER_ITEM = {
     route: "admin",
-    label: "管理",
+    label: "設定",
     icon: "⚙️",
     href: "project-zero-admin.html"
 };

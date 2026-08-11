@@ -1,56 +1,30 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
         大会記録一覧 | Baika Archery System
     </title>
 
-    <link
-        rel="stylesheet"
-        href="css/foundation/tokens.css"
-    >
+    <link rel="stylesheet" href="css/foundation/tokens.css">
 
-    <link
-        rel="stylesheet"
-        href="css/foundation/base.css"
-    >
+    <link rel="stylesheet" href="css/foundation/base.css">
 
-    <link
-        rel="stylesheet"
-        href="css/layouts/app-layout.css"
-    >
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/header.css"
-    >
+    <link rel="stylesheet" href="css/components/header.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/page-header.css"
-    >
+    <link rel="stylesheet" href="css/components/page-header.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/card.css"
-    >
+    <link rel="stylesheet" href="css/components/card.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/button.css"
-    >
+    <link rel="stylesheet" href="css/components/button.css">
 
-    <link
-        rel="stylesheet"
-        href="css/pages/match-records.css?v=5"
-    >
+    <link rel="stylesheet" href="css/pages/match-records.css?v=6">
 </head>
 
 <body>
@@ -61,10 +35,7 @@
             <div id="page-header"></div>
 
             <div class="bas-app__content">
-                <section
-                    class="bas-card"
-                    aria-labelledby="matchRecordsTitle"
-                >
+                <section class="bas-card" aria-labelledby="matchRecordsTitle">
                     <div class="bas-match-records__header">
                         <div>
                             <h2 id="matchRecordsTitle">
@@ -76,47 +47,136 @@
                             </p>
                         </div>
 
-                        <span
-                            id="matchRecordCount"
-                            class="bas-match-records__count"
-                        >
+                        <span id="matchRecordCount" class="bas-match-records__count">
                             0件
                         </span>
                     </div>
 
-                    <div
-                        id="matchRecordsStatus"
-                        class="bas-match-records__status"
-                    >
+                    <section class="bas-match-records__filters" aria-label="大会記録検索">
+                        <div class="bas-match-records__filter-grid">
+
+                            <label class="bas-match-records__filter">
+                                <span>対象</span>
+
+                                <select id="matchRecordScopeFilter">
+                                    <option value="mine">
+                                        自分のみ
+                                    </option>
+
+                                    <option value="all">
+                                        部員全員
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="bas-match-records__filter">
+                                <span>部員</span>
+
+                                <select id="matchRecordMemberFilter">
+                                    <option value="">
+                                        すべての部員
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="bas-match-records__filter">
+                                <span>種目</span>
+
+                                <select id="matchRecordCategoryFilter">
+                                    <option value="">
+                                        すべての種目
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="bas-match-records__filter">
+                                <span>年度</span>
+
+                                <select id="matchRecordYearFilter">
+                                    <option value="">
+                                        すべての年度
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="
+                bas-match-records__filter
+                bas-match-records__filter--wide
+            ">
+                                <span>大会名</span>
+
+                                <input id="matchRecordNameSearch" type="search" placeholder="大会名を入力" autocomplete="off">
+                            </label>
+
+                            <label class="bas-match-records__filter">
+                                <span>公開範囲</span>
+
+                                <select id="matchRecordVisibilityFilter">
+                                    <option value="">
+                                        すべて
+                                    </option>
+
+                                    <option value="members">
+                                        部員公開
+                                    </option>
+
+                                    <option value="private">
+                                        非公開
+                                    </option>
+                                </select>
+                            </label>
+
+                            <label class="bas-match-records__filter">
+                                <span>並び順</span>
+
+                                <select id="matchRecordSortFilter">
+                                    <option value="newest">
+                                        新しい順
+                                    </option>
+
+                                    <option value="oldest">
+                                        古い順
+                                    </option>
+
+                                    <option value="score-desc">
+                                        得点が高い順
+                                    </option>
+
+                                    <option value="score-asc">
+                                        得点が低い順
+                                    </option>
+                                </select>
+                            </label>
+
+                        </div>
+
+                        <div class="bas-match-records__filter-actions">
+                            <p id="matchRecordSearchCount">
+                                検索中
+                            </p>
+
+                            <button id="resetMatchRecordFilters" class="bas-button" type="button">
+                                条件をリセット
+                            </button>
+                        </div>
+                    </section>
+
+                    <div id="matchRecordsStatus" class="bas-match-records__status">
                         大会記録を読み込んでいます。
                     </div>
 
-                    <div
-                        id="matchRecordsList"
-                        class="bas-match-records__list"
-                        hidden
-                    ></div>
+                    <div id="matchRecordsList" class="bas-match-records__list" hidden></div>
 
-                    <div
-                        id="matchRecordsEmpty"
-                        class="bas-match-records__empty"
-                        hidden
-                    >
+                    <div id="matchRecordsEmpty" class="bas-match-records__empty" hidden>
                         大会記録はありません。
                     </div>
 
                     <div class="bas-match-records__actions">
-                        <a
-                            href="project-zero-match.html"
-                            class="bas-button bas-button--primary"
-                        >
+                        <a href="project-zero-match.html" class="bas-button bas-button--primary">
                             大会記録を入力する
                         </a>
 
-                        <a
-                            href="project-zero-record-center.html"
-                            class="bas-button"
-                        >
+                        <a href="project-zero-record-center.html" class="bas-button">
                             記録センターへ戻る
                         </a>
                     </div>
@@ -145,7 +205,7 @@
                     !window.V4Session ||
                     typeof window.V4Session
                         .requireLogin !==
-                        "function" ||
+                    "function" ||
                     !window.V4Session
                         .requireLogin()
                 ) {
@@ -156,7 +216,7 @@
                     window.BAS_HEADER &&
                     typeof window.BAS_HEADER
                         .render ===
-                        "function"
+                    "function"
                 ) {
                     window.BAS_HEADER.render({
                         targetId:
@@ -171,7 +231,7 @@
                     window.BAS_PAGE_HEADER &&
                     typeof window.BAS_PAGE_HEADER
                         .render ===
-                        "function"
+                    "function"
                 ) {
                     window.BAS_PAGE_HEADER.render({
                         targetId:
@@ -192,7 +252,7 @@
                     window.BAS_MATCH_RECORDS &&
                     typeof window.BAS_MATCH_RECORDS
                         .initialize ===
-                        "function"
+                    "function"
                 ) {
                     window.BAS_MATCH_RECORDS
                         .initialize();
@@ -206,4 +266,5 @@
         );
     </script>
 </body>
+
 </html>

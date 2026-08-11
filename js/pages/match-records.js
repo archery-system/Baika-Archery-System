@@ -7,174 +7,817 @@
 (function () {
     "use strict";
 
-    const MATCH_RECORDS_CACHE_KEY =
-    "baika-match-records-cache";
+    let currentVisibleRecords = [];
 
-const MATCH_RECORDS_CACHE_MAX_AGE =
-    5 * 60 * 1000;
+    const MATCH_RECORDS_CACHE_KEY =
+        "baika-match-records-cache";
+
+    const MATCH_RECORDS_CACHE_MAX_AGE =
+        5 * 60 * 1000;
 
     async function initialize() {
-    let renderedCache = false;
+        initializeMatchRecordFilters();
 
-    const cachedRecords =
-        loadMatchRecordsCache();
+        let renderedCache = false;
 
-    if (cachedRecords) {
-        renderVisibleRecords(
-            cachedRecords
-        );
+        const cachedRecords =
+            loadMatchRecordsCache();
 
-        renderedCache = true;
-    } else {
-        showLoading();
-    }
+        if (cachedRecords) {
+            renderVisibleRecords(
+                cachedRecords
+            );
 
-    if (
-        !window.BAS_CLOUD ||
-        typeof window.BAS_CLOUD
-            .loadMatchRecords !==
+            renderedCache = true;
+        } else {
+            showLoading();
+        }
+
+        if (
+            !window.BAS_CLOUD ||
+            typeof window.BAS_CLOUD
+                .loadMatchRecords !==
             "function"
+        ) {
+            if (!renderedCache) {
+                showError(
+                    "大会記録の読込機能を確認できませんでした。"
+                );
+            }
+
+            return;
+        }
+
+        try {
+            const allRecords =
+                await window.BAS_CLOUD
+                    .loadMatchRecords();
+
+            saveMatchRecordsCache(
+                allRecords
+            );
+
+            renderVisibleRecords(
+                allRecords
+            );
+        } catch (error) {
+            console.error(
+                "[大会記録一覧] 読込失敗:",
+                error
+            );
+
+            /*
+             * キャッシュを表示できている場合は、
+             * 通信失敗でも画面を消さない。
+             */
+            if (!renderedCache) {
+                showError(
+                    "大会記録を読み込めませんでした。"
+                );
+            }
+        }
+    }
+
+    function renderVisibleRecords(
+        allRecords
     ) {
-        if (!renderedCache) {
-            showError(
-                "大会記録の読込機能を確認できませんでした。"
+        currentVisibleRecords =
+            filterVisibleRecords(
+                allRecords
+            );
+
+        populateMatchRecordFilters(
+            currentVisibleRecords
+        );
+
+        applyMatchRecordFilters();
+    }
+
+    /**
+ * 大会記録検索を初期化する
+ */
+    function initializeMatchRecordFilters() {
+        const ids = [
+            "matchRecordScopeFilter",
+            "matchRecordMemberFilter",
+            "matchRecordCategoryFilter",
+            "matchRecordYearFilter",
+            "matchRecordVisibilityFilter",
+            "matchRecordSortFilter"
+        ];
+
+        ids.forEach(function (id) {
+            const element =
+                document.getElementById(id);
+
+            if (!element) {
+                return;
+            }
+
+            element.addEventListener(
+                "change",
+                function () {
+                    updateMemberFilterState();
+                    applyMatchRecordFilters();
+                }
+            );
+        });
+
+        const nameSearch =
+            document.getElementById(
+                "matchRecordNameSearch"
+            );
+
+        if (nameSearch) {
+            nameSearch.addEventListener(
+                "input",
+                applyMatchRecordFilters
             );
         }
 
-        return;
-    }
+        const resetButton =
+            document.getElementById(
+                "resetMatchRecordFilters"
+            );
 
-    try {
-        const allRecords =
-            await window.BAS_CLOUD
-                .loadMatchRecords();
-
-        saveMatchRecordsCache(
-            allRecords
-        );
-
-        renderVisibleRecords(
-            allRecords
-        );
-    } catch (error) {
-        console.error(
-            "[大会記録一覧] 読込失敗:",
-            error
-        );
-
-        /*
-         * キャッシュを表示できている場合は、
-         * 通信失敗でも画面を消さない。
-         */
-        if (!renderedCache) {
-            showError(
-                "大会記録を読み込めませんでした。"
+        if (resetButton) {
+            resetButton.addEventListener(
+                "click",
+                resetMatchRecordFilters
             );
         }
-    }
-}
 
-function renderVisibleRecords(
-    allRecords
-) {
-    const visibleRecords =
-        filterVisibleRecords(
-            allRecords
-        );
-
-    const sortedRecords =
-        sortRecords(
-            visibleRecords
-        );
-
-    renderRecords(
-        sortedRecords
-    );
-}
-
-function saveMatchRecordsCache(
-    records
-) {
-    if (!Array.isArray(records)) {
-        return;
+        updateMemberFilterState();
     }
 
-    try {
-        const cacheData = {
-            savedAt:
-                Date.now(),
 
-            records:
-                records
-        };
+    /**
+     * 検索条件用の選択肢を作る
+     */
+    function populateMatchRecordFilters(
+        records
+    ) {
+        populateMemberFilter(records);
+        populateCategoryFilter(records);
+        populateYearFilter(records);
+    }
 
-        window.sessionStorage.setItem(
-            MATCH_RECORDS_CACHE_KEY,
-            JSON.stringify(
-                cacheData
+
+    /**
+     * 部員選択肢を作る
+     */
+    function populateMemberFilter(records) {
+        const select =
+            document.getElementById(
+                "matchRecordMemberFilter"
+            );
+
+        if (!select) {
+            return;
+        }
+
+        const currentValue =
+            select.value;
+
+        const members =
+            new Map();
+
+        records.forEach(function (record) {
+            const memberId =
+                normalizeText(
+                    record.memberId
+                );
+
+            const memberName =
+                normalizeText(
+                    record.memberName
+                );
+
+            if (!memberId) {
+                return;
+            }
+
+            members.set(
+                memberId,
+                memberName || memberId
+            );
+        });
+
+        select.replaceChildren();
+
+        select.appendChild(
+            createFilterOption(
+                "",
+                "すべての部員"
             )
         );
-    } catch (error) {
-        console.warn(
-            "[大会記録一覧] " +
-            "一覧キャッシュを保存できませんでした。",
-            error
-        );
-    }
-}
 
-function loadMatchRecordsCache() {
-    try {
-        const storedValue =
-            window.sessionStorage.getItem(
-                MATCH_RECORDS_CACHE_KEY
-            );
-
-        if (!storedValue) {
-            return null;
-        }
-
-        const cacheData =
-            JSON.parse(
-                storedValue
-            );
+        Array.from(
+            members.entries()
+        )
+            .sort(function (a, b) {
+                return a[1].localeCompare(
+                    b[1],
+                    "ja"
+                );
+            })
+            .forEach(function (entry) {
+                select.appendChild(
+                    createFilterOption(
+                        entry[0],
+                        entry[1]
+                    )
+                );
+            });
 
         if (
-            !cacheData ||
-            !Array.isArray(
-                cacheData.records
-            )
+            Array.from(
+                select.options
+            ).some(function (option) {
+                return (
+                    option.value ===
+                    currentValue
+                );
+            })
         ) {
-            return null;
+            select.value =
+                currentValue;
         }
+    }
 
-        const savedAt =
-            Number(
-                cacheData.savedAt || 0
+
+    /**
+     * 種目選択肢を作る
+     */
+    function populateCategoryFilter(records) {
+        const select =
+            document.getElementById(
+                "matchRecordCategoryFilter"
             );
 
-        const cacheAge =
-            Date.now() - savedAt;
+        if (!select) {
+            return;
+        }
+
+        const currentValue =
+            select.value;
+
+        const categories =
+            new Map();
+
+        records.forEach(function (record) {
+            const category =
+                normalizeText(
+                    record.category
+                );
+
+            if (!category) {
+                return;
+            }
+
+            const label =
+                normalizeText(
+                    record.categoryLabel
+                ) ||
+                category;
+
+            categories.set(
+                category,
+                label
+            );
+        });
+
+        select.replaceChildren();
+
+        select.appendChild(
+            createFilterOption(
+                "",
+                "すべての種目"
+            )
+        );
+
+        Array.from(
+            categories.entries()
+        ).forEach(function (entry) {
+            select.appendChild(
+                createFilterOption(
+                    entry[0],
+                    entry[1]
+                )
+            );
+        });
 
         if (
-            savedAt <= 0 ||
-            cacheAge >
+            Array.from(
+                select.options
+            ).some(function (option) {
+                return (
+                    option.value ===
+                    currentValue
+                );
+            })
+        ) {
+            select.value =
+                currentValue;
+        }
+    }
+
+
+    /**
+     * 年度選択肢を作る
+     */
+    function populateYearFilter(records) {
+        const select =
+            document.getElementById(
+                "matchRecordYearFilter"
+            );
+
+        if (!select) {
+            return;
+        }
+
+        const currentValue =
+            select.value;
+
+        const years =
+            new Set();
+
+        records.forEach(function (record) {
+            const fiscalYear =
+                getMatchFiscalYear(
+                    record.matchDate
+                );
+
+            if (fiscalYear) {
+                years.add(fiscalYear);
+            }
+        });
+
+        select.replaceChildren();
+
+        select.appendChild(
+            createFilterOption(
+                "",
+                "すべての年度"
+            )
+        );
+
+        Array.from(years)
+            .sort(function (a, b) {
+                return b - a;
+            })
+            .forEach(function (year) {
+                select.appendChild(
+                    createFilterOption(
+                        String(year),
+                        `${year}年度`
+                    )
+                );
+            });
+
+        if (
+            Array.from(
+                select.options
+            ).some(function (option) {
+                return (
+                    option.value ===
+                    currentValue
+                );
+            })
+        ) {
+            select.value =
+                currentValue;
+        }
+    }
+
+
+    /**
+     * option要素を作る
+     */
+    function createFilterOption(
+        value,
+        label
+    ) {
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            value;
+
+        option.textContent =
+            label;
+
+        return option;
+    }
+
+
+    /**
+     * 4月始まりの年度を取得する
+     */
+    function getMatchFiscalYear(
+        dateValue
+    ) {
+        const text =
+            normalizeText(dateValue);
+
+        const match =
+            text.match(
+                /^(\d{4})-(\d{1,2})/
+            );
+
+        if (!match) {
+            return 0;
+        }
+
+        const year =
+            Number(match[1]);
+
+        const month =
+            Number(match[2]);
+
+        if (
+            !Number.isFinite(year) ||
+            !Number.isFinite(month)
+        ) {
+            return 0;
+        }
+
+        return month >= 4
+            ? year
+            : year - 1;
+    }
+
+
+    /**
+     * 検索条件を適用する
+     */
+    function applyMatchRecordFilters() {
+        const scope =
+            getFilterValue(
+                "matchRecordScopeFilter"
+            );
+
+        const memberId =
+            getFilterValue(
+                "matchRecordMemberFilter"
+            );
+
+        const category =
+            getFilterValue(
+                "matchRecordCategoryFilter"
+            );
+
+        const fiscalYear =
+            getFilterValue(
+                "matchRecordYearFilter"
+            );
+
+        const visibility =
+            getFilterValue(
+                "matchRecordVisibilityFilter"
+            );
+
+        const sortMode =
+            getFilterValue(
+                "matchRecordSortFilter"
+            ) ||
+            "newest";
+
+        const nameQuery =
+            normalizeText(
+                getFilterValue(
+                    "matchRecordNameSearch"
+                )
+            ).toLowerCase();
+
+        const loginMemberId =
+            getLoggedInMatchMemberId();
+
+        const filtered =
+            currentVisibleRecords.filter(
+                function (record) {
+
+                    if (
+                        scope === "mine" &&
+                        normalizeText(
+                            record.memberId
+                        ) !== loginMemberId
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        scope === "all" &&
+                        memberId &&
+                        normalizeText(
+                            record.memberId
+                        ) !== memberId
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        category &&
+                        normalizeText(
+                            record.category
+                        ) !== category
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        fiscalYear &&
+                        String(
+                            getMatchFiscalYear(
+                                record.matchDate
+                            )
+                        ) !== fiscalYear
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        visibility &&
+                        normalizeText(
+                            record.visibility
+                        ) !== visibility
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        nameQuery &&
+                        !normalizeText(
+                            record.matchName
+                        )
+                            .toLowerCase()
+                            .includes(nameQuery)
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                }
+            );
+
+        const sorted =
+            sortRecords(
+                filtered,
+                sortMode
+            );
+
+        renderRecords(sorted);
+
+        updateMatchRecordSearchCount(
+            sorted.length
+        );
+    }
+
+
+    /**
+     * filterの値を取得する
+     */
+    function getFilterValue(id) {
+        const element =
+            document.getElementById(id);
+
+        if (!element) {
+            return "";
+        }
+
+        return element.value || "";
+    }
+
+
+    /**
+     * ログイン中の部員IDを取得する
+     */
+    function getLoggedInMatchMemberId() {
+        if (
+            !window.V4Session ||
+            typeof window.V4Session
+                .getLoggedInMemberData !==
+            "function"
+        ) {
+            return "";
+        }
+
+        const data =
+            window.V4Session
+                .getLoggedInMemberData();
+
+        return normalizeText(
+            data && data.memberId
+        );
+    }
+
+
+    /**
+     * 対象によって部員選択を切り替える
+     */
+    function updateMemberFilterState() {
+        const scope =
+            document.getElementById(
+                "matchRecordScopeFilter"
+            );
+
+        const member =
+            document.getElementById(
+                "matchRecordMemberFilter"
+            );
+
+        if (!scope || !member) {
+            return;
+        }
+
+        const isMine =
+            scope.value === "mine";
+
+        member.disabled =
+            isMine;
+
+        if (isMine) {
+            member.value = "";
+        }
+    }
+
+
+    /**
+     * 検索結果件数を表示する
+     */
+    function updateMatchRecordSearchCount(
+        count
+    ) {
+        const element =
+            document.getElementById(
+                "matchRecordSearchCount"
+            );
+
+        if (!element) {
+            return;
+        }
+
+        element.textContent =
+            `該当 ${count}件`;
+    }
+
+
+    /**
+     * 検索条件を初期状態へ戻す
+     */
+    function resetMatchRecordFilters() {
+        const scope =
+            document.getElementById(
+                "matchRecordScopeFilter"
+            );
+
+        const member =
+            document.getElementById(
+                "matchRecordMemberFilter"
+            );
+
+        const category =
+            document.getElementById(
+                "matchRecordCategoryFilter"
+            );
+
+        const year =
+            document.getElementById(
+                "matchRecordYearFilter"
+            );
+
+        const name =
+            document.getElementById(
+                "matchRecordNameSearch"
+            );
+
+        const visibility =
+            document.getElementById(
+                "matchRecordVisibilityFilter"
+            );
+
+        const sort =
+            document.getElementById(
+                "matchRecordSortFilter"
+            );
+
+        if (scope) {
+            scope.value = "mine";
+        }
+
+        if (member) {
+            member.value = "";
+        }
+
+        if (category) {
+            category.value = "";
+        }
+
+        if (year) {
+            year.value = "";
+        }
+
+        if (name) {
+            name.value = "";
+        }
+
+        if (visibility) {
+            visibility.value = "";
+        }
+
+        if (sort) {
+            sort.value = "newest";
+        }
+
+        updateMemberFilterState();
+        applyMatchRecordFilters();
+    }
+
+    function saveMatchRecordsCache(
+        records
+    ) {
+        if (!Array.isArray(records)) {
+            return;
+        }
+
+        try {
+            const cacheData = {
+                savedAt:
+                    Date.now(),
+
+                records:
+                    records
+            };
+
+            window.sessionStorage.setItem(
+                MATCH_RECORDS_CACHE_KEY,
+                JSON.stringify(
+                    cacheData
+                )
+            );
+        } catch (error) {
+            console.warn(
+                "[大会記録一覧] " +
+                "一覧キャッシュを保存できませんでした。",
+                error
+            );
+        }
+    }
+
+    function loadMatchRecordsCache() {
+        try {
+            const storedValue =
+                window.sessionStorage.getItem(
+                    MATCH_RECORDS_CACHE_KEY
+                );
+
+            if (!storedValue) {
+                return null;
+            }
+
+            const cacheData =
+                JSON.parse(
+                    storedValue
+                );
+
+            if (
+                !cacheData ||
+                !Array.isArray(
+                    cacheData.records
+                )
+            ) {
+                return null;
+            }
+
+            const savedAt =
+                Number(
+                    cacheData.savedAt || 0
+                );
+
+            const cacheAge =
+                Date.now() - savedAt;
+
+            if (
+                savedAt <= 0 ||
+                cacheAge >
                 MATCH_RECORDS_CACHE_MAX_AGE
-        ) {
+            ) {
+                return null;
+            }
+
+            return cacheData.records;
+        } catch (error) {
+            console.warn(
+                "[大会記録一覧] " +
+                "一覧キャッシュを読み込めませんでした。",
+                error
+            );
+
             return null;
         }
-
-        return cacheData.records;
-    } catch (error) {
-        console.warn(
-            "[大会記録一覧] " +
-            "一覧キャッシュを読み込めませんでした。",
-            error
-        );
-
-        return null;
     }
-}
 
     function filterVisibleRecords(records) {
         if (!Array.isArray(records)) {
@@ -183,8 +826,8 @@ function loadMatchRecordsCache() {
 
         const loginData =
             window.V4Session &&
-            typeof window.V4Session
-                .getLoggedInMemberData ===
+                typeof window.V4Session
+                    .getLoggedInMemberData ===
                 "function"
                 ? window.V4Session
                     .getLoggedInMemberData()
@@ -213,7 +856,7 @@ function loadMatchRecordsCache() {
                 if (
                     !record ||
                     typeof record !==
-                        "object"
+                    "object"
                 ) {
                     return false;
                 }
@@ -243,7 +886,10 @@ function loadMatchRecordsCache() {
         );
     }
 
-    function sortRecords(records) {
+    function sortRecords(
+        records,
+        sortMode
+    ) {
         return records
             .slice()
             .sort(
@@ -258,11 +904,65 @@ function loadMatchRecordsCache() {
                             b.matchDate
                         );
 
-                    if (aDate !== bDate) {
-                        return bDate
-                            .localeCompare(
-                                aDate
+                    const aScore =
+                        Number(a.total) || 0;
+
+                    const bScore =
+                        Number(b.total) || 0;
+
+                    if (
+                        sortMode ===
+                        "score-desc"
+                    ) {
+                        if (
+                            bScore !==
+                            aScore
+                        ) {
+                            return (
+                                bScore -
+                                aScore
                             );
+                        }
+                    }
+
+                    if (
+                        sortMode ===
+                        "score-asc"
+                    ) {
+                        if (
+                            aScore !==
+                            bScore
+                        ) {
+                            return (
+                                aScore -
+                                bScore
+                            );
+                        }
+                    }
+
+                    if (
+                        sortMode ===
+                        "oldest"
+                    ) {
+                        if (
+                            aDate !==
+                            bDate
+                        ) {
+                            return aDate
+                                .localeCompare(
+                                    bDate
+                                );
+                        }
+                    } else {
+                        if (
+                            aDate !==
+                            bDate
+                        ) {
+                            return bDate
+                                .localeCompare(
+                                    aDate
+                                );
+                        }
                     }
 
                     return normalizeText(
@@ -333,72 +1033,72 @@ function loadMatchRecordsCache() {
         list.hidden = false;
     }
 
-/**
- * 大会記録を訂正できるか判定する。
- *
- * 本人：
- *   自分の記録だけ訂正可能
- *
- * 管理者：
- *   すべての記録を訂正可能
- *
- * 監督・他部員：
- *   閲覧のみ
- */
-function canEditRecord(record) {
-    if (
-        !record ||
-        typeof record !== "object"
-    ) {
-        return false;
-    }
+    /**
+     * 大会記録を訂正できるか判定する。
+     *
+     * 本人：
+     *   自分の記録だけ訂正可能
+     *
+     * 管理者：
+     *   すべての記録を訂正可能
+     *
+     * 監督・他部員：
+     *   閲覧のみ
+     */
+    function canEditRecord(record) {
+        if (
+            !record ||
+            typeof record !== "object"
+        ) {
+            return false;
+        }
 
-    if (
-        !window.V4Session ||
-        typeof window.V4Session
-            .getLoggedInMemberData !==
+        if (
+            !window.V4Session ||
+            typeof window.V4Session
+                .getLoggedInMemberData !==
             "function"
-    ) {
-        return false;
-    }
+        ) {
+            return false;
+        }
 
-    const loginData =
-        window.V4Session
-            .getLoggedInMemberData();
+        const loginData =
+            window.V4Session
+                .getLoggedInMemberData();
 
-    if (!loginData) {
-        return false;
-    }
+        if (!loginData) {
+            return false;
+        }
 
-    const role =
-        normalizeText(
-            loginData.role
+        const role =
+            normalizeText(
+                loginData.role
+            );
+
+        if (role === "admin") {
+            return true;
+        }
+
+        if (role !== "member") {
+            return false;
+        }
+
+        const loginMemberId =
+            normalizeText(
+                loginData.memberId
+            );
+
+        const recordMemberId =
+            normalizeText(
+                record.memberId
+            );
+
+        return (
+            loginMemberId !== "" &&
+            recordMemberId !== "" &&
+            loginMemberId === recordMemberId
         );
-
-    if (role === "admin") {
-        return true;
     }
-
-    if (role !== "member") {
-        return false;
-    }
-
-    const loginMemberId =
-        normalizeText(
-            loginData.memberId
-        );
-
-    const recordMemberId =
-        normalizeText(
-            record.memberId
-        );
-
-    return (
-        loginMemberId !== "" &&
-        recordMemberId !== "" &&
-        loginMemberId === recordMemberId
-    );
-}
 
     function createRecordCard(record) {
         const article =
@@ -506,10 +1206,9 @@ function canEditRecord(record) {
 
         score.appendChild(
             createScoreItem(
-                `総${
-                    normalizeText(
-                        record.count1Label
-                    ) || "X"
+                `総${normalizeText(
+                    record.count1Label
+                ) || "X"
                 }数`,
                 toNumber(
                     record.totalCount1
@@ -520,10 +1219,9 @@ function canEditRecord(record) {
 
         score.appendChild(
             createScoreItem(
-                `総${
-                    normalizeText(
-                        record.count2Label
-                    ) || "10"
+                `総${normalizeText(
+                    record.count2Label
+                ) || "10"
                 }数`,
                 toNumber(
                     record.totalCount2
@@ -536,465 +1234,465 @@ function canEditRecord(record) {
         article.appendChild(meta);
         article.appendChild(score);
 
-const detail =
-    createRecordDetail(
-        record
-    );
+        const detail =
+            createRecordDetail(
+                record
+            );
 
-article.appendChild(
-    detail
-);
-
-const resultUrl =
-    normalizeResultUrlForDisplay(
-        record.resultUrl
-    );
-
-if (resultUrl) {
-    const urlRow =
-        document.createElement(
-            "p"
+        article.appendChild(
+            detail
         );
 
-    urlRow.className =
-        "bas-match-record__url";
+        const resultUrl =
+            normalizeResultUrlForDisplay(
+                record.resultUrl
+            );
 
-    const urlLabel =
-        document.createElement(
-            "strong"
-        );
+        if (resultUrl) {
+            const urlRow =
+                document.createElement(
+                    "p"
+                );
 
-    urlLabel.textContent =
-        "大会結果URL：";
+            urlRow.className =
+                "bas-match-record__url";
 
-    const resultLink =
-        document.createElement(
-            "a"
-        );
+            const urlLabel =
+                document.createElement(
+                    "strong"
+                );
 
-    resultLink.href =
-        resultUrl;
+            urlLabel.textContent =
+                "大会結果URL：";
 
-    resultLink.target =
-        "_blank";
+            const resultLink =
+                document.createElement(
+                    "a"
+                );
 
-    resultLink.rel =
-        "noopener noreferrer";
+            resultLink.href =
+                resultUrl;
 
-    resultLink.className =
-        "bas-match-record__url-link";
+            resultLink.target =
+                "_blank";
 
-    resultLink.textContent =
-        resultUrl;
+            resultLink.rel =
+                "noopener noreferrer";
 
-    urlRow.appendChild(
-        urlLabel
-    );
+            resultLink.className =
+                "bas-match-record__url-link";
 
-    urlRow.appendChild(
-        resultLink
-    );
+            resultLink.textContent =
+                resultUrl;
 
-    article.appendChild(
-        urlRow
-    );
-}
+            urlRow.appendChild(
+                urlLabel
+            );
 
-if (
-    canEditRecord(record) &&
-    normalizeText(record.recordId)
-) {
-    const actions =
-        document.createElement("div");
+            urlRow.appendChild(
+                resultLink
+            );
 
-    actions.className =
-        "bas-match-record__actions";
+            article.appendChild(
+                urlRow
+            );
+        }
 
-    const editLink =
-        document.createElement("a");
+        if (
+            canEditRecord(record) &&
+            normalizeText(record.recordId)
+        ) {
+            const actions =
+                document.createElement("div");
 
-    editLink.href =
-        "project-zero-match.html?recordId=" +
-        encodeURIComponent(
+            actions.className =
+                "bas-match-record__actions";
+
+            const editLink =
+                document.createElement("a");
+
+            editLink.href =
+                "project-zero-match.html?recordId=" +
+                encodeURIComponent(
+                    normalizeText(
+                        record.recordId
+                    )
+                );
+
+            editLink.addEventListener(
+                "click",
+                function () {
+                    saveEditingRecordToSession(
+                        record
+                    );
+                }
+            );
+
+            editLink.className =
+                "bas-button";
+
+            editLink.textContent =
+                "記録を訂正する";
+
+            actions.appendChild(editLink);
+            article.appendChild(actions);
+        }
+
+        return article;
+    }
+
+    function createRecordDetail(record) {
+        const detail =
+            document.createElement(
+                "div"
+            );
+
+        detail.className =
+            "bas-match-record__detail";
+
+        const category =
             normalizeText(
-                record.recordId
+                record.category
+            );
+
+        const isIndoor =
+            category === "indoor18m";
+
+        const firstHalfEnds =
+            isIndoor
+                ? 5
+                : 6;
+
+        const secondHalfEnds =
+            isIndoor
+                ? 5
+                : 6;
+
+        const firstSection =
+            createHalfDetail({
+                title: isIndoor
+                    ? "前半 18m"
+                    : getFirstHalfTitle(
+                        category
+                    ),
+
+                startEnd: 1,
+
+                endCount:
+                    firstHalfEnds,
+
+                total:
+                    toNumber(
+                        record.firstHalfTotal
+                    ),
+
+                count1Label:
+                    normalizeText(
+                        record.count1Label
+                    ) || (
+                        isIndoor
+                            ? "10"
+                            : "X"
+                    ),
+
+                count2Label:
+                    normalizeText(
+                        record.count2Label
+                    ) || (
+                        isIndoor
+                            ? "9"
+                            : "10"
+                    ),
+
+                count1:
+                    toNumber(
+                        record.firstCount1
+                    ),
+
+                count2:
+                    toNumber(
+                        record.firstCount2
+                    ),
+
+                record:
+                    record
+            });
+
+        const secondSection =
+            createHalfDetail({
+                title: isIndoor
+                    ? "後半 18m"
+                    : getSecondHalfTitle(
+                        category
+                    ),
+
+                startEnd:
+                    firstHalfEnds + 1,
+
+                endCount:
+                    secondHalfEnds,
+
+                total:
+                    toNumber(
+                        record.secondHalfTotal
+                    ),
+
+                count1Label:
+                    normalizeText(
+                        record.count1Label
+                    ) || (
+                        isIndoor
+                            ? "10"
+                            : "X"
+                    ),
+
+                count2Label:
+                    normalizeText(
+                        record.count2Label
+                    ) || (
+                        isIndoor
+                            ? "9"
+                            : "10"
+                    ),
+
+                count1:
+                    toNumber(
+                        record.secondCount1
+                    ),
+
+                count2:
+                    toNumber(
+                        record.secondCount2
+                    ),
+
+                record:
+                    record
+            });
+
+        detail.appendChild(
+            firstSection
+        );
+
+        detail.appendChild(
+            secondSection
+        );
+
+        return detail;
+    }
+
+    function createHalfDetail(options) {
+        const section =
+            document.createElement(
+                "section"
+            );
+
+        section.className =
+            "bas-match-record__half";
+
+        const title =
+            document.createElement(
+                "h4"
+            );
+
+        title.className =
+            "bas-match-record__half-title";
+
+        title.textContent =
+            options.title;
+
+        section.appendChild(title);
+
+        const endGrid =
+            document.createElement(
+                "div"
+            );
+
+        endGrid.className =
+            "bas-match-record__ends";
+
+        for (
+            let index = 0;
+            index < options.endCount;
+            index += 1
+        ) {
+            const internalEndNumber =
+                options.startEnd +
+                index;
+
+            const displayEndNumber =
+                index + 1;
+
+            const endItem =
+                document.createElement(
+                    "p"
+                );
+
+            endItem.className =
+                "bas-match-record__end";
+
+            const endLabel =
+                document.createElement(
+                    "span"
+                );
+
+            endLabel.textContent =
+                String(
+                    displayEndNumber
+                );
+
+            const endScore =
+                document.createElement(
+                    "strong"
+                );
+
+            endScore.textContent =
+                String(
+                    toNumber(
+                        options.record[
+                        `e${internalEndNumber}`
+                        ]
+                    )
+                );
+
+            endItem.appendChild(
+                endLabel
+            );
+
+            endItem.appendChild(
+                endScore
+            );
+
+            endGrid.appendChild(
+                endItem
+            );
+        }
+
+        section.appendChild(
+            endGrid
+        );
+
+        const summary =
+            document.createElement(
+                "div"
+            );
+
+        summary.className =
+            "bas-match-record__half-summary";
+
+        summary.appendChild(
+            createCompactSummaryItem(
+                "合計",
+                options.total,
+                "点"
             )
         );
 
-        editLink.addEventListener(
-    "click",
-    function () {
-        saveEditingRecordToSession(
-            record
+        summary.appendChild(
+            createCompactSummaryItem(
+                options.count1Label,
+                options.count1,
+                ""
+            )
         );
+
+        summary.appendChild(
+            createCompactSummaryItem(
+                options.count2Label,
+                options.count2,
+                ""
+            )
+        );
+
+        section.appendChild(
+            summary
+        );
+
+        return section;
     }
-);
 
-    editLink.className =
-        "bas-button";
-
-    editLink.textContent =
-        "記録を訂正する";
-
-    actions.appendChild(editLink);
-    article.appendChild(actions);
-}
-
-return article;
-}
-
-function createRecordDetail(record) {
-    const detail =
-        document.createElement(
-            "div"
-        );
-
-    detail.className =
-        "bas-match-record__detail";
-
-    const category =
-        normalizeText(
-            record.category
-        );
-
-    const isIndoor =
-        category === "indoor18m";
-
-    const firstHalfEnds =
-        isIndoor
-            ? 5
-            : 6;
-
-    const secondHalfEnds =
-        isIndoor
-            ? 5
-            : 6;
-
-    const firstSection =
-        createHalfDetail({
-            title: isIndoor
-                ? "前半 18m"
-                : getFirstHalfTitle(
-                    category
-                ),
-
-            startEnd: 1,
-
-            endCount:
-                firstHalfEnds,
-
-            total:
-                toNumber(
-                    record.firstHalfTotal
-                ),
-
-            count1Label:
-                normalizeText(
-                    record.count1Label
-                ) || (
-                    isIndoor
-                        ? "10"
-                        : "X"
-                ),
-
-            count2Label:
-                normalizeText(
-                    record.count2Label
-                ) || (
-                    isIndoor
-                        ? "9"
-                        : "10"
-                ),
-
-            count1:
-                toNumber(
-                    record.firstCount1
-                ),
-
-            count2:
-                toNumber(
-                    record.firstCount2
-                ),
-
-            record:
-                record
-        });
-
-    const secondSection =
-        createHalfDetail({
-            title: isIndoor
-                ? "後半 18m"
-                : getSecondHalfTitle(
-                    category
-                ),
-
-            startEnd:
-                firstHalfEnds + 1,
-
-            endCount:
-                secondHalfEnds,
-
-            total:
-                toNumber(
-                    record.secondHalfTotal
-                ),
-
-            count1Label:
-                normalizeText(
-                    record.count1Label
-                ) || (
-                    isIndoor
-                        ? "10"
-                        : "X"
-                ),
-
-            count2Label:
-                normalizeText(
-                    record.count2Label
-                ) || (
-                    isIndoor
-                        ? "9"
-                        : "10"
-                ),
-
-            count1:
-                toNumber(
-                    record.secondCount1
-                ),
-
-            count2:
-                toNumber(
-                    record.secondCount2
-                ),
-
-            record:
-                record
-        });
-
-    detail.appendChild(
-        firstSection
-    );
-
-    detail.appendChild(
-        secondSection
-    );
-
-    return detail;
-}
-
-function createHalfDetail(options) {
-    const section =
-        document.createElement(
-            "section"
-        );
-
-    section.className =
-        "bas-match-record__half";
-
-    const title =
-        document.createElement(
-            "h4"
-        );
-
-    title.className =
-        "bas-match-record__half-title";
-
-    title.textContent =
-        options.title;
-
-    section.appendChild(title);
-
-    const endGrid =
-        document.createElement(
-            "div"
-        );
-
-    endGrid.className =
-        "bas-match-record__ends";
-
-    for (
-        let index = 0;
-        index < options.endCount;
-        index += 1
+    function createCompactSummaryItem(
+        label,
+        value,
+        suffix
     ) {
-        const internalEndNumber =
-            options.startEnd +
-            index;
-
-        const displayEndNumber =
-            index + 1;
-
-        const endItem =
+        const item =
             document.createElement(
                 "p"
             );
 
-        endItem.className =
-            "bas-match-record__end";
+        item.className =
+            "bas-match-record__compact-summary";
 
-        const endLabel =
+        const labelElement =
             document.createElement(
                 "span"
             );
 
-        endLabel.textContent =
-            String(
-                displayEndNumber
-            );
+        labelElement.textContent =
+            label;
 
-        const endScore =
+        const valueElement =
             document.createElement(
                 "strong"
             );
 
-        endScore.textContent =
-            String(
-                toNumber(
-                    options.record[
-                        `e${internalEndNumber}`
-                    ]
-                )
-            );
+        valueElement.textContent =
+            `${value}${suffix}`;
 
-        endItem.appendChild(
-            endLabel
+        item.appendChild(
+            labelElement
         );
 
-        endItem.appendChild(
-            endScore
+        item.appendChild(
+            valueElement
         );
 
-        endGrid.appendChild(
-            endItem
-        );
+        return item;
     }
 
-    section.appendChild(
-        endGrid
-    );
+    function getFirstHalfTitle(category) {
+        switch (category) {
+            case "70m":
+                return "前半 70m";
 
-    const summary =
-        document.createElement(
-            "div"
-        );
+            case "60m":
+                return "前半 60m";
 
-    summary.className =
-        "bas-match-record__half-summary";
+            case "50m":
+                return "前半 50m";
 
-    summary.appendChild(
-        createCompactSummaryItem(
-            "合計",
-            options.total,
-            "点"
-        )
-    );
+            case "30m":
+                return "前半 30m";
 
-    summary.appendChild(
-        createCompactSummaryItem(
-            options.count1Label,
-            options.count1,
-            ""
-        )
-    );
+            case "50m30m":
+                return "前半 50m";
 
-    summary.appendChild(
-        createCompactSummaryItem(
-            options.count2Label,
-            options.count2,
-            ""
-        )
-    );
-
-    section.appendChild(
-        summary
-    );
-
-    return section;
-}
-
-function createCompactSummaryItem(
-    label,
-    value,
-    suffix
-) {
-    const item =
-        document.createElement(
-            "p"
-        );
-
-    item.className =
-        "bas-match-record__compact-summary";
-
-    const labelElement =
-        document.createElement(
-            "span"
-        );
-
-    labelElement.textContent =
-        label;
-
-    const valueElement =
-        document.createElement(
-            "strong"
-        );
-
-    valueElement.textContent =
-        `${value}${suffix}`;
-
-    item.appendChild(
-        labelElement
-    );
-
-    item.appendChild(
-        valueElement
-    );
-
-    return item;
-}
-
-function getFirstHalfTitle(category) {
-    switch (category) {
-        case "70m":
-            return "前半 70m";
-
-        case "60m":
-            return "前半 60m";
-
-        case "50m":
-            return "前半 50m";
-
-        case "30m":
-            return "前半 30m";
-
-        case "50m30m":
-            return "前半 50m";
-
-        default:
-            return "前半";
+            default:
+                return "前半";
+        }
     }
-}
 
-function getSecondHalfTitle(category) {
-    switch (category) {
-        case "70m":
-            return "後半 70m";
+    function getSecondHalfTitle(category) {
+        switch (category) {
+            case "70m":
+                return "後半 70m";
 
-        case "60m":
-            return "後半 60m";
+            case "60m":
+                return "後半 60m";
 
-        case "50m":
-            return "後半 50m";
+            case "50m":
+                return "後半 50m";
 
-        case "30m":
-            return "後半 30m";
+            case "30m":
+                return "後半 30m";
 
-        case "50m30m":
-            return "後半 30m";
+            case "50m30m":
+                return "後半 30m";
 
-        default:
-            return "後半";
+            default:
+                return "後半";
+        }
     }
-}
 
     function createBadge(text) {
         const badge =
@@ -1116,49 +1814,49 @@ function getSecondHalfTitle(category) {
         }
     }
 
-/**
- * 訂正する大会記録を、
- * 次の画面で即座に使えるよう一時保存する。
- */
-function saveEditingRecordToSession(
-    record
-) {
-    if (
-        !record ||
-        typeof record !== "object"
+    /**
+     * 訂正する大会記録を、
+     * 次の画面で即座に使えるよう一時保存する。
+     */
+    function saveEditingRecordToSession(
+        record
     ) {
-        return;
+        if (
+            !record ||
+            typeof record !== "object"
+        ) {
+            return;
+        }
+
+        try {
+            window.sessionStorage.setItem(
+                "baika-editing-match-record",
+                JSON.stringify(record)
+            );
+        } catch (error) {
+            console.warn(
+                "[大会記録一覧] " +
+                "訂正データを一時保存できませんでした。",
+                error
+            );
+        }
     }
 
-    try {
-        window.sessionStorage.setItem(
-            "baika-editing-match-record",
-            JSON.stringify(record)
-        );
-    } catch (error) {
-        console.warn(
-            "[大会記録一覧] " +
-            "訂正データを一時保存できませんでした。",
-            error
-        );
-    }
-}
-
-function normalizeResultUrlForDisplay(
-    value
-) {
-    const url =
-        normalizeText(value);
-
-    if (
-        url.startsWith("https://") ||
-        url.startsWith("http://")
+    function normalizeResultUrlForDisplay(
+        value
     ) {
-        return url;
-    }
+        const url =
+            normalizeText(value);
 
-    return "";
-}
+        if (
+            url.startsWith("https://") ||
+            url.startsWith("http://")
+        ) {
+            return url;
+        }
+
+        return "";
+    }
 
     function normalizeText(value) {
         return String(

@@ -9,7 +9,7 @@
     >
 
     <title>
-        管理者 | Baika Archery System
+       設定 | Baika Archery System
     </title>
 
     <link
@@ -41,6 +41,11 @@
         rel="stylesheet"
         href="css/components/header.css"
     >
+    <link
+        rel="stylesheet"
+        href="css/pages/admin.css?v=2"
+    >
+
 </head>
 
 <body>
@@ -50,17 +55,18 @@
         <main class="bas-app__main">
             <div class="bas-app__content">
                 <section aria-labelledby="adminPageTitle">
-                    <p>
+                     <p>
                         Baika Archery System
-                    </p>
+                     </p>
 
-                    <h1 id="adminPageTitle">
-                        ⚙️ 管理
-                    </h1>
+                     <h1 id="adminPageTitle">
+                       ⚙️ 設定
+                     </h1>
 
-                    <p>
-                        プロフィール設定や各種管理機能を利用します。
-                    </p>
+                     <p>
+                       プロフィール設定や使い方の確認、
+                       各種設定を行います。
+                     </p>
                 </section>
 
                 <section
@@ -101,30 +107,46 @@
 
                 <section aria-labelledby="adminMenuTitle">
                 <h2 id="adminMenuTitle">
-                    管理メニュー
+                    設定メニュー
                 </h2>
 
-                <div>
-                    <article class="bas-card">
-                        <h3>👤 プロフィール設定</h3>
+                <div class="bas-admin-menu">
+    　　　　　　　　　<article class="bas-card">
+                    <h3>👤 プロフィール設定</h3>
 
-                        <p>
-                            表示名・ニックネーム・パスワードなど、
-                            自分のプロフィールを設定します。
-                        </p>
+                    <p>
+                        表示名・ニックネーム・パスワードなど、
+                        自分のプロフィールを設定します。
+                    </p>
 
-                        <a
-                            class="bas-button bas-button--secondary"
-                            href="project-zero-profile.html"
-                        >
-                            開く
-                        </a>
-                    </article>
-
-                    <div
-                        id="adminOnlyMenu"
-                        hidden
+                    <a
+                        class="bas-button bas-button--secondary"
+                        href="project-zero-profile.html"
                     >
+                        開く
+                    </a>
+                </article>
+
+                <article class="bas-card">
+                    <h3>❓ 使い方・ヘルプ</h3>
+
+                    <p>
+                        Baika Archery System の基本的な使い方や、
+                        困ったときの確認方法を説明します。
+                    </p>
+
+                    <a
+                        class="bas-button bas-button--secondary"
+                        href="project-zero-help.html"
+                    >
+                        開く
+                    </a>
+                </article>
+
+                <div
+                    id="adminOnlyMenu"
+                    hidden
+                >
                         <article class="bas-card">
                             <h3>👥 部員管理</h3>
 

@@ -1,402 +1,308 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>
-練習記録 | Baika Archery System
-</title>
+    <title>
+        練習記録 | Baika Archery System
+    </title>
 
-<link rel="stylesheet" href="css/foundation/tokens.css">
-<link rel="stylesheet" href="css/foundation/base.css">
-<link rel="stylesheet" href="css/layouts/app-layout.css">
-<link rel="stylesheet" href="css/components/header.css">
-<link rel="stylesheet" href="css/components/page-header.css">
-<link rel="stylesheet" href="css/components/card.css">
-<link rel="stylesheet" href="css/pages/records.css">
-<link
-    rel="stylesheet"
-    href="css/components/grouping-viewer.css"
->
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+    <link rel="stylesheet" href="css/foundation/base.css">
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
+    <link rel="stylesheet" href="css/components/header.css">
+    <link rel="stylesheet" href="css/components/page-header.css">
+    <link rel="stylesheet" href="css/components/card.css">
+    <link rel="stylesheet" href="css/pages/records.css?v=3">
+    <link rel="stylesheet" href="css/pages/match-records.css">
+    <link rel="stylesheet" href="css/components/grouping-viewer.css">
 
 </head>
 
 <body>
 
-<div class="bas-app">
+    <div class="bas-app">
 
-    <div id="app-header"></div>
+        <div id="app-header"></div>
 
-    <main class="bas-app__main">
+        <main class="bas-app__main">
 
-        <div id="page-header"></div>
+            <div id="page-header"></div>
 
-        <div class="bas-records">
+            <div class="bas-records">
 
-            <section class="bas-card bas-records__summary">
+                <section class="bas-card bas-records__summary">
 
-                <div class="bas-records__summary-header">
+                    <div class="bas-records__summary-header">
 
-                    <div>
+                        <div>
 
-                        <p class="bas-records__label">
-                            ログイン中
-                        </p>
+                            <p class="bas-records__label">
+                                ログイン中
+                            </p>
 
-                        <h2
-                            id="recordsUserName"
-                            class="bas-records__user-name"
-                        >
-                            読み込み中
+                            <h2 id="recordsUserName" class="bas-records__user-name">
+                                読み込み中
+                            </h2>
+
+                        </div>
+
+                        <span id="recordsCount" class="bas-records__count">
+                            0件
+                        </span>
+
+                    </div>
+
+                    <p class="bas-records__description">
+                        ログイン中の部員本人の記録だけを表示しています。
+                    </p>
+
+                </section>
+
+                <section id="recordsStatus" class="bas-card bas-records__status" aria-live="polite">
+
+                    <p id="recordsStatusMessage">
+                        練習記録を読み込んでいます。
+                    </p>
+
+                </section>
+
+                <nav class="bas-records__tabs" aria-label="記録種別">
+                    <button id="practiceRecordsTab" class="bas-records__tab bas-records__tab--active" type="button"
+                        aria-selected="true">
+                        練習記録
+                    </button>
+
+                    <button id="groupingRecordsTab" class="bas-records__tab" type="button" aria-selected="false">
+                        グルーピング記録
+                    </button>
+                </nav>
+
+                <section id="recordsListSection" class="bas-records__list-section" hidden>
+
+                    <div class="bas-records__section-header">
+
+                        <h2 class="bas-records__section-title">
+                            練習記録一覧
                         </h2>
 
                     </div>
 
-                    <span
-                        id="recordsCount"
-                        class="bas-records__count"
-                    >
-                        0件
-                    </span>
+                    <div id="recordsList" class="bas-records__list">
+                    </div>
 
-                </div>
+                </section>
 
-                <p class="bas-records__description">
-    ログイン中の部員本人の記録だけを表示しています。
-</p>
+                <section id="groupingRecordsSection" class="bas-records__list-section" hidden>
+                    <div class="bas-records__section-header">
+                        <h2 class="bas-records__section-title">
+                            グルーピング記録一覧
+                        </h2>
 
-            </section>
+                        <p id="groupingRecordCount" class="bas-records__count">
+                            0件
+                        </p>
+                    </div>
 
-            <section
-                id="recordsStatus"
-                class="bas-card bas-records__status"
-                aria-live="polite"
-            >
+                    <div id="groupingComparisonBar" class="bas-records__comparison-bar" hidden>
+                        <div>
+                            <strong>
+                                グルーピング比較
+                            </strong>
 
-                <p id="recordsStatusMessage">
-                    練習記録を読み込んでいます。
-                </p>
+                            <p id="groupingComparisonStatus">
+                                比較する記録を2件選択してください
+                            </p>
+                        </div>
 
-            </section>
+                        <button id="groupingComparisonStartButton" class="bas-records__comparison-start" type="button"
+                            disabled>
+                            比較開始
+                        </button>
+                    </div>
 
-<nav
-    class="bas-records__tabs"
-    aria-label="記録種別"
->
-    <button
-        id="practiceRecordsTab"
-        class="bas-records__tab bas-records__tab--active"
-        type="button"
-        aria-selected="true"
-    >
-        練習記録
-    </button>
+                    <div id="groupingRecordsList" class="bas-records__list">
+                    </div>
 
-    <button
-        id="groupingRecordsTab"
-        class="bas-records__tab"
-        type="button"
-        aria-selected="false"
-    >
-        グルーピング記録
-    </button>
-</nav>
+                    <div id="groupingRecordsEmpty" class="bas-records__empty" hidden>
+                        <h2 class="bas-records__empty-title">
+                            グルーピング記録がありません
+                        </h2>
 
-            <section
-                id="recordsListSection"
-                class="bas-records__list-section"
-                hidden
-            >
+                        <p class="bas-records__empty-message">
+                            練習入力画面でグルーピングを保存すると、
+                            ここに表示されます。
+                        </p>
 
-                <div class="bas-records__section-header">
+                        <a class="bas-records__practice-link" href="practice.html">
+                            練習入力へ
+                        </a>
+                    </div>
+                </section>
 
-                    <h2 class="bas-records__section-title">
-                        練習記録一覧
+                <section id="recordsEmpty" class="bas-card bas-records__empty" hidden>
+
+                    <div class="bas-records__empty-icon">
+                        📖
+                    </div>
+
+                    <h2 class="bas-records__empty-title">
+                        練習記録がありません
                     </h2>
 
-                </div>
+                    <p class="bas-records__empty-message">
+                        練習入力画面で6射を保存すると、ここに表示されます。
+                    </p>
 
-                <div
-                    id="recordsList"
-                    class="bas-records__list"
-                >
-                </div>
+                    <a class="bas-records__practice-link" href="practice.html">
+                        練習入力へ
+                    </a>
 
-            </section>
+                </section>
 
-            <section
-    id="groupingRecordsSection"
-    class="bas-records__list-section"
-    hidden
->
-    <div class="bas-records__section-header">
-        <h2 class="bas-records__section-title">
-            グルーピング記録一覧
-        </h2>
-
-        <p
-            id="groupingRecordCount"
-            class="bas-records__count"
-        >
-            0件
-        </p>
-    </div>
-
-<div
-    id="groupingComparisonBar"
-    class="bas-records__comparison-bar"
-    hidden
->
-    <div>
-        <strong>
-            グルーピング比較
-        </strong>
-
-        <p id="groupingComparisonStatus">
-            比較する記録を2件選択してください
-        </p>
-    </div>
-
-    <button
-        id="groupingComparisonStartButton"
-        class="bas-records__comparison-start"
-        type="button"
-        disabled
-    >
-        比較開始
-    </button>
-</div>
-
-    <div
-        id="groupingRecordsList"
-        class="bas-records__list"
-    >
-    </div>
-
-    <div
-        id="groupingRecordsEmpty"
-        class="bas-records__empty"
-        hidden
-    >
-        <h2 class="bas-records__empty-title">
-            グルーピング記録がありません
-        </h2>
-
-        <p class="bas-records__empty-message">
-            練習入力画面でグルーピングを保存すると、
-            ここに表示されます。
-        </p>
-
-        <a
-            class="bas-records__practice-link"
-            href="practice.html"
-        >
-            練習入力へ
-        </a>
-    </div>
-</section>
-
-            <section
-                id="recordsEmpty"
-                class="bas-card bas-records__empty"
-                hidden
-            >
-
-                <div class="bas-records__empty-icon">
-                    📖
-                </div>
-
-                <h2 class="bas-records__empty-title">
-                    練習記録がありません
-                </h2>
-
-                <p class="bas-records__empty-message">
-                    練習入力画面で6射を保存すると、ここに表示されます。
-                </p>
-
-                <a
-                    class="bas-records__practice-link"
-                    href="practice.html"
-                >
-                    練習入力へ
-                </a>
-
-            </section>
-
-        </div>
-
-    </main>
-
-    <div
-    id="groupingViewerModal"
-    class="bas-grouping-viewer"
-    hidden
->
-    <div
-        class="bas-grouping-viewer__backdrop"
-        data-grouping-viewer-close
-    ></div>
-
-    <section
-        class="bas-grouping-viewer__dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="groupingViewerTitle"
-    >
-        <header class="bas-grouping-viewer__header">
-            <div>
-                <p class="bas-grouping-viewer__eyebrow">
-                    Grouping Viewer
-                </p>
-
-                <h2
-                    id="groupingViewerTitle"
-                    class="bas-grouping-viewer__title"
-                >
-                    グルーピング確認
-                </h2>
             </div>
 
-            <button
-                id="groupingViewerCloseButton"
-                class="bas-grouping-viewer__close"
-                type="button"
-                aria-label="閉じる"
-            >
-                ×
-            </button>
-        </header>
+        </main>
 
-        <div class="bas-grouping-viewer__body">
-            <p
-                id="groupingViewerSummary"
-                class="bas-grouping-viewer__summary"
-            >
-            </p>
+        <div id="groupingViewerModal" class="bas-grouping-viewer" hidden>
+            <div class="bas-grouping-viewer__backdrop" data-grouping-viewer-close></div>
 
-            <div class="bas-grouping-viewer__target">
-    <svg
-        id="groupingViewerTargetSvg"
-        class="bas-grouping-viewer__target-svg"
-        viewBox="0 0 300 300"
-        role="img"
-        aria-label="保存済みグルーピング"
-    ></svg>
-</div>
-<section
-    id="groupingViewerDetails"
-    class="bas-grouping-viewer__details"
-    aria-label="練習条件"
->
-    <h3 class="bas-grouping-viewer__details-title">
-        練習条件
-    </h3>
+            <section class="bas-grouping-viewer__dialog" role="dialog" aria-modal="true"
+                aria-labelledby="groupingViewerTitle">
+                <header class="bas-grouping-viewer__header">
+                    <div>
+                        <p class="bas-grouping-viewer__eyebrow">
+                            Grouping Viewer
+                        </p>
 
-    <dl class="bas-grouping-viewer__details-list">
-        <div class="bas-grouping-viewer__details-item">
-            <dt>体調</dt>
-            <dd id="groupingViewerFeeling">―</dd>
+                        <h2 id="groupingViewerTitle" class="bas-grouping-viewer__title">
+                            グルーピング確認
+                        </h2>
+                    </div>
+
+                    <button id="groupingViewerCloseButton" class="bas-grouping-viewer__close" type="button"
+                        aria-label="閉じる">
+                        ×
+                    </button>
+                </header>
+
+                <div class="bas-grouping-viewer__body">
+                    <p id="groupingViewerSummary" class="bas-grouping-viewer__summary">
+                    </p>
+
+                    <div class="bas-grouping-viewer__target">
+                        <svg id="groupingViewerTargetSvg" class="bas-grouping-viewer__target-svg" viewBox="0 0 300 300"
+                            role="img" aria-label="保存済みグルーピング"></svg>
+                    </div>
+                    <section id="groupingViewerDetails" class="bas-grouping-viewer__details" aria-label="練習条件">
+                        <h3 class="bas-grouping-viewer__details-title">
+                            練習条件
+                        </h3>
+
+                        <dl class="bas-grouping-viewer__details-list">
+                            <div class="bas-grouping-viewer__details-item">
+                                <dt>体調</dt>
+                                <dd id="groupingViewerFeeling">―</dd>
+                            </div>
+
+                            <div class="bas-grouping-viewer__details-item">
+                                <dt>天候</dt>
+                                <dd id="groupingViewerWeather">―</dd>
+                            </div>
+
+                            <div class="bas-grouping-viewer__details-item">
+                                <dt>風の強さ</dt>
+                                <dd id="groupingViewerWindStrength">―</dd>
+                            </div>
+
+                            <div class="bas-grouping-viewer__details-item">
+                                <dt>風向</dt>
+                                <dd id="groupingViewerWindDirection">―</dd>
+                            </div>
+
+                            <div class="bas-grouping-viewer__details-item bas-grouping-viewer__details-item--wide">
+                                <dt>練習テーマ</dt>
+                                <dd id="groupingViewerTheme">―</dd>
+                            </div>
+
+                            <div class="bas-grouping-viewer__details-item bas-grouping-viewer__details-item--wide">
+                                <dt>メモ</dt>
+                                <dd id="groupingViewerMemo">―</dd>
+                            </div>
+                        </dl>
+                    </section>
+                </div>
+            </section>
         </div>
 
-        <div class="bas-grouping-viewer__details-item">
-            <dt>天候</dt>
-            <dd id="groupingViewerWeather">―</dd>
-        </div>
+    </div>
 
-        <div class="bas-grouping-viewer__details-item">
-            <dt>風の強さ</dt>
-            <dd id="groupingViewerWindStrength">―</dd>
-        </div>
+    <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+    <script src="js/auth/api.js"></script>
 
-        <div class="bas-grouping-viewer__details-item">
-            <dt>風向</dt>
-            <dd id="groupingViewerWindDirection">―</dd>
-        </div>
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/core/theme.js"></script>
+    <script src="js/core/state.js"></script>
+    <script src="js/core/cloud.js?v=2"></script>
 
-        <div class="bas-grouping-viewer__details-item bas-grouping-viewer__details-item--wide">
-            <dt>練習テーマ</dt>
-            <dd id="groupingViewerTheme">―</dd>
-        </div>
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+    <script src="js/components/card.js"></script>
 
-        <div class="bas-grouping-viewer__details-item bas-grouping-viewer__details-item--wide">
-            <dt>メモ</dt>
-            <dd id="groupingViewerMemo">―</dd>
-        </div>
-    </dl>
-</section>
-        </div>
-    </section>
-</div>
-
-</div>
-
-<!-- Login Session -->
-<script src="js/v4-session.js"></script>
-<script src="js/auth/api.js"></script>
-
-<!-- Project Zero Core -->
-<script src="js/core/config.js"></script>
-<script src="js/core/organization.js"></script>
-<script src="js/core/theme.js"></script>
-<script src="js/core/state.js"></script>
-<script src="js/core/cloud.js?v=2"></script>
-
-<!-- Project Zero Components -->
-<script src="js/components/header.js"></script>
-<script src="js/components/page-header.js"></script>
-<script src="js/components/card.js"></script>
-
-<!-- Project Zero Pages -->
- <script src="js/components/grouping-target.js"></script>
- <script src="js/pages/grouping-viewer.js"></script>
- <script src="js/pages/records.js?v=5"></script>
+    <!-- Project Zero Pages -->
+    <script src="js/components/grouping-target.js"></script>
+    <script src="js/pages/grouping-viewer.js"></script>
+    <script src="js/pages/records.js?v=5"></script>
 
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        if (
-            window.BAS_HEADER &&
-            typeof window.BAS_HEADER.render === "function"
-        ) {
-            window.BAS_HEADER.render({
-                currentRoute: "records"
-            });
-        }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (
+                window.BAS_HEADER &&
+                typeof window.BAS_HEADER.render === "function"
+            ) {
+                window.BAS_HEADER.render({
+                    currentRoute: "records"
+                });
+            }
 
-        if (
-            window.BAS_PAGE_HEADER &&
-            typeof window.BAS_PAGE_HEADER.render === "function"
-        ) {
-            window.BAS_PAGE_HEADER.render({
-                eyebrow: "Practice Records",
-                title: "練習記録",
-                description:
-                    "保存済みの練習記録を日付の新しい順に確認します。"
-            });
-        }
+            if (
+                window.BAS_PAGE_HEADER &&
+                typeof window.BAS_PAGE_HEADER.render === "function"
+            ) {
+                window.BAS_PAGE_HEADER.render({
+                    eyebrow: "Practice Records",
+                    title: "練習記録",
+                    description:
+                        "保存済みの練習記録を日付の新しい順に確認します。"
+                });
+            }
 
-if (
-    window.BAS_GROUPING_VIEWER &&
-    typeof window.BAS_GROUPING_VIEWER.initialize ===
-        "function"
-) {
-    window.BAS_GROUPING_VIEWER.initialize();
-}
+            if (
+                window.BAS_GROUPING_VIEWER &&
+                typeof window.BAS_GROUPING_VIEWER.initialize ===
+                "function"
+            ) {
+                window.BAS_GROUPING_VIEWER.initialize();
+            }
 
-        if (
-            window.BAS_RECORDS &&
-            typeof window.BAS_RECORDS.initialize === "function"
-        ) {
-            window.BAS_RECORDS.initialize();
-        }
-    });
-</script>
+            if (
+                window.BAS_RECORDS &&
+                typeof window.BAS_RECORDS.initialize === "function"
+            ) {
+                window.BAS_RECORDS.initialize();
+            }
+        });
+    </script>
 
 </body>
+
 </html>

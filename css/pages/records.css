@@ -494,3 +494,83 @@
         width: 100%;
     }
 }
+
+/**
+ * 点取り練習
+ * 前半・後半サマリー
+ */
+
+.bas-records__practice-halves {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--bas-space-2);
+}
+
+.bas-records__practice-half {
+    display: grid;
+    grid-template-columns:
+        minmax(54px, auto)
+        repeat(3, minmax(0, 1fr));
+    align-items: center;
+    overflow: hidden;
+    border: 1px solid rgb(120 50 110 / 14%);
+    border-radius: 8px;
+    background: var(--bas-color-white);
+}
+
+.bas-records__practice-half-title {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    color: var(--bas-color-white);
+    background:
+        linear-gradient(
+            135deg,
+            var(--bas-color-primary-800),
+            var(--bas-color-primary-600)
+        );
+}
+
+.bas-records__practice-half > span {
+    display: block;
+    padding: 6px 5px;
+    border-left: 1px solid rgb(120 50 110 / 12%);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.bas-records__practice-half > span strong {
+    margin-left: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
+.bas-records__practice-average {
+    margin: 0;
+    color: var(--bas-color-text-muted);
+    font-size: var(--bas-font-size-sm);
+    text-align: right;
+}
+
+@media (max-width: 600px) {
+    .bas-records__practice-halves {
+        grid-template-columns: 1fr;
+    }
+
+    .bas-records__practice-half {
+        grid-template-columns:
+            minmax(54px, auto)
+            repeat(3, minmax(0, 1fr));
+    }
+}
+
+.bas-records__practice-detail {
+    display: grid;
+    gap: var(--bas-space-3);
+    margin-top: var(--bas-space-3);
+}
+
+.bas-records__practice-detail[hidden] {
+    display: none;
+}

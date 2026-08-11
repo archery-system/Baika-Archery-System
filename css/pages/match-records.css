@@ -647,3 +647,94 @@ body {
         width: 100%;
     }
 }
+
+/*
+ * 大会記録検索
+ */
+
+.bas-match-records__filters {
+    display: grid;
+    gap: var(--bas-space-4);
+    margin-bottom: var(--bas-space-5);
+    padding: var(--bas-space-4);
+    border: 1px solid rgb(120 50 110 / 15%);
+    border-radius: 12px;
+    background: rgb(251 247 250);
+}
+
+.bas-match-records__filter-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(0, 1fr)
+        );
+    gap: var(--bas-space-3);
+}
+
+.bas-match-records__filter {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.bas-match-records__filter > span {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.bas-match-records__filter select,
+.bas-match-records__filter input {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 1px solid rgb(120 50 110 / 22%);
+    border-radius: 8px;
+    color: inherit;
+    background: var(--bas-color-white);
+}
+
+.bas-match-records__filter--wide {
+    grid-column: span 2;
+}
+
+.bas-match-records__filter-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bas-space-3);
+}
+
+#matchRecordSearchCount {
+    margin: 0;
+    font-weight: 700;
+}
+
+@media (max-width: 800px) {
+    .bas-match-records__filter-grid {
+        grid-template-columns:
+            repeat(
+                2,
+                minmax(0, 1fr)
+            );
+    }
+}
+
+@media (max-width: 520px) {
+    .bas-match-records__filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-records__filter--wide {
+        grid-column: auto;
+    }
+
+    .bas-match-records__filter-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .bas-match-records__filter-actions .bas-button {
+        width: 100%;
+    }
+}

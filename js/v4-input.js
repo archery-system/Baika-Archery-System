@@ -1785,18 +1785,42 @@ async function registerPhotoPracticeEnd(photoPins) {
 );
 
 /*
- * 保存した6射を登録済みグルーピングへ残す
+ * ピン位置を持つ6射は、
+ * 点取り保存と同時にグルーピングにも追加する
  */
-registeredGroupingArrows =
-    registeredGroupingArrows.concat(
-        photoPins.map(function (arrow) {
-            return {
-                ...arrow
-            };
-        })
-    );
+const groupingArrows =
+    photoPins.filter(function (arrow) {
+        return (
+            arrow &&
+            arrow.x != null &&
+            arrow.y != null
+        );
+    });
+
+if (groupingArrows.length > 0) {
+    registeredGroupingArrows =
+        registeredGroupingArrows.concat(
+            groupingArrows.map(function (arrow) {
+                return {
+                    ...arrow
+                };
+            })
+        );
 
     saveGroupingDraft();
+
+    isGroupingSaved = false;
+
+    const groupingSaveMessage =
+        document.getElementById(
+            "v4GroupingSaveMessage"
+        );
+
+    if (groupingSaveMessage) {
+        groupingSaveMessage.textContent =
+            "未保存";
+    }
+}
 
 currentArrows = [];
 photoGroupingArrows = [];

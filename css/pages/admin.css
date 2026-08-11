@@ -1,0 +1,20 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Settings / Admin Page
+ */
+
+/* 設定メニュー内のカード間隔 */
+.bas-admin-menu > .bas-card + .bas-card {
+    margin-top: var(--bas-space-5);
+}
+
+/* 一般設定と管理者メニューの間隔 */
+.bas-admin-menu > .bas-card + #adminOnlyMenu {
+    margin-top: var(--bas-space-5);
+}
+
+/* 管理者メニュー内のカード間隔 */
+#adminOnlyMenu > .bas-card + .bas-card {
+    margin-top: var(--bas-space-5);
+}

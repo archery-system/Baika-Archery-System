@@ -7,113 +7,218 @@
 (function () {
     "use strict";
 
-        /**
-     * 比較対象として選択されたグルーピング記録
-     *
-     * @type {Object[]}
-     */
+    const PRACTICE_RECORDS_CACHE_PREFIX =
+        "baika-practice-records-cache-";
+
+    const PRACTICE_RECORDS_CACHE_MAX_AGE =
+        5 * 60 * 1000;
+
+    /**
+ * 比較対象として選択されたグルーピング記録
+ *
+ * @type {Object[]}
+ */
     const selectedGroupingRecords = [];
 
     /**
  * 比較対象の選択状態を画面へ反映する
  */
-function updateGroupingComparisonBar() {
-    const comparisonBar =
-        document.getElementById(
-            "groupingComparisonBar"
-        );
+    function updateGroupingComparisonBar() {
+        const comparisonBar =
+            document.getElementById(
+                "groupingComparisonBar"
+            );
 
-    const status =
-        document.getElementById(
-            "groupingComparisonStatus"
-        );
+        const status =
+            document.getElementById(
+                "groupingComparisonStatus"
+            );
 
-    const startButton =
-        document.getElementById(
-            "groupingComparisonStartButton"
-        );
+        const startButton =
+            document.getElementById(
+                "groupingComparisonStartButton"
+            );
 
-    if (
-        !comparisonBar ||
-        !status ||
-        !startButton
-    ) {
-        return;
+        if (
+            !comparisonBar ||
+            !status ||
+            !startButton
+        ) {
+            return;
+        }
+
+        const selectedCount =
+            selectedGroupingRecords.length;
+
+        comparisonBar.hidden =
+            selectedCount === 0;
+
+        if (selectedCount === 0) {
+            status.textContent =
+                "比較する記録を2件選択してください";
+        } else if (selectedCount === 1) {
+            status.textContent =
+                "1件選択中です。もう1件選択してください";
+        } else {
+            status.textContent =
+                "2件選択しました。比較を開始できます";
+        }
+
+        startButton.disabled =
+            selectedCount !== 2;
     }
 
-    const selectedCount =
-        selectedGroupingRecords.length;
+    /**
+     * 比較開始ボタンを準備する
+     */
+    function initializeGroupingComparison() {
+        const startButton =
+            document.getElementById(
+                "groupingComparisonStartButton"
+            );
 
-    comparisonBar.hidden =
-        selectedCount === 0;
+        if (!startButton) {
+            return;
+        }
 
-    if (selectedCount === 0) {
-        status.textContent =
-            "比較する記録を2件選択してください";
-    } else if (selectedCount === 1) {
-        status.textContent =
-            "1件選択中です。もう1件選択してください";
-    } else {
-        status.textContent =
-            "2件選択しました。比較を開始できます";
-    }
+        startButton.addEventListener(
+            "click",
+            function () {
+                if (
+                    selectedGroupingRecords.length !== 2
+                ) {
+                    return;
+                }
 
-    startButton.disabled =
-        selectedCount !== 2;
-}
+                try {
+                    sessionStorage.setItem(
+                        "basGroupingComparisonRecords",
+                        JSON.stringify(
+                            selectedGroupingRecords
+                        )
+                    );
 
-/**
- * 比較開始ボタンを準備する
- */
-function initializeGroupingComparison() {
-    const startButton =
-        document.getElementById(
-            "groupingComparisonStartButton"
-        );
-
-    if (!startButton) {
-        return;
-    }
-
-    startButton.addEventListener(
-        "click",
-        function () {
-            if (
-                selectedGroupingRecords.length !== 2
-            ) {
-                return;
-            }
-
-            try {
-                sessionStorage.setItem(
-                    "basGroupingComparisonRecords",
-                    JSON.stringify(
+                    console.log(
+                        "[グルーピング比較] 比較データを保存しました",
                         selectedGroupingRecords
+                    );
+
+                    window.location.href =
+                        "comparison.html";
+                } catch (error) {
+                    console.error(
+                        "[グルーピング比較] 比較データを保存できませんでした。",
+                        error
+                    );
+
+                    alert(
+                        "比較データを準備できませんでした。"
+                    );
+                }
+            }
+        );
+
+        updateGroupingComparisonBar();
+    }
+
+    /**
+     * 練習記録キャッシュのキーを取得する
+     */
+    function getPracticeRecordsCacheKey(
+        memberId
+    ) {
+        return (
+            PRACTICE_RECORDS_CACHE_PREFIX +
+            String(memberId || "").trim()
+        );
+    }
+
+
+    /**
+     * 練習記録をキャッシュへ保存する
+     */
+    function savePracticeRecordsCache(
+        memberId,
+        records
+    ) {
+        if (!Array.isArray(records)) {
+            return;
+        }
+
+        try {
+            const cacheData = {
+                savedAt: Date.now(),
+                records: records
+            };
+
+            window.sessionStorage.setItem(
+                getPracticeRecordsCacheKey(
+                    memberId
+                ),
+                JSON.stringify(cacheData)
+            );
+        } catch (error) {
+            console.warn(
+                "[練習記録] " +
+                "一覧キャッシュを保存できませんでした。",
+                error
+            );
+        }
+    }
+
+
+    /**
+     * 練習記録キャッシュを読み込む
+     */
+    function loadPracticeRecordsCache(
+        memberId
+    ) {
+        try {
+            const raw =
+                window.sessionStorage.getItem(
+                    getPracticeRecordsCacheKey(
+                        memberId
                     )
                 );
 
-                console.log(
-                    "[グルーピング比較] 比較データを保存しました",
-                    selectedGroupingRecords
-                );
-
-                window.location.href =
-                "comparison.html";
-            } catch (error) {
-                console.error(
-                    "[グルーピング比較] 比較データを保存できませんでした。",
-                    error
-                );
-
-                alert(
-                    "比較データを準備できませんでした。"
-                );
+            if (!raw) {
+                return null;
             }
-        }
-    );
 
-    updateGroupingComparisonBar();
-}
+            const cacheData =
+                JSON.parse(raw);
+
+            if (
+                !cacheData ||
+                !Array.isArray(
+                    cacheData.records
+                )
+            ) {
+                return null;
+            }
+
+            const savedAt =
+                Number(cacheData.savedAt);
+
+            if (
+                !Number.isFinite(savedAt) ||
+                Date.now() - savedAt >
+                PRACTICE_RECORDS_CACHE_MAX_AGE
+            ) {
+                return null;
+            }
+
+            return cacheData.records;
+        } catch (error) {
+            console.warn(
+                "[練習記録] " +
+                "一覧キャッシュを読み込めませんでした。",
+                error
+            );
+
+            return null;
+        }
+    }
 
     /**
      * 部員別練習記録画面を初期化する
@@ -162,11 +267,45 @@ function initializeGroupingComparison() {
 
         initializeGroupingComparison();
 
-        await loadAndRenderRecords(memberData);
+        /*
+         * 前回取得した練習記録があれば、
+         * クラウド通信を待たずに先に表示する。
+         */
+        const cachedRecords =
+            loadPracticeRecordsCache(
+                memberData.memberId
+            );
+
+        if (cachedRecords) {
+            const cachedMemberRecords =
+                filterMemberRecords(
+                    cachedRecords,
+                    memberData
+                );
+
+            const cachedSortedRecords =
+                sortRecordsByDate(
+                    cachedMemberRecords
+                );
+
+            renderRecords(
+                cachedSortedRecords
+            );
+        } else {
+            showLoading();
+        }
+
+        /*
+         * キャッシュ表示後、
+         * 最新データをクラウドから取得する。
+         */
+        loadAndRenderRecords(
+            memberData,
+            Boolean(cachedRecords)
+        );
 
         loadGroupingRecords();
     }
-
 
     /**
      * ログイン中の部員情報を取得する
@@ -174,13 +313,13 @@ function initializeGroupingComparison() {
     function getLoggedInMemberData() {
         const sessionData =
             typeof window.V4Session.getLoggedInMemberData ===
-            "function"
+                "function"
                 ? window.V4Session.getLoggedInMemberData()
                 : null;
 
         const memberId =
             sessionData &&
-            sessionData.memberId != null
+                sessionData.memberId != null
                 ? String(sessionData.memberId).trim()
                 : "";
 
@@ -205,8 +344,13 @@ function initializeGroupingComparison() {
     /**
      * GASから記録を取得して表示する
      */
-    async function loadAndRenderRecords(memberData) {
-        showLoading();
+    async function loadAndRenderRecords(
+        memberData,
+        hasRenderedCache
+    ) {
+        if (!hasRenderedCache) {
+            showLoading();
+        }
 
         if (
             !window.BAS_CLOUD ||
@@ -217,16 +361,24 @@ function initializeGroupingComparison() {
                 "[練習記録] BAS_CLOUD.loadPracticeRecordsを読み込めません。"
             );
 
-            showError(
-                "練習記録の読込機能を確認できませんでした。"
-            );
+            if (!hasRenderedCache) {
+                showError(
+                    "練習記録の読込機能を確認できませんでした。"
+                );
+            }
 
             return;
         }
 
         try {
             const allRecords =
-                await window.BAS_CLOUD.loadPracticeRecords();
+                await window.BAS_CLOUD
+                    .loadPracticeRecords();
+
+            savePracticeRecordsCache(
+                memberData.memberId,
+                allRecords
+            );
 
             const memberRecords =
                 filterMemberRecords(
@@ -235,18 +387,28 @@ function initializeGroupingComparison() {
                 );
 
             const sortedRecords =
-                sortRecordsByDate(memberRecords);
+                sortRecordsByDate(
+                    memberRecords
+                );
 
-            renderRecords(sortedRecords);
+            renderRecords(
+                sortedRecords
+            );
         } catch (error) {
             console.error(
                 "[練習記録] 記録の取得に失敗しました。",
                 error
             );
 
-            showError(
-                "練習記録を読み込めませんでした。通信環境またはGAS設定を確認してください。"
-            );
+            /*
+             * キャッシュを表示できている場合は、
+             * 通信エラーでも表示中の記録を消さない。
+             */
+            if (!hasRenderedCache) {
+                showError(
+                    "練習記録を読み込めませんでした。通信環境またはGAS設定を確認してください。"
+                );
+            }
         }
     }
 
@@ -417,6 +579,173 @@ function initializeGroupingComparison() {
         return `${year}-${month}-${day}`;
     }
 
+    /**
+ * 6射単位の練習記録を、
+ * 同じ日付・同じ距離ごとの点取り記録へまとめる
+ */
+    function groupPracticeRecords(records) {
+        const groups = new Map();
+
+        records
+            .slice()
+            .reverse()
+            .forEach(function (record) {
+                const date =
+                    normalizeDateValue(record.date);
+
+                const distance =
+                    String(
+                        record.distance || ""
+                    ).trim();
+
+                const key =
+                    `${date}__${distance}`;
+
+                if (!groups.has(key)) {
+                    groups.set(
+                        key,
+                        {
+                            date: date,
+                            distance: distance,
+                            ends: []
+                        }
+                    );
+                }
+
+                groups.get(key).ends.push(record);
+            });
+
+        return Array.from(groups.values())
+            .sort(function (a, b) {
+                return (
+                    getDateTimestamp(b.date) -
+                    getDateTimestamp(a.date)
+                );
+            });
+    }
+
+
+    /**
+     * 1エンドの6射を配列で取得する
+     */
+    function getEndScoreLabels(record) {
+        return [
+            record.a1,
+            record.a2,
+            record.a3,
+            record.a4,
+            record.a5,
+            record.a6
+        ].map(function (value) {
+            return String(
+                value == null ? "" : value
+            )
+                .trim()
+                .toUpperCase();
+        });
+    }
+
+
+    /**
+     * 点数ラベルを数値へ変換する
+     */
+    function getScoreNumber(label) {
+        if (
+            label === "X" ||
+            label === "10"
+        ) {
+            return 10;
+        }
+
+        if (label === "M" || !label) {
+            return 0;
+        }
+
+        const score = Number(label);
+
+        return Number.isFinite(score)
+            ? score
+            : 0;
+    }
+
+
+    /**
+     * 複数エンドの集計を作る
+     */
+    function calculatePracticeSummary(ends) {
+        const labels = [];
+
+        ends.forEach(function (record) {
+            labels.push(
+                ...getEndScoreLabels(record)
+            );
+        });
+
+        const total =
+            labels.reduce(
+                function (sum, label) {
+                    return (
+                        sum +
+                        getScoreNumber(label)
+                    );
+                },
+                0
+            );
+
+        const tenCount =
+            labels.filter(function (label) {
+                return label === "10";
+            }).length;
+
+        const xCount =
+            labels.filter(function (label) {
+                return label === "X";
+            }).length;
+
+        return {
+            arrowCount: labels.length,
+            total: total,
+            tenCount: tenCount,
+            xCount: xCount,
+            average:
+                labels.length > 0
+                    ? total / labels.length
+                    : 0
+        };
+    }
+
+
+    /**
+     * 点取り1件の前半・後半・総計を集計する
+     */
+    function buildPracticeSessionSummary(group) {
+        const firstHalfEnds =
+            group.ends.slice(0, 6);
+
+        const secondHalfEnds =
+            group.ends.slice(6, 12);
+
+        return {
+            date: group.date,
+            distance: group.distance,
+            ends: group.ends,
+
+            firstHalf:
+                calculatePracticeSummary(
+                    firstHalfEnds
+                ),
+
+            secondHalf:
+                calculatePracticeSummary(
+                    secondHalfEnds
+                ),
+
+            total:
+                calculatePracticeSummary(
+                    group.ends
+                )
+        };
+    }
 
     /**
      * 記録一覧を表示する
@@ -437,23 +766,32 @@ function initializeGroupingComparison() {
 
         recordsList.replaceChildren();
 
-        updateRecordCount(records.length);
-
         if (records.length === 0) {
+            updateRecordCount(0);
             showEmpty();
             return;
         }
 
+        const groupedRecords =
+            groupPracticeRecords(records);
+
+        const sessions =
+            groupedRecords.map(function (group) {
+                return buildPracticeSessionSummary(group);
+            });
+
+        updateRecordCount(sessions.length);
+
         const fragment =
             document.createDocumentFragment();
 
-        records.forEach(function (
-            record,
+        sessions.forEach(function (
+            session,
             index
         ) {
             fragment.appendChild(
-                createRecordCard(
-                    record,
+                createPracticeSessionCard(
+                    session,
                     index
                 )
             );
@@ -468,6 +806,308 @@ function initializeGroupingComparison() {
     /**
      * 記録カードを作成する
      */
+
+    function createPracticeSessionCard(
+        session,
+        index
+    ) {
+        const article =
+            document.createElement("article");
+
+        article.className =
+            "bas-match-record";
+
+        article.dataset.sessionIndex =
+            String(index);
+
+        /*
+         * 上段：日付と距離
+         */
+        const top =
+            document.createElement("div");
+
+        top.className =
+            "bas-match-record__top";
+
+        const title =
+            document.createElement("h3");
+
+        title.className =
+            "bas-match-record__title";
+
+        title.textContent =
+            formatDisplayDate(
+                session.date
+            );
+
+        const date =
+            document.createElement("span");
+
+        date.className =
+            "bas-match-record__date";
+
+        date.textContent =
+            formatDistance(
+                session.distance
+            );
+
+        top.appendChild(title);
+        top.appendChild(date);
+
+        /*
+         * 基本情報
+         */
+        const meta =
+            document.createElement("div");
+
+        meta.className =
+            "bas-match-record__meta";
+
+        const arrowBadge =
+            document.createElement("span");
+
+        arrowBadge.className =
+            "bas-match-record__badge";
+
+        arrowBadge.textContent =
+            `${session.total.arrowCount}射`;
+
+        meta.appendChild(arrowBadge);
+
+        /*
+         * 総合計・総10数・総X数
+         */
+        const score =
+            document.createElement("div");
+
+        score.className =
+            "bas-match-record__score";
+
+        score.appendChild(
+            createPracticeScoreItem(
+                "合計",
+                session.total.total,
+                "点"
+            )
+        );
+
+        score.appendChild(
+            createPracticeScoreItem(
+                "総10数",
+                session.total.tenCount,
+                ""
+            )
+        );
+
+        score.appendChild(
+            createPracticeScoreItem(
+                "総X数",
+                session.total.xCount,
+                ""
+            )
+        );
+
+        /*
+         * 前半・後半の集計
+         */
+        const halfSummary =
+            document.createElement("div");
+
+        halfSummary.className =
+            "bas-records__practice-halves";
+
+        halfSummary.appendChild(
+            createPracticeHalfSummary(
+                "前半",
+                session.firstHalf
+            )
+        );
+
+        halfSummary.appendChild(
+            createPracticeHalfSummary(
+                "後半",
+                session.secondHalf
+            )
+        );
+
+        /*
+         * 平均
+         */
+        const average =
+            document.createElement("p");
+
+        average.className =
+            "bas-records__practice-average";
+
+        average.textContent =
+            `1射平均 ${session.total.average.toFixed(2)}点`;
+
+        /*
+         * 詳細ボタン
+         */
+        const actions =
+            document.createElement("div");
+
+        actions.className =
+            "bas-match-record__actions";
+
+        const detailButton =
+            document.createElement("button");
+
+        detailButton.type =
+            "button";
+
+        detailButton.className =
+            "bas-button bas-button--secondary";
+
+        detailButton.textContent =
+            "詳細を見る";
+
+        detailButton.dataset.practiceDetailIndex =
+            String(index);
+
+        actions.appendChild(
+            detailButton
+        );
+
+        const detail =
+            document.createElement("div");
+
+        detail.className =
+            "bas-records__practice-detail";
+
+        detail.hidden = true;
+
+        session.ends.forEach(function (
+            record,
+            endIndex
+        ) {
+            const endCard =
+                createRecordCard(
+                    record,
+                    endIndex
+                );
+
+            detail.appendChild(endCard);
+        });
+
+        detailButton.addEventListener(
+            "click",
+            function () {
+                detail.hidden =
+                    !detail.hidden;
+
+                detailButton.textContent =
+                    detail.hidden
+                        ? "詳細を見る"
+                        : "詳細を閉じる";
+            }
+        );
+
+        article.appendChild(top);
+        article.appendChild(meta);
+        article.appendChild(score);
+        article.appendChild(halfSummary);
+        article.appendChild(average);
+        article.appendChild(actions);
+        article.appendChild(detail);
+
+        return article;
+    }
+
+
+    /**
+     * 大会記録と同じ形式の
+     * スコア表示を作成する
+     */
+    function createPracticeScoreItem(
+        labelText,
+        valueText,
+        unitText
+    ) {
+        const item =
+            document.createElement("p");
+
+        item.className =
+            "bas-match-record__score-item";
+
+        const label =
+            document.createElement("span");
+
+        label.textContent =
+            labelText;
+
+        const value =
+            document.createElement("strong");
+
+        value.textContent =
+            String(valueText);
+
+        const unit =
+            document.createElement("span");
+
+        unit.textContent =
+            unitText;
+
+        item.appendChild(label);
+        item.appendChild(value);
+
+        if (unitText) {
+            item.appendChild(unit);
+        }
+
+        return item;
+    }
+
+
+    /**
+     * 前半・後半の集計表示を作成する
+     */
+    function createPracticeHalfSummary(
+        titleText,
+        summary
+    ) {
+        const section =
+            document.createElement("div");
+
+        section.className =
+            "bas-records__practice-half";
+
+        const title =
+            document.createElement("strong");
+
+        title.className =
+            "bas-records__practice-half-title";
+
+        title.textContent =
+            titleText;
+
+        const score =
+            document.createElement("span");
+
+        score.innerHTML =
+            `得点 <strong>${summary.total}</strong>`;
+
+        const ten =
+            document.createElement("span");
+
+        ten.innerHTML =
+            `10数 <strong>${summary.tenCount}</strong>`;
+
+        const x =
+            document.createElement("span");
+
+        x.innerHTML =
+            `X数 <strong>${summary.xCount}</strong>`;
+
+        section.appendChild(title);
+        section.appendChild(score);
+        section.appendChild(ten);
+        section.appendChild(x);
+
+        return section;
+    }
+
     function createRecordCard(
         record,
         index
@@ -929,326 +1569,326 @@ function initializeGroupingComparison() {
         ).trim();
     }
 
-/**
- * タブを初期化する
- */
-function initializeTabs() {
-    const practiceTab =
-        document.getElementById(
-            "practiceRecordsTab"
+    /**
+     * タブを初期化する
+     */
+    function initializeTabs() {
+        const practiceTab =
+            document.getElementById(
+                "practiceRecordsTab"
+            );
+
+        const groupingTab =
+            document.getElementById(
+                "groupingRecordsTab"
+            );
+
+        if (
+            !practiceTab ||
+            !groupingTab
+        ) {
+            return;
+        }
+
+        practiceTab.addEventListener(
+            "click",
+            function () {
+                showPracticeTab();
+            }
         );
 
-    const groupingTab =
-        document.getElementById(
-            "groupingRecordsTab"
+        groupingTab.addEventListener(
+            "click",
+            function () {
+                showGroupingTab();
+            }
         );
-
-    if (
-        !practiceTab ||
-        !groupingTab
-    ) {
-        return;
     }
 
-    practiceTab.addEventListener(
-        "click",
-        function () {
-            showPracticeTab();
-        }
-    );
+    /**
+     * 練習記録タブを表示する
+     */
+    function showPracticeTab() {
+        document
+            .getElementById(
+                "recordsListSection"
+            )
+            .hidden = false;
 
-    groupingTab.addEventListener(
-        "click",
-        function () {
-            showGroupingTab();
-        }
-    );
-}
+        document
+            .getElementById(
+                "groupingRecordsSection"
+            )
+            .hidden = true;
 
-/**
- * 練習記録タブを表示する
- */
-function showPracticeTab() {
-    document
-        .getElementById(
-            "recordsListSection"
-        )
-        .hidden = false;
+        document
+            .getElementById(
+                "practiceRecordsTab"
+            )
+            .classList.add(
+                "bas-records__tab--active"
+            );
 
-    document
-        .getElementById(
-            "groupingRecordsSection"
-        )
-        .hidden = true;
-
-    document
-        .getElementById(
-            "practiceRecordsTab"
-        )
-        .classList.add(
-            "bas-records__tab--active"
-        );
-
-    document
-        .getElementById(
-            "groupingRecordsTab"
-        )
-        .classList.remove(
-            "bas-records__tab--active"
-        );
-}
-
-/**
- * グルーピング記録タブを表示する
- */
-function showGroupingTab() {
-    document
-        .getElementById(
-            "recordsListSection"
-        )
-        .hidden = true;
-
-    document
-        .getElementById(
-            "groupingRecordsSection"
-        )
-        .hidden = false;
-
-    document
-        .getElementById(
-            "practiceRecordsTab"
-        )
-        .classList.remove(
-            "bas-records__tab--active"
-        );
-
-    document
-        .getElementById(
-            "groupingRecordsTab"
-        )
-        .classList.add(
-            "bas-records__tab--active"
-        );
-}
-
-function loadGroupingRecords() {
-
-    if (
-        !window.V4Session ||
-        typeof window.V4Session.getLoggedInMemberId
-        !== "function"
-    ) {
-        return;
+        document
+            .getElementById(
+                "groupingRecordsTab"
+            )
+            .classList.remove(
+                "bas-records__tab--active"
+            );
     }
 
-    const memberId =
-        window.V4Session.getLoggedInMemberId();
+    /**
+     * グルーピング記録タブを表示する
+     */
+    function showGroupingTab() {
+        document
+            .getElementById(
+                "recordsListSection"
+            )
+            .hidden = true;
 
-    const key =
-        "baika-grouping-history-" +
-        memberId;
+        document
+            .getElementById(
+                "groupingRecordsSection"
+            )
+            .hidden = false;
 
-    const history =
-        JSON.parse(
-            localStorage.getItem(key) || "[]"
-        );
+        document
+            .getElementById(
+                "practiceRecordsTab"
+            )
+            .classList.remove(
+                "bas-records__tab--active"
+            );
 
-   renderGroupingRecords(history);
-
-}
-
-/**
- * 画面表示用の文字列をHTMLとして安全な形へ変換する
- */
-function escapeHtml(value) {
-
-    return String(
-        value == null ? "" : value
-    )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-/**
- * グルーピング記録を画面へ表示する
- */
-
-/**
- * コンディションの内部値を日本語表示へ変換する
- */
-function formatConditionValue(type, value) {
-
-    const originalValue =
-        String(value == null ? "" : value).trim();
-
-    const labels = {
-        feeling: {
-            "very-good": "とても良い",
-            good: "良い",
-            normal: "普通",
-            bad: "悪い",
-            "very-bad": "とても悪い"
-        },
-
-        weather: {
-            sunny: "晴れ",
-            cloudy: "曇り",
-            rainy: "雨",
-            snowy: "雪"
-        },
-
-        windStrength: {
-            none: "無風",
-            weak: "弱い",
-            normal: "普通",
-            strong: "強い",
-            "very-strong": "とても強い"
-        },
-
-        windDirection: {
-            north: "↑ 手前から奥へ",
-            south: "↓ 奥から手前へ",
-            west: "← 右から左へ",
-            east: "→ 左から右へ",
-            northwest: "↖ 右手前から左奥へ",
-            northeast: "↗ 左手前から右奥へ",
-            southwest: "↙ 右奥から左手前へ",
-            southeast: "↘ 左奥から手前へ"
-        }
-    };
-
-    if (
-        labels[type] &&
-        labels[type][originalValue]
-    ) {
-        return labels[type][originalValue];
+        document
+            .getElementById(
+                "groupingRecordsTab"
+            )
+            .classList.add(
+                "bas-records__tab--active"
+            );
     }
 
-    return originalValue;
-}
+    function loadGroupingRecords() {
 
-function renderGroupingRecords(history) {
+        if (
+            !window.V4Session ||
+            typeof window.V4Session.getLoggedInMemberId
+            !== "function"
+        ) {
+            return;
+        }
 
-    const list =
-        document.getElementById(
-            "groupingRecordsList"
-        );
+        const memberId =
+            window.V4Session.getLoggedInMemberId();
 
-    const empty =
-        document.getElementById(
-            "groupingRecordsEmpty"
-        );
+        const key =
+            "baika-grouping-history-" +
+            memberId;
 
-    const count =
-        document.getElementById(
-            "groupingRecordCount"
-        );
+        const history =
+            JSON.parse(
+                localStorage.getItem(key) || "[]"
+            );
 
-    list.replaceChildren();
-
-    count.textContent =
-        history.length + "件";
-
-    if (history.length === 0) {
-
-        empty.hidden = false;
-
-        return;
+        renderGroupingRecords(history);
 
     }
 
-    empty.hidden = true;
+    /**
+     * 画面表示用の文字列をHTMLとして安全な形へ変換する
+     */
+    function escapeHtml(value) {
 
-    history
-        .slice()
-        .reverse()
-        .forEach(function(record, index){
+        return String(
+            value == null ? "" : value
+        )
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
 
-            const card =
-                document.createElement(
-                    "article"
-                );
+    /**
+     * グルーピング記録を画面へ表示する
+     */
 
-            card.className =
-                "bas-records__item";
+    /**
+     * コンディションの内部値を日本語表示へ変換する
+     */
+    function formatConditionValue(type, value) {
 
-            const arrowCount =
-    Array.isArray(record.arrows)
-        ? record.arrows.length
-        : 0;
+        const originalValue =
+            String(value == null ? "" : value).trim();
 
-const conditionItems = [
-    record.conditionFeeling
-        ? {
-            icon: "😊",
-            label: "調子",
-            value: formatConditionValue(
-            "feeling",
-            record.conditionFeeling
-)
+        const labels = {
+            feeling: {
+                "very-good": "とても良い",
+                good: "良い",
+                normal: "普通",
+                bad: "悪い",
+                "very-bad": "とても悪い"
+            },
+
+            weather: {
+                sunny: "晴れ",
+                cloudy: "曇り",
+                rainy: "雨",
+                snowy: "雪"
+            },
+
+            windStrength: {
+                none: "無風",
+                weak: "弱い",
+                normal: "普通",
+                strong: "強い",
+                "very-strong": "とても強い"
+            },
+
+            windDirection: {
+                north: "↑ 手前から奥へ",
+                south: "↓ 奥から手前へ",
+                west: "← 右から左へ",
+                east: "→ 左から右へ",
+                northwest: "↖ 右手前から左奥へ",
+                northeast: "↗ 左手前から右奥へ",
+                southwest: "↙ 右奥から左手前へ",
+                southeast: "↘ 左奥から手前へ"
+            }
+        };
+
+        if (
+            labels[type] &&
+            labels[type][originalValue]
+        ) {
+            return labels[type][originalValue];
         }
-        : null,
 
-    record.conditionWeather
-        ? {
-            icon: "☀️",
-            label: "天気",
-            value: formatConditionValue(
-            "weather",
-             record.conditionWeather
-)
+        return originalValue;
+    }
+
+    function renderGroupingRecords(history) {
+
+        const list =
+            document.getElementById(
+                "groupingRecordsList"
+            );
+
+        const empty =
+            document.getElementById(
+                "groupingRecordsEmpty"
+            );
+
+        const count =
+            document.getElementById(
+                "groupingRecordCount"
+            );
+
+        list.replaceChildren();
+
+        count.textContent =
+            history.length + "件";
+
+        if (history.length === 0) {
+
+            empty.hidden = false;
+
+            return;
+
         }
-        : null,
 
-    record.conditionWindStrength
-        ? {
-            icon: "💨",
-            label: "風の強さ",
-            value: formatConditionValue(
-            "windStrength",
-            record.conditionWindStrength
-)
-        }
-        : null,
+        empty.hidden = true;
 
-    record.conditionWindDirection
-        ? {
-            icon: "🧭",
-            label: "風向き",
-            value: formatConditionValue(
-            "windDirection",
-            record.conditionWindDirection
-)
-        }
-        : null,
+        history
+            .slice()
+            .reverse()
+            .forEach(function (record, index) {
 
-    record.conditionTheme
-        ? {
-            icon: "🎯",
-            label: "今日のテーマ",
-            value: record.conditionTheme
-        }
-        : null,
+                const card =
+                    document.createElement(
+                        "article"
+                    );
 
-    record.conditionMemo
-        ? {
-            icon: "📝",
-            label: "メモ",
-            value: record.conditionMemo
-        }
-        : null
-].filter(Boolean);
+                card.className =
+                    "bas-records__item";
 
-const conditionHtml =
-    conditionItems.length > 0
-        ? `
+                const arrowCount =
+                    Array.isArray(record.arrows)
+                        ? record.arrows.length
+                        : 0;
+
+                const conditionItems = [
+                    record.conditionFeeling
+                        ? {
+                            icon: "😊",
+                            label: "調子",
+                            value: formatConditionValue(
+                                "feeling",
+                                record.conditionFeeling
+                            )
+                        }
+                        : null,
+
+                    record.conditionWeather
+                        ? {
+                            icon: "☀️",
+                            label: "天気",
+                            value: formatConditionValue(
+                                "weather",
+                                record.conditionWeather
+                            )
+                        }
+                        : null,
+
+                    record.conditionWindStrength
+                        ? {
+                            icon: "💨",
+                            label: "風の強さ",
+                            value: formatConditionValue(
+                                "windStrength",
+                                record.conditionWindStrength
+                            )
+                        }
+                        : null,
+
+                    record.conditionWindDirection
+                        ? {
+                            icon: "🧭",
+                            label: "風向き",
+                            value: formatConditionValue(
+                                "windDirection",
+                                record.conditionWindDirection
+                            )
+                        }
+                        : null,
+
+                    record.conditionTheme
+                        ? {
+                            icon: "🎯",
+                            label: "今日のテーマ",
+                            value: record.conditionTheme
+                        }
+                        : null,
+
+                    record.conditionMemo
+                        ? {
+                            icon: "📝",
+                            label: "メモ",
+                            value: record.conditionMemo
+                        }
+                        : null
+                ].filter(Boolean);
+
+                const conditionHtml =
+                    conditionItems.length > 0
+                        ? `
             <div class="bas-records__grouping-conditions">
                 ${conditionItems
-                    .map(function (item) {
-                        return `
+                            .map(function (item) {
+                                return `
                             <p class="bas-records__grouping-condition">
                                 <span>
                                     ${item.icon}
@@ -1260,14 +1900,14 @@ const conditionHtml =
                                 </strong>
                             </p>
                         `;
-                    })
-                    .join("")}
+                            })
+                            .join("")}
             </div>
         `
-        : "";
+                        : "";
 
-card.innerHTML =
-    `
+                card.innerHTML =
+                    `
     <h3>${record.practiceDate}</h3>
 
     <div class="bas-records__grouping-meta">
@@ -1303,134 +1943,134 @@ ${conditionHtml}
     </div>
     `;
 
-const confirmButton =
-    card.querySelector("[data-grouping-id]");
+                const confirmButton =
+                    card.querySelector("[data-grouping-id]");
 
-if (confirmButton) {
-    confirmButton.addEventListener(
-        "click",
-        function () {
+                if (confirmButton) {
+                    confirmButton.addEventListener(
+                        "click",
+                        function () {
 
-            console.log(
-                "[確認ボタン] クリックされました",
-                record
-            );
+                            console.log(
+                                "[確認ボタン] クリックされました",
+                                record
+                            );
 
-            console.log(
-                "[確認ボタン] ビューア状態",
-                window.BAS_GROUPING_VIEWER
-            );
+                            console.log(
+                                "[確認ボタン] ビューア状態",
+                                window.BAS_GROUPING_VIEWER
+                            );
 
-            if (
-                window.BAS_GROUPING_VIEWER &&
-                typeof window.BAS_GROUPING_VIEWER.open ===
-                    "function"
-            ) {
-                window.BAS_GROUPING_VIEWER.open(record);
-            } else {
-                console.error(
-                    "[確認ボタン] グルーピングビューアを読み込めません。"
-                );
-            }
+                            if (
+                                window.BAS_GROUPING_VIEWER &&
+                                typeof window.BAS_GROUPING_VIEWER.open ===
+                                "function"
+                            ) {
+                                window.BAS_GROUPING_VIEWER.open(record);
+                            } else {
+                                console.error(
+                                    "[確認ボタン] グルーピングビューアを読み込めません。"
+                                );
+                            }
 
-        }
-    );
-}
+                        }
+                    );
+                }
 
-const compareButton =
-    card.querySelector(
-        "[data-grouping-compare-id]"
-    );
+                const compareButton =
+                    card.querySelector(
+                        "[data-grouping-compare-id]"
+                    );
 
-if (compareButton) {
-    compareButton.addEventListener(
-        "click",
-        function () {
-            const recordId =
-                String(record.id || "");
+                if (compareButton) {
+                    compareButton.addEventListener(
+                        "click",
+                        function () {
+                            const recordId =
+                                String(record.id || "");
 
-            const selectedIndex =
-                selectedGroupingRecords.findIndex(
-                    function (selectedRecord) {
-                        return String(
-                            selectedRecord.id || ""
-                        ) === recordId;
-                    }
-                );
+                            const selectedIndex =
+                                selectedGroupingRecords.findIndex(
+                                    function (selectedRecord) {
+                                        return String(
+                                            selectedRecord.id || ""
+                                        ) === recordId;
+                                    }
+                                );
 
-            /*
-             * すでに選択済みなら解除する
-             */
-            if (selectedIndex !== -1) {
-                selectedGroupingRecords.splice(
-                    selectedIndex,
-                    1
-                );
+                            /*
+                             * すでに選択済みなら解除する
+                             */
+                            if (selectedIndex !== -1) {
+                                selectedGroupingRecords.splice(
+                                    selectedIndex,
+                                    1
+                                );
 
-                compareButton.textContent =
-                    "比較に追加";
+                                compareButton.textContent =
+                                    "比較に追加";
 
-                compareButton.setAttribute(
-                    "aria-pressed",
-                    "false"
-                );
+                                compareButton.setAttribute(
+                                    "aria-pressed",
+                                    "false"
+                                );
 
-                compareButton.classList.remove(
-                    "bas-records__grouping-button--selected"
-                );
+                                compareButton.classList.remove(
+                                    "bas-records__grouping-button--selected"
+                                );
 
-                updateGroupingComparisonBar();
+                                updateGroupingComparisonBar();
 
-                console.log(
-                    "[グルーピング比較] 選択解除",
-                    selectedGroupingRecords
-                );
+                                console.log(
+                                    "[グルーピング比較] 選択解除",
+                                    selectedGroupingRecords
+                                );
 
-                return;
-            }
+                                return;
+                            }
 
-            /*
-             * 最大2件まで
-             */
-            if (
-                selectedGroupingRecords.length >= 2
-            ) {
-                alert(
-                    "比較できるグルーピングは最大2件です。どちらかを解除してください。"
-                );
+                            /*
+                             * 最大2件まで
+                             */
+                            if (
+                                selectedGroupingRecords.length >= 2
+                            ) {
+                                alert(
+                                    "比較できるグルーピングは最大2件です。どちらかを解除してください。"
+                                );
 
-                return;
-            }
+                                return;
+                            }
 
-            selectedGroupingRecords.push(record);
+                            selectedGroupingRecords.push(record);
 
-            compareButton.textContent =
-                `選択中（${selectedGroupingRecords.length}/2）`;
+                            compareButton.textContent =
+                                `選択中（${selectedGroupingRecords.length}/2）`;
 
-            compareButton.setAttribute(
-                "aria-pressed",
-                "true"
-            );
+                            compareButton.setAttribute(
+                                "aria-pressed",
+                                "true"
+                            );
 
-            compareButton.classList.add(
-                "bas-records__grouping-button--selected"
-            );
+                            compareButton.classList.add(
+                                "bas-records__grouping-button--selected"
+                            );
 
-            updateGroupingComparisonBar();
+                            updateGroupingComparisonBar();
 
-            console.log(
-                "[グルーピング比較] 選択追加",
-                selectedGroupingRecords
-            );
-        }
-    );
-}
+                            console.log(
+                                "[グルーピング比較] 選択追加",
+                                selectedGroupingRecords
+                            );
+                        }
+                    );
+                }
 
-            list.appendChild(card);
+                list.appendChild(card);
 
-        });
+            });
 
-}
+    }
 
     window.BAS_RECORDS = {
         initialize: initialize
