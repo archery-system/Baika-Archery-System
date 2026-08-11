@@ -1987,8 +1987,90 @@
                         currentRoute: "admin"
                     });
                 }
+
+                initializeHelpAnchorScroll();
             }
         );
+
+        function initializeHelpAnchorScroll() {
+            const menuLinks =
+                document.querySelectorAll(
+                    '.bas-help__menu a[href^="#"]'
+                );
+
+            menuLinks.forEach(function (link) {
+                link.addEventListener(
+                    "click",
+                    function (event) {
+                        const targetId =
+                            link.getAttribute("href");
+
+                        if (
+                            !targetId ||
+                            targetId === "#"
+                        ) {
+                            return;
+                        }
+
+                        const target =
+                            document.querySelector(
+                                targetId
+                            );
+
+                        if (!target) {
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        scrollToHelpTarget(
+                            target,
+                            targetId
+                        );
+                    }
+                );
+            });
+        }
+
+        function scrollToHelpTarget(
+            target,
+            targetId
+        ) {
+            const header =
+                document.querySelector(
+                    ".bas-header"
+                );
+
+            const headerHeight =
+                header
+                    ? header.getBoundingClientRect().height
+                    : 0;
+
+            const extraSpace = 16;
+
+            const targetTop =
+                target.getBoundingClientRect().top +
+                window.scrollY -
+                headerHeight -
+                extraSpace;
+
+            window.scrollTo({
+                top: Math.max(0, targetTop),
+                behavior: "smooth"
+            });
+
+            if (
+                window.history &&
+                typeof window.history.replaceState ===
+                "function"
+            ) {
+                window.history.replaceState(
+                    null,
+                    "",
+                    targetId
+                );
+            }
+        }
     </script>
 </body>
 
