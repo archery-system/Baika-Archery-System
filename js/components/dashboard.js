@@ -246,6 +246,128 @@
         );
     }
 
+    const LAST_PRACTICE_CACHE_PREFIX =
+        "baika-home-last-practice-cache";
+
+    function getLastPracticeCacheKey(
+        loginMember
+    ) {
+        const memberId =
+            loginMember &&
+                typeof loginMember.memberId ===
+                "string"
+                ? loginMember.memberId.trim()
+                : "";
+
+        const memberName =
+            loginMember &&
+                typeof loginMember.memberName ===
+                "string"
+                ? loginMember.memberName.trim()
+                : "";
+
+        return [
+            LAST_PRACTICE_CACHE_PREFIX,
+            memberId || memberName || "unknown"
+        ].join(":");
+    }
+
+    function loadLastPracticeCache(
+        loginMember
+    ) {
+        try {
+            const raw =
+                sessionStorage.getItem(
+                    getLastPracticeCacheKey(
+                        loginMember
+                    )
+                );
+
+            if (!raw) {
+                return null;
+            }
+
+            const parsed =
+                JSON.parse(raw);
+
+            return parsed &&
+                typeof parsed === "object"
+                ? parsed
+                : null;
+        } catch (error) {
+            console.warn(
+                "[Baika Dashboard] 最新練習キャッシュを読めませんでした。",
+                error
+            );
+
+            return null;
+        }
+    }
+
+    function saveLastPracticeCache(
+        loginMember,
+        summary
+    ) {
+        try {
+            sessionStorage.setItem(
+                getLastPracticeCacheKey(
+                    loginMember
+                ),
+                JSON.stringify(summary)
+            );
+        } catch (error) {
+            console.warn(
+                "[Baika Dashboard] 最新練習キャッシュを保存できませんでした。",
+                error
+            );
+        }
+    }
+
+    function renderLastPracticeSummary(
+        summary
+    ) {
+        if (!summary) {
+            return;
+        }
+
+        setTextContent(
+            "homeLastPracticeDate",
+            summary.date || "-"
+        );
+
+        setTextContent(
+            "homeLastPracticeDistance",
+            summary.distance || "-"
+        );
+
+        setTextContent(
+            "homeLastPracticeScore",
+            summary.totalScore != null
+                ? String(summary.totalScore)
+                : "-"
+        );
+
+        setTextContent(
+            "homeLastPracticeAverage",
+            summary.averageScore != null
+                ? String(summary.averageScore)
+                : "-"
+        );
+
+        setTextContent(
+            "homeLastPracticeArrowCount",
+            summary.arrowCount != null
+                ? String(summary.arrowCount)
+                : "-"
+        );
+
+        setTextContent(
+            "homeLastMemo",
+            summary.memo ||
+            "前回の練習メモはありません。"
+        );
+    }
+
     async function renderLastPractice() {
         if (
             !window.BAS_CLOUD ||
@@ -273,17 +395,28 @@
             return;
         }
 
-        setTextContent(
-            "homeLastPracticeDate",
-            "読込中..."
-        );
+        const loginMember =
+            window.V4Session.getLoggedInMemberData();
+
+        if (!loginMember) {
+            renderEmptyLastPractice();
+            return;
+        }
+
+        const cachedSummary =
+            loadLastPracticeCache(
+                loginMember
+            );
+
+        if (cachedSummary) {
+            renderLastPracticeSummary(
+                cachedSummary
+            );
+        }
 
         try {
             const records =
                 await window.BAS_CLOUD.loadPracticeRecords();
-
-            const loginMember =
-                window.V4Session.getLoggedInMemberData();
 
             if (
                 !Array.isArray(records) ||
@@ -440,44 +573,47 @@
                         );
                     });
 
-            setTextContent(
-                "homeLastPracticeDate",
-                formatPracticeDate(latestDate)
+            const summary = {
+                date:
+                    formatPracticeDate(
+                        latestDate
+                    ),
+
+                distance:
+                    distances.length > 0
+                        ? distances.join(" / ")
+                        : "-",
+
+                totalScore:
+                    arrowCount > 0
+                        ? totalScore
+                        : null,
+
+                averageScore:
+                    Number.isFinite(
+                        averageScore
+                    )
+                        ? averageScore.toFixed(2)
+                        : null,
+
+                arrowCount:
+                    arrowCount > 0
+                        ? arrowCount
+                        : null,
+
+                memo:
+                    memoRecord
+                        ? memoRecord.memo.trim()
+                        : "前回の練習メモはありません。"
+            };
+
+            renderLastPracticeSummary(
+                summary
             );
 
-            setTextContent(
-                "homeLastPracticeDistance",
-                distances.length > 0
-                    ? distances.join(" / ")
-                    : "-"
-            );
-
-            setTextContent(
-                "homeLastPracticeScore",
-                arrowCount > 0
-                    ? String(totalScore)
-                    : "-"
-            );
-
-            setTextContent(
-                "homeLastPracticeAverage",
-                Number.isFinite(averageScore)
-                    ? averageScore.toFixed(2)
-                    : "-"
-            );
-
-            setTextContent(
-                "homeLastPracticeArrowCount",
-                arrowCount > 0
-                    ? String(arrowCount)
-                    : "-"
-            );
-
-            setTextContent(
-                "homeLastMemo",
-                memoRecord
-                    ? memoRecord.memo.trim()
-                    : "前回の練習メモはありません。"
+            saveLastPracticeCache(
+                loginMember,
+                summary
             );
 
             console.log(
@@ -498,7 +634,9 @@
                 error
             );
 
-            renderEmptyLastPractice();
+            if (!cachedSummary) {
+                renderEmptyLastPractice();
+            }
         }
     }
 
