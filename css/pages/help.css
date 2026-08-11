@@ -63,7 +63,9 @@
 
 .bas-help__detail {
     margin-top: var(--bas-space-6);
-    scroll-margin-top: var(--bas-space-6);
+
+    scroll-margin-top:
+        calc(var(--bas-header-height) + var(--bas-space-4));
 }
 
 .bas-help__detail h2 {
