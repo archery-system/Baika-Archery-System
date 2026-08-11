@@ -14,11 +14,9 @@
     border-bottom: 1px solid rgb(255 255 255 / 18%);
     color: var(--bas-color-white);
     background:
-        linear-gradient(
-            135deg,
+        linear-gradient(135deg,
             var(--bas-color-primary-900),
-            var(--bas-color-primary-700)
-        );
+            var(--bas-color-primary-700));
     box-shadow: var(--bas-shadow-sm);
 }
 
@@ -27,10 +25,8 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--bas-space-4);
-    width: min(
-        calc(100% - (var(--bas-space-4) * 2)),
-        var(--bas-content-width)
-    );
+    width: min(calc(100% - (var(--bas-space-4) * 2)),
+            var(--bas-content-width));
     min-height: var(--bas-header-height);
     margin-inline: auto;
 }
@@ -45,15 +41,18 @@
 }
 
 .bas-header__mark {
-    display: grid;
+    display: block;
     flex: 0 0 auto;
+
     width: 42px;
     height: 42px;
-    place-items: center;
-    border: 1px solid rgb(255 255 255 / 35%);
+
+    object-fit: contain;
+
+    border: 0;
     border-radius: 50%;
-    background: rgb(255 255 255 / 12%);
-    font-size: 1.35rem;
+
+    background: transparent;
 }
 
 .bas-header__brand-text {
@@ -214,28 +213,27 @@
         width: 100%;
     }
 
-  .bas-header__nav {
-    display: grid;
-    grid-template-columns:
-        repeat(6, minmax(0, 1fr));
-    gap: 2px;
-    width: 100%;
-   }
+    .bas-header__nav {
+        display: grid;
+        grid-template-columns:
+            repeat(6, minmax(0, 1fr));
+        gap: 2px;
+        width: 100%;
+    }
 
-  .bas-header__nav-link {
-    flex-direction: column;
-    gap: var(--bas-space-1);
-    min-width: 0;
-    padding:
-        var(--bas-space-2)
-        1px;
+    .bas-header__nav-link {
+        flex-direction: column;
+        gap: var(--bas-space-1);
+        min-width: 0;
+        padding:
+            var(--bas-space-2) 1px;
 
-    font-size: 0.72rem;
+        font-size: 0.72rem;
 
-    white-space: nowrap;
-    word-break: keep-all;
-    overflow-wrap: normal;
-   }
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow-wrap: normal;
+    }
 
     .bas-header__account {
         justify-content: center;
@@ -304,7 +302,6 @@
         width: 34px;
         height: 34px;
 
-        font-size: 18px;
     }
 
     .bas-header__brand-text {

@@ -9,7 +9,7 @@
 
     const LOGIN_STORAGE_KEY = "baikaArcheryVer4Login";
 
-        const HEADER_ITEMS = [
+    const HEADER_ITEMS = [
         {
             route: "home",
             label: "ホーム",
@@ -34,20 +34,20 @@
             icon: "📊",
             href: "analysis.html"
         },
-                {
+        {
             route: "cameraCenter",
             label: "撮影",
             icon: "📷",
             href: "camera-center.html"
-        }, 
+        },
     ];
 
-const ADMIN_HEADER_ITEM = {
-    route: "admin",
-    label: "設定",
-    icon: "⚙️",
-    href: "project-zero-admin.html"
-};
+    const ADMIN_HEADER_ITEM = {
+        route: "admin",
+        label: "設定",
+        icon: "⚙️",
+        href: "project-zero-admin.html"
+    };
 
     function createNavigationLink(item, currentRoute) {
         const link = document.createElement("a");
@@ -93,7 +93,7 @@ const ADMIN_HEADER_ITEM = {
 
             return (
                 loginData &&
-                typeof loginData.member === "string"
+                    typeof loginData.member === "string"
                     ? loginData.member.trim()
                     : ""
             );
@@ -109,37 +109,37 @@ const ADMIN_HEADER_ITEM = {
         }
     }
 
-function isAdminLoggedIn() {
-    if (
-        window.V4Session &&
-        typeof window.V4Session.isAdmin === "function"
-    ) {
-        return window.V4Session.isAdmin();
-    }
-
-    try {
-        const savedData =
-            localStorage.getItem(LOGIN_STORAGE_KEY);
-
-        if (!savedData) {
-            return false;
+    function isAdminLoggedIn() {
+        if (
+            window.V4Session &&
+            typeof window.V4Session.isAdmin === "function"
+        ) {
+            return window.V4Session.isAdmin();
         }
 
-        const loginData = JSON.parse(savedData);
+        try {
+            const savedData =
+                localStorage.getItem(LOGIN_STORAGE_KEY);
 
-        return (
-            loginData &&
-            String(loginData.role || "").trim() === "admin"
-        );
-    } catch (error) {
-        console.warn(
-            "管理者権限を確認できませんでした:",
-            error
-        );
+            if (!savedData) {
+                return false;
+            }
 
-        return false;
+            const loginData = JSON.parse(savedData);
+
+            return (
+                loginData &&
+                String(loginData.role || "").trim() === "admin"
+            );
+        } catch (error) {
+            console.warn(
+                "管理者権限を確認できませんでした:",
+                error
+            );
+
+            return false;
+        }
     }
-}
 
     function logout() {
         localStorage.removeItem(LOGIN_STORAGE_KEY);
@@ -188,11 +188,21 @@ function isAdminLoggedIn() {
         brand.className = "bas-header__brand";
         brand.href = "project-zero-home.html";
 
-        const mark = document.createElement("span");
+        const mark =
+            document.createElement("img");
 
-        mark.className = "bas-header__mark";
-        mark.setAttribute("aria-hidden", "true");
-        mark.textContent = "🏹";
+        mark.className =
+            "bas-header__mark";
+
+        mark.src =
+            "icons/app-icon-header-64.png";
+
+        mark.alt = "";
+
+        mark.setAttribute(
+            "aria-hidden",
+            "true"
+        );
 
         const brandText = document.createElement("span");
 
@@ -217,16 +227,16 @@ function isAdminLoggedIn() {
         navigation.className = "bas-header__nav";
         navigation.setAttribute("aria-label", "主要メニュー");
 
-const navigationItems = [
-    ...HEADER_ITEMS,
-    ADMIN_HEADER_ITEM
-];
+        const navigationItems = [
+            ...HEADER_ITEMS,
+            ADMIN_HEADER_ITEM
+        ];
 
-navigationItems.forEach(function (item) {
-    navigation.append(
-        createNavigationLink(item, currentRoute)
-    );
-});
+        navigationItems.forEach(function (item) {
+            navigation.append(
+                createNavigationLink(item, currentRoute)
+            );
+        });
 
         const rightArea = document.createElement("div");
 
@@ -260,7 +270,7 @@ navigationItems.forEach(function (item) {
             settings.currentRoute ||
             (
                 window.BAS_ROUTER &&
-                typeof window.BAS_ROUTER.detectCurrentRoute ===
+                    typeof window.BAS_ROUTER.detectCurrentRoute ===
                     "function"
                     ? window.BAS_ROUTER.detectCurrentRoute()
                     : "home"
