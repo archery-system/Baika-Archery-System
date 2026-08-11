@@ -118,15 +118,22 @@ function getMemberMaster() {
   ),
 
           active:
-            normalizeBooleanValue_(
-              row.active,
-              true
-            ),
+  normalizeBooleanValue_(
+    row.active,
+    true
+  ),
 
-          updatedAt:
-            String(
-              row.updatedAt || ""
-            ).trim(),
+sortOrder:
+  row.sortOrder === null ||
+  row.sortOrder === undefined ||
+  String(row.sortOrder).trim() === ""
+    ? ""
+    : Number(row.sortOrder),
+
+updatedAt:
+  String(
+    row.updatedAt || ""
+  ).trim(),
 
           updatedBy:
             String(

@@ -171,10 +171,17 @@ function syncMembersSheet(
       ),
 
   active:
-    member.active !== false,
+  member.active !== false,
 
-  initialPassword:
-    String(effectivePassword || ""),
+sortOrder:
+  member.sortOrder === null ||
+  member.sortOrder === undefined ||
+  String(member.sortOrder).trim() === ""
+    ? ""
+    : Number(member.sortOrder),
+
+initialPassword:
+  String(effectivePassword || ""),
 
   updatedAt:
     String(member.updatedAt || ""),
@@ -581,9 +588,10 @@ function overwriteSheet(sheetName, data) {
   "memberName",
   "displayName",
   "nickname",
-  "role",
-  "active",
-  "initialPassword",
+　"role",
+　"active",
+　"sortOrder",
+　"initialPassword",
   "updatedAt",
   "updatedBy",
   "distance",

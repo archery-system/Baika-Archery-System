@@ -584,9 +584,15 @@ const role =
           : ROLE_NAMES.MEMBER
       );
 
-  const password = String(
-    payload.password || ""
-  );
+  const sortOrderRaw =
+  payload.sortOrder;
+
+const sortOrder =
+  sortOrderRaw === null ||
+  sortOrderRaw === undefined ||
+  String(sortOrderRaw).trim() === ""
+    ? ""
+    : Number(sortOrderRaw);
 
   if (!name) {
     return createJsonResponse({
@@ -623,12 +629,13 @@ const role =
     createNextMemberId_(members);
 
   const newMember = {
-    memberId: memberId,
-    name: name,
-    displayName: name,
-    role: role,
-    active: true
-  };
+  memberId: memberId,
+  name: name,
+  displayName: name,
+  role: role,
+  active: true,
+  sortOrder: sortOrder
+};
 
   const updatedMembers =
     members.concat(newMember);
@@ -690,14 +697,24 @@ function handleUpdateMemberNameAction_(payload) {
     ).trim();
 
   const updatedBy =
-    String(
-      payload.updatedBy || ""
-    ).trim();
+String(
+payload.updatedBy || ""
+).trim();
 
-    const requestedRole =
-  String(
-    payload.role || ""
-  ).trim();
+const sortOrderRaw =
+payload.sortOrder;
+
+const sortOrder =
+sortOrderRaw === null ||
+sortOrderRaw === undefined ||
+String(sortOrderRaw).trim() === ""
+? ""
+: Number(sortOrderRaw);
+
+const requestedRole =
+String(
+payload.role || ""
+).trim();
 
 const newRole =
   requestedRole === ROLE_NAMES.ADMIN
@@ -721,6 +738,20 @@ const newRole =
       message: "氏名を入力してください。"
     });
   }
+
+if (
+sortOrder !== "" &&
+(
+!Number.isInteger(sortOrder) ||
+sortOrder < 1
+)
+) {
+return createJsonResponse({
+success: false,
+message:
+"ログイン表示順は1以上の整数で入力してください。"
+});
+}
 
   const members =
     getMemberMaster();
@@ -769,22 +800,25 @@ const newRole =
     );
 
   const updatedMember = {
-  ...previousMember,
+...previousMember,
 
-  name:
-    newName,
+name:
+newName,
 
-  displayName:
-    newName,
+displayName:
+newName,
 
-  role:
-    newRole,
+role:
+newRole,
 
-  updatedAt:
-    updatedAt,
+sortOrder:
+sortOrder,
 
-  updatedBy:
-    updatedBy
+updatedAt:
+updatedAt,
+
+updatedBy:
+updatedBy
 };
 
   const updatedMembers =

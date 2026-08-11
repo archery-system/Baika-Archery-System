@@ -30,30 +30,30 @@
 
         renderLoadingRow();
 
-try {
-    const members = await loadMembers();
+        try {
+            const members = await loadMembers();
 
-    renderMemberTable(members);
-} catch (error) {
-    console.error(
-        "部員一覧の読み込みに失敗しました:",
-        error
-    );
+            renderMemberTable(members);
+        } catch (error) {
+            console.error(
+                "部員一覧の読み込みに失敗しました:",
+                error
+            );
 
-    if (
-        error &&
-        error.name === "AbortError"
-    ) {
-        renderErrorRow(
-            "部員情報の読み込みに時間がかかっています。再読み込みしてください。"
-        );
-        return;
-    }
+            if (
+                error &&
+                error.name === "AbortError"
+            ) {
+                renderErrorRow(
+                    "部員情報の読み込みに時間がかかっています。再読み込みしてください。"
+                );
+                return;
+            }
 
-    renderErrorRow(
-        "部員情報を読み込めませんでした。再読み込みしてください。"
-    );
-}
+            renderErrorRow(
+                "部員情報を読み込めませんでした。再読み込みしてください。"
+            );
+        }
     }
 
     /**
@@ -91,27 +91,27 @@ try {
             }
         );
 
-              if (cancelButton) {
-    cancelButton.addEventListener(
-        "click",
-        function () {
-            memberAddForm.reset();
+        if (cancelButton) {
+            cancelButton.addEventListener(
+                "click",
+                function () {
+                    memberAddForm.reset();
 
-            const nameInput =
-                document.getElementById(
-                    "newMemberName"
-                );
+                    const nameInput =
+                        document.getElementById(
+                            "newMemberName"
+                        );
 
-            if (nameInput) {
-                nameInput.dispatchEvent(
-                    new Event("input")
-                );
+                    if (nameInput) {
+                        nameInput.dispatchEvent(
+                            new Event("input")
+                        );
 
-                nameInput.focus();
-            }
+                        nameInput.focus();
+                    }
+                }
+            );
         }
-    );
-}
     }
 
     /**
@@ -156,521 +156,562 @@ try {
         }
     }
 
-/**
- * 入力欄の状態を監視する
- */
-function initializeMemberFormValidation() {
+    /**
+     * 入力欄の状態を監視する
+     */
+    function initializeMemberFormValidation() {
 
-    const nameInput =
-        document.getElementById(
-            "newMemberName"
+        const nameInput =
+            document.getElementById(
+                "newMemberName"
+            );
+
+        const passwordInput =
+            document.getElementById(
+                "newMemberPassword"
+            );
+
+        const sortOrderInput =
+            document.getElementById(
+                "newMemberSortOrder"
+            );
+
+        const saveButton =
+            document.getElementById(
+                "saveNewMember"
+            );
+
+        if (
+            !nameInput ||
+            !passwordInput ||
+            !saveButton
+        ) {
+            return;
+        }
+
+        function updateButton() {
+
+            const canSave =
+                nameInput.value.trim() !== "" &&
+                passwordInput.value.trim() !== "";
+
+            saveButton.disabled = !canSave;
+
+            saveButton.textContent =
+                canSave
+                    ? "部員を登録"
+                    : "保存準備中";
+        }
+
+        nameInput.addEventListener(
+            "input",
+            updateButton
         );
 
-    const passwordInput =
-        document.getElementById(
-            "newMemberPassword"
+        passwordInput.addEventListener(
+            "input",
+            updateButton
         );
 
-    const saveButton =
-        document.getElementById(
-            "saveNewMember"
-        );
-
-    if (
-        !nameInput ||
-        !passwordInput ||
-        !saveButton
-    ) {
-        return;
+        updateButton();
     }
 
-    function updateButton() {
+    /**
+     * 部員追加ボタンを準備する
+     */
+    function initializeMemberSave() {
+        const saveButton =
+            document.getElementById(
+                "saveNewMember"
+            );
 
-        const canSave =
-            nameInput.value.trim() !== "" &&
-            passwordInput.value.trim() !== "";
+        if (!saveButton) {
+            return;
+        }
 
-        saveButton.disabled = !canSave;
-
-        saveButton.textContent =
-            canSave
-                ? "部員を登録"
-                : "保存準備中";
+        saveButton.addEventListener(
+            "click",
+            saveNewMember
+        );
     }
 
-    nameInput.addEventListener(
-        "input",
-        updateButton
-    );
 
-    passwordInput.addEventListener(
-        "input",
-        updateButton
-    );
+    /**
+     * 新しい部員をGASへ登録する
+     */
+    async function saveNewMember() {
+        const nameInput =
+            document.getElementById(
+                "newMemberName"
+            );
 
-    updateButton();
-}
+        const roleInput =
+            document.getElementById(
+                "newMemberRole"
+            );
 
-/**
- * 部員追加ボタンを準備する
- */
-function initializeMemberSave() {
-    const saveButton =
-        document.getElementById(
-            "saveNewMember"
-        );
+        const passwordInput =
+            document.getElementById(
+                "newMemberPassword"
+            );
 
-    if (!saveButton) {
-        return;
+        const sortOrderInput =
+            document.getElementById(
+                "newMemberSortOrder"
+            );
+
+        const saveButton =
+            document.getElementById(
+                "saveNewMember"
+            );
+
+        const memberAddForm =
+            document.getElementById(
+                "memberAddForm"
+            );
+
+        if (
+            !nameInput ||
+            !roleInput ||
+            !sortOrderInput ||
+            !passwordInput ||
+            !saveButton ||
+            !memberAddForm
+        ) {
+            return;
+        }
+
+        const memberName =
+            nameInput.value.trim();
+
+        const selectedRole =
+            String(roleInput.value || "");
+
+        const role =
+            selectedRole === "admin"
+                ? "admin"
+                : (
+                    selectedRole === "coach"
+                        ? "coach"
+                        : "member"
+                );
+
+        const sortOrderRaw =
+            sortOrderInput.value.trim();
+
+        const sortOrder =
+            sortOrderRaw === ""
+                ? ""
+                : Number(sortOrderRaw);
+
+        if (
+            sortOrder !== "" &&
+            (
+                !Number.isInteger(sortOrder) ||
+                sortOrder < 1
+            )
+        ) {
+            alert(
+                "ログイン表示順は1以上の整数で入力してください。"
+            );
+
+            sortOrderInput.focus();
+            return;
+        }
+
+        const password =
+            passwordInput.value;
+
+        if (!memberName) {
+            alert("氏名を入力してください。");
+            nameInput.focus();
+            return;
+        }
+
+        if (!password) {
+            alert(
+                "初期パスワードを入力してください。"
+            );
+            passwordInput.focus();
+            return;
+        }
+
+        saveButton.disabled = true;
+        saveButton.textContent = "登録中...";
+
+        try {
+            const result =
+                await postAddMember({
+                    memberName: memberName,
+                    role: role,
+                    sortOrder: sortOrder,
+                    password: password
+                });
+
+            console.log(
+                "部員登録API結果:",
+                result
+            );
+
+            if (
+                !result ||
+                result.success !== true
+            ) {
+                throw new Error(
+                    result && result.message
+                        ? result.message
+                        : "部員を登録できませんでした。"
+                );
+            }
+
+            renderMemberTable(
+                Array.isArray(result.members)
+                    ? result.members
+                    : []
+            );
+
+            memberAddForm.reset();
+
+            nameInput.dispatchEvent(
+                new Event("input")
+            );
+
+            setMemberAddFormOpen(false);
+
+            alert(
+                result.message ||
+                "部員を登録しました。"
+            );
+        } catch (error) {
+            console.error(
+                "部員登録に失敗しました:",
+                error
+            );
+
+            alert(
+                error && error.message
+                    ? error.message
+                    : "部員登録中にエラーが発生しました。"
+            );
+        } finally {
+            nameInput.dispatchEvent(
+                new Event("input")
+            );
+        }
     }
 
-    saveButton.addEventListener(
-        "click",
-        saveNewMember
-    );
-}
 
-
-/**
- * 新しい部員をGASへ登録する
- */
-async function saveNewMember() {
-    const nameInput =
-        document.getElementById(
-            "newMemberName"
-        );
-
-    const roleInput =
-        document.getElementById(
-            "newMemberRole"
-        );
-
-    const passwordInput =
-        document.getElementById(
-            "newMemberPassword"
-        );
-
-    const saveButton =
-        document.getElementById(
-            "saveNewMember"
-        );
-
-    const memberAddForm =
-        document.getElementById(
-            "memberAddForm"
-        );
-
-    if (
-        !nameInput ||
-        !roleInput ||
-        !passwordInput ||
-        !saveButton ||
-        !memberAddForm
-    ) {
-        return;
-    }
-
-    const memberName =
-        nameInput.value.trim();
-
-    const selectedRole =
-    String(roleInput.value || "");
-
-const role =
-    selectedRole === "admin"
-        ? "admin"
-        : (
-            selectedRole === "coach"
-                ? "coach"
-                : "member"
-        );
-
-    const password =
-        passwordInput.value;
-
-    if (!memberName) {
-        alert("氏名を入力してください。");
-        nameInput.focus();
-        return;
-    }
-
-    if (!password) {
-        alert(
-            "初期パスワードを入力してください。"
-        );
-        passwordInput.focus();
-        return;
-    }
-
-    saveButton.disabled = true;
-    saveButton.textContent = "登録中...";
-
-    try {
-    const result =
-        await postAddMember({
-            memberName: memberName,
-            role: role,
-            password: password
-        });
-
-    console.log(
-        "部員登録API結果:",
-        result
-    );
-
-    if (
-        !result ||
-        result.success !== true
-    ) {
+    /**
+     * 部員追加APIへ送信する
+     */
+    async function postAddMember(memberData) {
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
             throw new Error(
-                result && result.message
-                    ? result.message
-                    : "部員を登録できませんでした。"
+                "GAS API URLが設定されていません。"
             );
         }
 
-        renderMemberTable(
-            Array.isArray(result.members)
-                ? result.members
-                : []
+        const response = await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "addMember",
+
+                    memberName:
+                        memberData.memberName,
+
+                    role:
+                        memberData.role,
+
+                    sortOrder:
+                        memberData.sortOrder,
+
+                    password:
+                        memberData.password
+                })
+            }
         );
 
-        memberAddForm.reset();
-
-        nameInput.dispatchEvent(
-            new Event("input")
-        );
-
-        setMemberAddFormOpen(false);
-
-        alert(
-            result.message ||
-            "部員を登録しました。"
-        );
-    } catch (error) {
-        console.error(
-            "部員登録に失敗しました:",
-            error
-        );
-
-        alert(
-            error && error.message
-                ? error.message
-                : "部員登録中にエラーが発生しました。"
-        );
-    } finally {
-        nameInput.dispatchEvent(
-            new Event("input")
-        );
-    }
-}
-
-
-/**
- * 部員追加APIへ送信する
- */
-async function postAddMember(memberData) {
-    if (
-        typeof V4_GAS_API_URL !== "string" ||
-        V4_GAS_API_URL.trim() === ""
-    ) {
-        throw new Error(
-            "GAS API URLが設定されていません。"
-        );
-    }
-
-    const response = await fetch(
-        V4_GAS_API_URL,
-        {
-            method: "POST",
-            body: JSON.stringify({
-                action: "addMember",
-                memberName:
-                    memberData.memberName,
-                role:
-                    memberData.role,
-                password:
-                    memberData.password
-            })
+        if (!response.ok) {
+            throw new Error(
+                `部員登録に失敗しました。HTTP ${response.status}`
+            );
         }
-    );
 
-    if (!response.ok) {
-        throw new Error(
-            `部員登録に失敗しました。HTTP ${response.status}`
-        );
+        const responseText =
+            await response.text();
+
+        if (!responseText) {
+            throw new Error(
+                "部員登録APIから応答がありません。"
+            );
+        }
+
+        try {
+            return JSON.parse(responseText);
+        } catch (error) {
+            console.error(
+                "部員登録APIの応答:",
+                responseText
+            );
+
+            throw new Error(
+                "部員登録APIの応答形式が正しくありません。"
+            );
+        }
     }
-
-    const responseText =
-        await response.text();
-
-    if (!responseText) {
-        throw new Error(
-            "部員登録APIから応答がありません。"
-        );
-    }
-
-    try {
-        return JSON.parse(responseText);
-    } catch (error) {
-        console.error(
-            "部員登録APIの応答:",
-            responseText
-        );
-
-        throw new Error(
-            "部員登録APIの応答形式が正しくありません。"
-        );
-    }
-}
 
     /**
  * GASから正規化済みの部員一覧を取得する
  */
-async function loadMembers() {
-    if (
-        typeof V4_GAS_API_URL !== "string" ||
-        V4_GAS_API_URL.trim() === ""
+    async function loadMembers() {
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const separator =
+            V4_GAS_API_URL.includes("?")
+                ? "&"
+                : "?";
+
+        const requestUrl =
+            `${V4_GAS_API_URL}${separator}action=getMembers`;
+
+        const controller =
+            new AbortController();
+
+        const timeoutId =
+            window.setTimeout(
+                function () {
+                    controller.abort();
+                },
+                15000
+            );
+
+        let response;
+
+        try {
+            response =
+                await fetch(
+                    requestUrl,
+                    {
+                        method: "GET",
+                        cache: "no-store",
+                        signal: controller.signal
+                    }
+                );
+        } finally {
+            window.clearTimeout(
+                timeoutId
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                `部員一覧の取得に失敗しました。HTTP ${response.status}`
+            );
+        }
+
+        const result = await response.json();
+
+        console.log(
+            "部員一覧API取得結果:",
+            result
+        );
+
+        if (
+            !result ||
+            result.success !== true ||
+            !Array.isArray(result.members)
+        ) {
+            const message =
+                result && result.message
+                    ? result.message
+                    : "部員一覧の応答形式が正しくありません。";
+
+            throw new Error(message);
+        }
+
+        return result.members;
+    }
+
+    /**
+* 部員一覧を表示する
+*/
+    function renderMemberTable(members) {
+        const tableBody =
+            document.getElementById(
+                "memberTableBody"
+            );
+
+        if (!tableBody) {
+            return;
+        }
+
+        tableBody.innerHTML = "";
+
+        if (
+            !Array.isArray(members) ||
+            members.length === 0
+        ) {
+            renderEmptyRow();
+            return;
+        }
+
+        members.forEach(function (member, index) {
+            const normalizedMember =
+                normalizeMemberForDisplay(
+                    member,
+                    index
+                );
+
+            const row =
+                document.createElement("tr");
+
+            const memberId =
+                createTableCell(
+                    normalizedMember.memberId
+                );
+
+            const name =
+                createTableCell(
+                    normalizedMember.displayName
+                );
+
+            const role =
+                createTableCell(
+                    formatRole(
+                        normalizedMember.role
+                    )
+                );
+
+            const status =
+                createTableCell(
+                    normalizedMember.active
+                        ? "利用中"
+                        : "利用停止"
+                );
+
+            const actionCell =
+                createMemberActionCell(
+                    normalizedMember
+                );
+
+            row.appendChild(memberId);
+            row.appendChild(name);
+            row.appendChild(role);
+            row.appendChild(status);
+            row.appendChild(actionCell);
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    /**
+     * 一覧表示用に部員情報を整える
+     */
+    function normalizeMemberForDisplay(
+        member,
+        index
     ) {
-        throw new Error(
-            "GAS API URLが設定されていません。"
-        );
-    }
+        if (typeof member === "string") {
+            return {
+                memberId:
+                    `legacy_${String(index + 1).padStart(3, "0")}`,
+                displayName: member,
+                role: "member",
+                active: true
+            };
+        }
 
-    const separator =
-        V4_GAS_API_URL.includes("?")
-            ? "&"
-            : "?";
+        const memberData =
+            member &&
+                typeof member === "object"
+                ? member
+                : {};
 
-    const requestUrl =
-        `${V4_GAS_API_URL}${separator}action=getMembers`;
+        const displayName =
+            memberData.displayName ||
+            memberData.name ||
+            memberData.memberName ||
+            "氏名未設定";
 
-    const controller =
-    new AbortController();
-
-const timeoutId =
-    window.setTimeout(
-        function () {
-            controller.abort();
-        },
-        15000
-    );
-
-let response;
-
-try {
-    response =
-        await fetch(
-            requestUrl,
-            {
-                method: "GET",
-                cache: "no-store",
-                signal: controller.signal
-            }
-        );
-} finally {
-    window.clearTimeout(
-        timeoutId
-    );
-}
-
-    if (!response.ok) {
-        throw new Error(
-            `部員一覧の取得に失敗しました。HTTP ${response.status}`
-        );
-    }
-
-    const result = await response.json();
-
-    console.log(
-        "部員一覧API取得結果:",
-        result
-    );
-
-    if (
-        !result ||
-        result.success !== true ||
-        !Array.isArray(result.members)
-    ) {
-        const message =
-            result && result.message
-                ? result.message
-                : "部員一覧の応答形式が正しくありません。";
-
-        throw new Error(message);
-    }
-
-    return result.members;
-}
-
-        /**
- * 部員一覧を表示する
- */
-function renderMemberTable(members) {
-    const tableBody =
-        document.getElementById(
-            "memberTableBody"
-        );
-
-    if (!tableBody) {
-        return;
-    }
-
-    tableBody.innerHTML = "";
-
-    if (
-        !Array.isArray(members) ||
-        members.length === 0
-    ) {
-        renderEmptyRow();
-        return;
-    }
-
-    members.forEach(function (member, index) {
-        const normalizedMember =
-            normalizeMemberForDisplay(
-                member,
-                index
-            );
-
-        const row =
-            document.createElement("tr");
-
-        const memberId =
-            createTableCell(
-                normalizedMember.memberId
-            );
-
-        const name =
-            createTableCell(
-                normalizedMember.displayName
-            );
-
-        const role =
-            createTableCell(
-                formatRole(
-                    normalizedMember.role
-                )
-            );
-
-        const status =
-    createTableCell(
-        normalizedMember.active
-            ? "利用中"
-            : "利用停止"
-    );
-
-const actionCell =
-    createMemberActionCell(
-        normalizedMember
-    );
-
-row.appendChild(memberId);
-row.appendChild(name);
-row.appendChild(role);
-row.appendChild(status);
-row.appendChild(actionCell);
-
-tableBody.appendChild(row);
-    });
-}
-
-/**
- * 一覧表示用に部員情報を整える
- */
-function normalizeMemberForDisplay(
-    member,
-    index
-) {
-    if (typeof member === "string") {
         return {
             memberId:
+                memberData.memberId ||
                 `legacy_${String(index + 1).padStart(3, "0")}`,
-            displayName: member,
-            role: "member",
-            active: true
+
+            displayName: displayName,
+
+            role:
+                memberData.role || "member",
+
+            active:
+                memberData.active !== false
         };
     }
 
-    const memberData =
-        member &&
-        typeof member === "object"
-            ? member
-            : {};
+    /**
+     * 部員一覧の操作セルを作成する
+     */
+    function createMemberActionCell(member) {
+        const cell =
+            document.createElement("td");
 
-    const displayName =
-        memberData.displayName ||
-        memberData.name ||
-        memberData.memberName ||
-        "氏名未設定";
+        cell.style.padding = "12px";
+        cell.style.borderBottom =
+            "1px solid rgb(0 0 0 / 10%)";
 
-    return {
-        memberId:
-            memberData.memberId ||
-            `legacy_${String(index + 1).padStart(3, "0")}`,
+        const editButton =
+            document.createElement("button");
 
-        displayName: displayName,
+        editButton.type = "button";
+        editButton.className =
+            "bas-member-action-button";
 
-        role:
-            memberData.role || "member",
+        editButton.textContent = "✏️";
 
-        active:
-            memberData.active !== false
-    };
-}
+        editButton.style.display = "block";
+        editButton.style.margin = "0 auto";
 
-/**
- * 部員一覧の操作セルを作成する
- */
-function createMemberActionCell(member) {
-    const cell =
-        document.createElement("td");
+        editButton.title =
+            `${member.displayName}さんを編集`;
 
-    cell.style.padding = "12px";
-    cell.style.borderBottom =
-        "1px solid rgb(0 0 0 / 10%)";
+        editButton.setAttribute(
+            "aria-label",
+            `${member.displayName}さんを編集`
+        );
 
-    const editButton =
-    document.createElement("button");
+        editButton.dataset.memberId =
+            member.memberId;
 
-editButton.type = "button";
-editButton.className =
-    "bas-member-action-button";
+        editButton.addEventListener(
+            "click",
+            function () {
+                const memberId =
+                    encodeURIComponent(
+                        member.memberId
+                    );
 
-editButton.textContent = "✏️";
+                window.location.href =
+                    "project-zero-admin-member-edit.html" +
+                    `?memberId=${memberId}`;
+            }
+        );
 
-editButton.style.display = "block";
-editButton.style.margin = "0 auto";
+        cell.appendChild(editButton);
 
-editButton.title =
-    `${member.displayName}さんを編集`;
-
-editButton.setAttribute(
-    "aria-label",
-    `${member.displayName}さんを編集`
-);
-
-editButton.dataset.memberId =
-    member.memberId;
-
-    editButton.addEventListener(
-    "click",
-    function () {
-        const memberId =
-            encodeURIComponent(
-                member.memberId
-            );
-
-        window.location.href =
-            "project-zero-admin-member-edit.html" +
-            `?memberId=${memberId}`;
+        return cell;
     }
-);
-
-    cell.appendChild(editButton);
-
-    return cell;
-}
 
     /**
      * テーブルのセルを作成する
@@ -684,9 +725,9 @@ editButton.dataset.memberId =
         cell.style.padding = "8px";
         cell.style.textAlign = "center";
         cell.style.verticalAlign = "middle";
-        
+
         cell.style.borderBottom =
-    "1px solid rgb(0 0 0 / 10%)";
+            "1px solid rgb(0 0 0 / 10%)";
 
         return cell;
     }
@@ -695,16 +736,16 @@ editButton.dataset.memberId =
      * 権限を日本語表示へ変換する
      */
     function formatRole(role) {
-    if (role === "admin") {
-        return "管理者";
-    }
+        if (role === "admin") {
+            return "管理者";
+        }
 
-    if (role === "coach") {
-        return "監督";
-    }
+        if (role === "coach") {
+            return "監督";
+        }
 
-    return "部員";
-}
+        return "部員";
+    }
 
     /**
      * 読み込み中の表示
@@ -728,58 +769,58 @@ editButton.dataset.memberId =
      * エラー表示
      */
     function renderErrorRow(message) {
-    const tableBody =
-        document.getElementById(
-            "memberTableBody"
+        const tableBody =
+            document.getElementById(
+                "memberTableBody"
+            );
+
+        if (!tableBody) {
+            return;
+        }
+
+        tableBody.innerHTML = "";
+
+        const row =
+            document.createElement("tr");
+
+        const cell =
+            document.createElement("td");
+
+        cell.colSpan = 5;
+        cell.style.padding = "24px";
+        cell.style.textAlign = "center";
+
+        const messageText =
+            document.createElement("p");
+
+        messageText.textContent =
+            String(message || "");
+
+        const retryButton =
+            document.createElement("button");
+
+        retryButton.type = "button";
+        retryButton.className = "bas-button";
+        retryButton.textContent = "再読み込み";
+
+        retryButton.addEventListener(
+            "click",
+            function () {
+                window.location.reload();
+            }
         );
 
-    if (!tableBody) {
-        return;
+        cell.appendChild(
+            messageText
+        );
+
+        cell.appendChild(
+            retryButton
+        );
+
+        row.appendChild(cell);
+        tableBody.appendChild(row);
     }
-
-    tableBody.innerHTML = "";
-
-    const row =
-        document.createElement("tr");
-
-    const cell =
-        document.createElement("td");
-
-    cell.colSpan = 5;
-    cell.style.padding = "24px";
-    cell.style.textAlign = "center";
-
-    const messageText =
-        document.createElement("p");
-
-    messageText.textContent =
-        String(message || "");
-
-    const retryButton =
-        document.createElement("button");
-
-    retryButton.type = "button";
-    retryButton.className = "bas-button";
-    retryButton.textContent = "再読み込み";
-
-    retryButton.addEventListener(
-        "click",
-        function () {
-            window.location.reload();
-        }
-    );
-
-    cell.appendChild(
-        messageText
-    );
-
-    cell.appendChild(
-        retryButton
-    );
-
-    row.appendChild(cell);
-    tableBody.appendChild(row);
-}
 
     /**
      * テーブル全体を使って案内を表示する

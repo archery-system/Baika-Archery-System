@@ -1,114 +1,78 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
         部員管理 | Baika Archery System
     </title>
-    <meta
-        name="theme-color"
-        content="#9b2457"
-    >
+    <meta name="theme-color" content="#9b2457">
 
-    <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="icons/favicon-32.png"
-    >
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 
-    <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="icons/apple-touch-icon.png"
-    >
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
-    <link
-        rel="manifest"
-        href="manifest.webmanifest"
-    >
+    <link rel="manifest" href="manifest.webmanifest">
 
-    <link
-        rel="stylesheet"
-        href="css/foundation/tokens.css"
-    >
+    <link rel="stylesheet" href="css/foundation/tokens.css">
 
-    <link
-        rel="stylesheet"
-        href="css/foundation/base.css"
-    >
+    <link rel="stylesheet" href="css/foundation/base.css">
 
-    <link
-        rel="stylesheet"
-        href="css/layouts/app-layout.css"
-    >
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/header.css"
-    >
+    <link rel="stylesheet" href="css/components/header.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/card.css"
-    >
+    <link rel="stylesheet" href="css/components/card.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/button.css"
-    >
+    <link rel="stylesheet" href="css/components/button.css">
 
-<style>
-    .bas-member-action-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        padding: 0;
-        border: 1px solid rgb(0 0 0 / 12%);
-        border-radius: 8px;
-        background: #fff;
-        font-size: 18px;
-        line-height: 1;
-        cursor: pointer;
-    }
+    <style>
+        .bas-member-action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border: 1px solid rgb(0 0 0 / 12%);
+            border-radius: 8px;
+            background: #fff;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
 
-    .bas-member-action-button:hover {
-        background: rgb(0 0 0 / 5%);
-    }
+        .bas-member-action-button:hover {
+            background: rgb(0 0 0 / 5%);
+        }
 
-    .bas-member-action-button:focus-visible {
-        outline: 3px solid rgb(98 54 170 / 25%);
-        outline-offset: 2px;
-    }
-    @media
-    (orientation: landscape)
-    and (max-width: 900px) {
+        .bas-member-action-button:focus-visible {
+            outline: 3px solid rgb(98 54 170 / 25%);
+            outline-offset: 2px;
+        }
 
-    #memberTable {
-        min-width: 720px;
-    }
+        @media (orientation: landscape) and (max-width: 900px) {
 
-    #memberTable th:nth-child(2),
-    #memberTable td:nth-child(2) {
-        min-width: 140px;
-        white-space: nowrap;
-    }
+            #memberTable {
+                min-width: 720px;
+            }
 
-    #memberTable th:nth-child(5),
-    #memberTable td:nth-child(5) {
-        width: 64px;
-        min-width: 64px;
-    }
-}
-</style>
+            #memberTable th:nth-child(2),
+            #memberTable td:nth-child(2) {
+                min-width: 140px;
+                white-space: nowrap;
+            }
+
+            #memberTable th:nth-child(5),
+            #memberTable td:nth-child(5) {
+                width: 64px;
+                min-width: 64px;
+            }
+        }
+    </style>
 
 </head>
 
@@ -132,204 +96,179 @@
                     </p>
                 </section>
 
-<section
-    class="bas-card"
-    aria-labelledby="adminMemberAddTitle"
->
-    <div
-        style="
+                <section class="bas-card" aria-labelledby="adminMemberAddTitle">
+                    <div style="
             display:flex;
             align-items:center;
             justify-content:space-between;
             gap:12px;
             flex-wrap:wrap;
-        "
-    >
-        <div>
-            <h2
-                id="adminMemberAddTitle"
-                style="margin-bottom:6px;"
-            >
-                部員追加
-            </h2>
+        ">
+                        <div>
+                            <h2 id="adminMemberAddTitle" style="margin-bottom:6px;">
+                                部員追加
+                            </h2>
 
-            <p style="margin:0;">
-                新しい部員の基本情報を登録します。
-            </p>
-        </div>
+                            <p style="margin:0;">
+                                新しい部員の基本情報を登録します。
+                            </p>
+                        </div>
 
-        <button
-            type="button"
-            class="bas-button"
-            id="toggleMemberAddForm"
-            aria-expanded="false"
-            aria-controls="memberAddForm"
-        >
-            ＋ 部員を追加
-        </button>
-    </div>
+                        <button type="button" class="bas-button" id="toggleMemberAddForm" aria-expanded="false"
+                            aria-controls="memberAddForm">
+                            ＋ 部員を追加
+                        </button>
+                    </div>
 
-    <form
-        id="memberAddForm"
-        hidden
-        style="margin-top:20px;"
-    >
-        <div
-            style="
+                    <form id="memberAddForm" hidden style="margin-top:20px;">
+                        <div style="
                 display:grid;
                 grid-template-columns:
                     repeat(auto-fit, minmax(180px, 1fr));
                 gap:16px;
-            "
-        >
-            <div>
-                <label for="newMemberName">
-                    氏名
-                </label>
+            ">
+                            <div>
+                                <label for="newMemberName">
+                                    氏名
+                                </label>
 
-                <input
-                    type="text"
-                    id="newMemberName"
-                    name="memberName"
-                    autocomplete="off"
-                    style="
+                                <input type="text" id="newMemberName" name="memberName" autocomplete="off" style="
                         width:100%;
                         min-height:44px;
                         box-sizing:border-box;
                         margin-top:6px;
-                    "
-                >
-            </div>
+                    ">
+                            </div>
 
-            <div>
-                <label for="newMemberRole">
-                    権限
-                </label>
+                            <div>
+                                <label for="newMemberRole">
+                                    権限
+                                </label>
 
-                <select id="newMemberRole">
-    <option value="member">
-        部員
-    </option>
+                                <select id="newMemberRole">
+                                    <option value="member">
+                                        部員
+                                    </option>
 
-    <option value="coach">
-        監督
-    </option>
+                                    <option value="coach">
+                                        監督
+                                    </option>
 
-    <option value="admin">
-        管理者
-    </option>
-</select>
-            </div>
+                                    <option value="admin">
+                                        管理者
+                                    </option>
+                                </select>
+                            </div>
 
-            <div>
-                <label for="newMemberPassword">
-                    初期パスワード
-                </label>
+                            <div>
+                                <label for="newMemberSortOrder">
+                                    ログイン表示順
+                                </label>
 
-                <input
-                    type="password"
-                    id="newMemberPassword"
-                    name="memberPassword"
-                    autocomplete="new-password"
-                    style="
+                                <input type="number" id="newMemberSortOrder" name="memberSortOrder" min="1" step="1"
+                                    inputmode="numeric" placeholder="例：1" style="
+            width:100%;
+            min-height:44px;
+            box-sizing:border-box;
+            margin-top:6px;
+        ">
+
+                                <p style="
+            margin:6px 0 0;
+            font-size:0.85rem;
+            line-height:1.5;
+            opacity:0.75;
+        ">
+                                    数字が小さい順にログイン画面へ表示します。
+                                    空欄の場合はログイン画面に表示しません。
+                                </p>
+                            </div>
+
+                            <div>
+                                <label for="newMemberPassword">
+                                    初期パスワード
+                                </label>
+
+                                <input type="password" id="newMemberPassword" name="memberPassword"
+                                    autocomplete="new-password" style="
                         width:100%;
                         min-height:44px;
                         box-sizing:border-box;
                         margin-top:6px;
-                    "
-                >
-            </div>
-        </div>
+                    ">
+                            </div>
+                        </div>
 
-        <div
-            style="
+                        <div style="
                 display:flex;
                 gap:12px;
                 margin-top:20px;
                 flex-wrap:wrap;
-            "
-        >
-            <button
-                type="button"
-                class="bas-button"
-                id="saveNewMember"
-                disabled
-            >
-                保存準備中
-            </button>
+            ">
+                            <button type="button" class="bas-button" id="saveNewMember" disabled>
+                                保存準備中
+                            </button>
 
-            <button
-                type="button"
-                class="bas-button"
-                id="cancelMemberAdd"
-            >
-                キャンセル
-            </button>
-        </div>
-    </form>
-</section>
+                            <button type="button" class="bas-button" id="cancelMemberAdd">
+                                キャンセル
+                            </button>
+                        </div>
+                    </form>
+                </section>
 
-               <section
-    class="bas-card"
-    aria-labelledby="adminMembersListTitle"
->
-    <h2 id="adminMembersListTitle">
-        部員一覧
-    </h2>
+                <section class="bas-card" aria-labelledby="adminMembersListTitle">
+                    <h2 id="adminMembersListTitle">
+                        部員一覧
+                    </h2>
 
-    <div style="overflow-x:auto;">
-        <table
-            id="memberTable"
-            style="
+                    <div style="overflow-x:auto;">
+                        <table id="memberTable" style="
                 width:100%;
                 border-collapse:collapse;
-            "
-        >
-            <thead>
-                <tr>
-                    <th>
-                        部員ID
-                    </th>
+            ">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        部員ID
+                                    </th>
 
-                    <th>
-                        氏名
-                    </th>
+                                    <th>
+                                        氏名
+                                    </th>
 
-                    <th>
-                        権限
-                    </th>
+                                    <th>
+                                        権限
+                                    </th>
 
-                    <th>
-                        状態
-                    </th>
+                                    <th>
+                                        状態
+                                    </th>
 
-                    <th
-                        style="
+                                    <th style="
                             width:64px;
                             text-align:center;
-                        "
-                    >
-                        操作
-                    </th>
-                </tr>
-            </thead>
+                        ">
+                                        操作
+                                    </th>
+                                </tr>
+                            </thead>
 
-            <tbody id="memberTableBody">
-            </tbody>
-        </table>
-    </div>
-</section>
+                            <tbody id="memberTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
 
     <script src="js/v4-session.js"></script>
-<script src="js/core/config.js"></script>
-<script src="js/core/organization.js"></script>
-<script src="js/components/header.js"></script>
-<script src="js/pages/admin-members.js?v=19"></script>
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/pages/admin-members.js?v=19"></script>
 
-<script>
+    <script>
         document.addEventListener(
             "DOMContentLoaded",
             function () {
@@ -354,4 +293,5 @@
         );
     </script>
 </body>
+
 </html>

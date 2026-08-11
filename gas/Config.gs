@@ -94,10 +94,13 @@ function normalizeMemberMaster(memberMaster) {
     ROLE_NAMES.MEMBER,
 
   active:
-    true,
+  true,
 
-  updatedAt:
-    "",
+sortOrder:
+  "",
+
+updatedAt:
+  "",
 
   updatedBy:
     ""
@@ -138,10 +141,17 @@ function normalizeMemberMaster(memberMaster) {
     normalizeRole_(member.role),
 
   active:
-    member.active !== false,
+  member.active !== false,
 
-  updatedAt:
-    String(member.updatedAt || "").trim(),
+sortOrder:
+  member.sortOrder === null ||
+  member.sortOrder === undefined ||
+  String(member.sortOrder).trim() === ""
+    ? ""
+    : Number(member.sortOrder),
+
+updatedAt:
+  String(member.updatedAt || "").trim(),
 
   updatedBy:
     String(member.updatedBy || "").trim()

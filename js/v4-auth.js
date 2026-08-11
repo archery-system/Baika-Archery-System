@@ -22,156 +22,156 @@ const V4Auth = {
      * ログイン画面の初期化
      */
     async init() {
-    this.restoreLogin();
+        this.restoreLogin();
 
-    /*
-     * ログイン状態を最優先で画面へ反映する。
-     * 部員データ通信を待たないことで、
-     * ログイン済みなのに旧ログイン画面が
-     * 一瞬表示される現象を防ぐ。
-     */
-    this.bindEvents();
-    this.updateScreen();
+        /*
+         * ログイン状態を最優先で画面へ反映する。
+         * 部員データ通信を待たないことで、
+         * ログイン済みなのに旧ログイン画面が
+         * 一瞬表示される現象を防ぐ。
+         */
+        this.bindEvents();
+        this.updateScreen();
 
-    try {
-        await this.loadMemberData();
-    } catch (error) {
-        console.error(
-            "部員データの読み込みに失敗しました:",
-            error
-        );
+        try {
+            await this.loadMemberData();
+        } catch (error) {
+            console.error(
+                "部員データの読み込みに失敗しました:",
+                error
+            );
 
-        this.showMessage(
-            "部員データを読み込めませんでした。通信環境を確認してください。",
-            "error"
-        );
-    }
+            this.showMessage(
+                "部員データを読み込めませんでした。通信環境を確認してください。",
+                "error"
+            );
+        }
 
-    this.renderMemberDropdown();
-},
+        this.renderMemberDropdown();
+    },
 
     /**
      * GASから部員一覧・パスワード情報を取得
      */
     async loadMemberData() {
-    if (
-        typeof GAS_API_URL === "undefined" ||
-        !GAS_API_URL
-    ) {
-        throw new Error(
-            "GAS_API_URLが設定されていません"
-        );
-    }
-
-    const cachedMembers =
-       this.loadMemberCache();
-
-    if (cachedMembers) {
-       this.members = cachedMembers;
-       this.memberPasswords = {};
-       return;
-    }
-
-    const url =
-        GAS_API_URL +
-        (GAS_API_URL.includes("?") ? "&" : "?") +
-        "action=getMembers";
-
-    const response = await fetch(url, {
-        method: "GET",
-        cache: "no-store"
-    });
-
-    if (!response.ok) {
-        throw new Error(
-            `HTTPエラー: ${response.status}`
-        );
-    }
-
-    const data = await response.json();
-
-    if (
-        data &&
-        data.success === true &&
-        Array.isArray(data.members)
-    ) {
-        this.members = data.members;
-        this.saveMemberCache(
-        data.members
-        );
-    } else {
-        this.members = [];
-    }
-
-    this.memberPasswords = {};
-},
-
-loadMemberCache() {
-    try {
-        const saved =
-            localStorage.getItem(
-                V4_MEMBER_CACHE_KEY
+        if (
+            typeof GAS_API_URL === "undefined" ||
+            !GAS_API_URL
+        ) {
+            throw new Error(
+                "GAS_API_URLが設定されていません"
             );
-
-        if (!saved) {
-            return null;
         }
 
-        const cacheData =
-            JSON.parse(saved);
+        const cachedMembers =
+            this.loadMemberCache();
+
+        if (cachedMembers) {
+            this.members = cachedMembers;
+            this.memberPasswords = {};
+            return;
+        }
+
+        const url =
+            GAS_API_URL +
+            (GAS_API_URL.includes("?") ? "&" : "?") +
+            "action=getMembers";
+
+        const response = await fetch(url, {
+            method: "GET",
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTPエラー: ${response.status}`
+            );
+        }
+
+        const data = await response.json();
 
         if (
-            !cacheData ||
-            !Array.isArray(
-                cacheData.members
-            ) ||
-            !cacheData.savedAt
+            data &&
+            data.success === true &&
+            Array.isArray(data.members)
         ) {
-            return null;
+            this.members = data.members;
+            this.saveMemberCache(
+                data.members
+            );
+        } else {
+            this.members = [];
         }
 
-        const age =
-            Date.now() -
-            Number(cacheData.savedAt);
+        this.memberPasswords = {};
+    },
 
-        if (
-            !Number.isFinite(age) ||
-            age > V4_MEMBER_CACHE_TTL
-        ) {
-            localStorage.removeItem(
-                V4_MEMBER_CACHE_KEY
+    loadMemberCache() {
+        try {
+            const saved =
+                localStorage.getItem(
+                    V4_MEMBER_CACHE_KEY
+                );
+
+            if (!saved) {
+                return null;
+            }
+
+            const cacheData =
+                JSON.parse(saved);
+
+            if (
+                !cacheData ||
+                !Array.isArray(
+                    cacheData.members
+                ) ||
+                !cacheData.savedAt
+            ) {
+                return null;
+            }
+
+            const age =
+                Date.now() -
+                Number(cacheData.savedAt);
+
+            if (
+                !Number.isFinite(age) ||
+                age > V4_MEMBER_CACHE_TTL
+            ) {
+                localStorage.removeItem(
+                    V4_MEMBER_CACHE_KEY
+                );
+
+                return null;
+            }
+
+            return cacheData.members;
+        } catch (error) {
+            console.warn(
+                "部員キャッシュを読み込めませんでした:",
+                error
             );
 
             return null;
         }
+    },
 
-        return cacheData.members;
-    } catch (error) {
-        console.warn(
-            "部員キャッシュを読み込めませんでした:",
-            error
-        );
-
-        return null;
-    }
-},
-
-saveMemberCache(members) {
-    try {
-        localStorage.setItem(
-            V4_MEMBER_CACHE_KEY,
-            JSON.stringify({
-                members,
-                savedAt: Date.now()
-            })
-        );
-    } catch (error) {
-        console.warn(
-            "部員キャッシュを保存できませんでした:",
-            error
-        );
-    }
-},
+    saveMemberCache(members) {
+        try {
+            localStorage.setItem(
+                V4_MEMBER_CACHE_KEY,
+                JSON.stringify({
+                    members,
+                    savedAt: Date.now()
+                })
+            );
+        } catch (error) {
+            console.warn(
+                "部員キャッシュを保存できませんでした:",
+                error
+            );
+        }
+    },
 
     /**
      * JSON文字列ならオブジェクトへ変換
@@ -198,98 +198,130 @@ saveMemberCache(members) {
 
         dropdown.innerHTML = '<option value="">部員を選択してください</option>';
 
-        this.members.forEach(member => {
-    const memberData =
-        typeof member === "string"
-            ? {
-                memberId: member,
-                name: member,
-                displayName: member,
-                active: true
+        const loginMembers =
+            this.members
+                .map(member => {
+                    if (typeof member === "string") {
+                        return {
+                            memberId: member,
+                            name: member,
+                            displayName: member,
+                            active: true,
+                            sortOrder: ""
+                        };
+                    }
+
+                    return member;
+                })
+                .filter(memberData => {
+                    if (
+                        !memberData ||
+                        typeof memberData !== "object" ||
+                        memberData.active === false
+                    ) {
+                        return false;
+                    }
+
+                    const sortOrderRaw =
+                        memberData.sortOrder;
+
+                    if (
+                        sortOrderRaw === null ||
+                        sortOrderRaw === undefined ||
+                        String(sortOrderRaw).trim() === ""
+                    ) {
+                        return false;
+                    }
+
+                    const sortOrder =
+                        Number(sortOrderRaw);
+
+                    return (
+                        Number.isInteger(sortOrder) &&
+                        sortOrder >= 1
+                    );
+                })
+                .sort((a, b) => {
+                    return (
+                        Number(a.sortOrder) -
+                        Number(b.sortOrder)
+                    );
+                });
+
+        loginMembers.forEach(memberData => {
+            const memberId =
+                String(
+                    memberData.memberId ||
+                    memberData.name ||
+                    memberData.displayName ||
+                    ""
+                ).trim();
+
+            const displayName =
+                String(
+                    memberData.displayName ||
+                    memberData.name ||
+                    memberId
+                ).trim();
+
+            if (!memberId || !displayName) {
+                return;
             }
-            : member;
 
-    if (
-        !memberData ||
-        typeof memberData !== "object" ||
-        memberData.active === false
-    ) {
-        return;
-    }
+            const option =
+                document.createElement("option");
 
-    const memberId =
-        String(
-            memberData.memberId ||
-            memberData.name ||
-            memberData.displayName ||
-            ""
-        ).trim();
+            option.value = memberId;
+            option.textContent = displayName;
 
-    const displayName =
-        String(
-            memberData.displayName ||
-            memberData.name ||
-            memberId
-        ).trim();
-
-    if (!memberId || !displayName) {
-        return;
-    }
-
-    const option =
-        document.createElement("option");
-
-    option.value = memberId;
-    option.textContent = displayName;
-
-    option.dataset.memberName =
-        String(
-            memberData.name ||
-            displayName
-        );
-
-    dropdown.appendChild(option);
-});
-
-if (this.loggedInMember) {
-    const matchingMember =
-        this.members.find(member => {
-            if (typeof member === "string") {
-                return (
-                    member ===
-                    this.loggedInMember
+            option.dataset.memberName =
+                String(
+                    memberData.name ||
+                    displayName
                 );
-            }
 
-            if (
-                !member ||
-                typeof member !== "object"
-            ) {
-                return false;
-            }
-
-            return (
-                member.memberId ===
-                    this.loggedInMember ||
-                member.name ===
-                    this.loggedInMember ||
-                member.displayName ===
-                    this.loggedInMember
-            );
+            dropdown.appendChild(option);
         });
 
-    if (matchingMember) {
-        dropdown.value =
-            typeof matchingMember === "string"
-                ? matchingMember
-                : (
-                    matchingMember.memberId ||
-                    matchingMember.name ||
-                    matchingMember.displayName ||
-                    ""
-                );
-    }
-}
+        if (this.loggedInMember) {
+            const matchingMember =
+                this.members.find(member => {
+                    if (typeof member === "string") {
+                        return (
+                            member ===
+                            this.loggedInMember
+                        );
+                    }
+
+                    if (
+                        !member ||
+                        typeof member !== "object"
+                    ) {
+                        return false;
+                    }
+
+                    return (
+                        member.memberId ===
+                        this.loggedInMember ||
+                        member.name ===
+                        this.loggedInMember ||
+                        member.displayName ===
+                        this.loggedInMember
+                    );
+                });
+
+            if (matchingMember) {
+                dropdown.value =
+                    typeof matchingMember === "string"
+                        ? matchingMember
+                        : (
+                            matchingMember.memberId ||
+                            matchingMember.name ||
+                            matchingMember.displayName ||
+                            ""
+                        );
+            }
+        }
     },
 
     /**
@@ -325,99 +357,99 @@ if (this.loggedInMember) {
     /**
  * ログイン
  */
-async login() {
-    const memberDropdown = document.getElementById("v4LoginMember");
-    const passwordInput = document.getElementById("v4LoginPassword");
-    const loginButton = document.getElementById("v4LoginButton");
+    async login() {
+        const memberDropdown = document.getElementById("v4LoginMember");
+        const passwordInput = document.getElementById("v4LoginPassword");
+        const loginButton = document.getElementById("v4LoginButton");
 
-    if (!memberDropdown || !passwordInput) return;
+        if (!memberDropdown || !passwordInput) return;
 
-    const memberIdentifier = memberDropdown.value.trim();
-    const password = passwordInput.value;
+        const memberIdentifier = memberDropdown.value.trim();
+        const password = passwordInput.value;
 
-    if (!memberIdentifier) {
-        this.showMessage("部員を選択してください。", "error");
-        memberDropdown.focus();
-        return;
-    }
+        if (!memberIdentifier) {
+            this.showMessage("部員を選択してください。", "error");
+            memberDropdown.focus();
+            return;
+        }
 
-    if (!password) {
-        this.showMessage("パスワードを入力してください。", "error");
-        passwordInput.focus();
-        return;
-    }
-
-    if (
-        typeof window.V4AuthApi === "undefined" ||
-        typeof window.V4AuthApi.login !== "function"
-    ) {
-        this.showMessage(
-            "認証機能を読み込めませんでした。ページを再読み込みしてください。",
-            "error"
-        );
-        return;
-    }
-
-    if (loginButton) {
-        loginButton.disabled = true;
-        loginButton.textContent = "確認中...";
-    }
-
-    this.showMessage("ログイン情報を確認しています。", "");
-
-    try {
-        const result = await window.V4AuthApi.login(
-            memberIdentifier,
-            password
-        );
-
-        if (!result || result.success !== true || !result.member) {
-            const message =
-                result && result.message
-                    ? result.message
-                    : "ログインできませんでした。";
-
-            this.showMessage(message, "error");
-            passwordInput.value = "";
+        if (!password) {
+            this.showMessage("パスワードを入力してください。", "error");
             passwordInput.focus();
             return;
         }
 
-        const authenticatedMember = result.member;
-
-        this.loggedInMember =
-            authenticatedMember.displayName ||
-            authenticatedMember.memberName ||
-            memberIdentifier;
-
-        this.saveLogin(authenticatedMember);
-
-        passwordInput.value = "";
-
-        this.showMessage(
-            `${this.loggedInMember}さん、ログインしました。`,
-            "success"
-        );
-
-        this.updateScreen();
-
-        window.location.href = "project-zero-home.html";
-    } catch (error) {
-        console.error("ログイン処理に失敗しました:", error);
-
-        this.showMessage(
-            error && error.message
-                ? error.message
-                : "ログイン処理中にエラーが発生しました。",
-            "error"
-        );
-    } finally {
-        if (loginButton) {
-            loginButton.disabled = false;
-            loginButton.textContent = "ログイン";
+        if (
+            typeof window.V4AuthApi === "undefined" ||
+            typeof window.V4AuthApi.login !== "function"
+        ) {
+            this.showMessage(
+                "認証機能を読み込めませんでした。ページを再読み込みしてください。",
+                "error"
+            );
+            return;
         }
-    }
-},
+
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.textContent = "確認中...";
+        }
+
+        this.showMessage("ログイン情報を確認しています。", "");
+
+        try {
+            const result = await window.V4AuthApi.login(
+                memberIdentifier,
+                password
+            );
+
+            if (!result || result.success !== true || !result.member) {
+                const message =
+                    result && result.message
+                        ? result.message
+                        : "ログインできませんでした。";
+
+                this.showMessage(message, "error");
+                passwordInput.value = "";
+                passwordInput.focus();
+                return;
+            }
+
+            const authenticatedMember = result.member;
+
+            this.loggedInMember =
+                authenticatedMember.displayName ||
+                authenticatedMember.memberName ||
+                memberIdentifier;
+
+            this.saveLogin(authenticatedMember);
+
+            passwordInput.value = "";
+
+            this.showMessage(
+                `${this.loggedInMember}さん、ログインしました。`,
+                "success"
+            );
+
+            this.updateScreen();
+
+            window.location.href = "project-zero-home.html";
+        } catch (error) {
+            console.error("ログイン処理に失敗しました:", error);
+
+            this.showMessage(
+                error && error.message
+                    ? error.message
+                    : "ログイン処理中にエラーが発生しました。",
+                "error"
+            );
+        } finally {
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.textContent = "ログイン";
+            }
+        }
+    },
 
     /**
      * ログアウト
@@ -439,32 +471,32 @@ async login() {
     /**
  * ログイン状態を保存
  */
-saveLogin(memberData = {}) {
-    const memberName =
-        memberData.memberName ||
-        memberData.displayName ||
-        this.loggedInMember;
+    saveLogin(memberData = {}) {
+        const memberName =
+            memberData.memberName ||
+            memberData.displayName ||
+            this.loggedInMember;
 
-    const displayName =
-        memberData.displayName ||
-        memberName ||
-        this.loggedInMember;
+        const displayName =
+            memberData.displayName ||
+            memberName ||
+            this.loggedInMember;
 
-    const loginData = {
-        member: displayName,
-        memberId: memberData.memberId || "",
-        memberName: memberName || "",
-        displayName: displayName || "",
-        nickname: memberData.nickname || "",
-        role: memberData.role || "member",
-        savedAt: new Date().toISOString()
-    };
+        const loginData = {
+            member: displayName,
+            memberId: memberData.memberId || "",
+            memberName: memberName || "",
+            displayName: displayName || "",
+            nickname: memberData.nickname || "",
+            role: memberData.role || "member",
+            savedAt: new Date().toISOString()
+        };
 
-    localStorage.setItem(
-        V4_AUTH_STORAGE_KEY,
-        JSON.stringify(loginData)
-    );
-},
+        localStorage.setItem(
+            V4_AUTH_STORAGE_KEY,
+            JSON.stringify(loginData)
+        );
+    },
 
     /**
      * 保存されたログイン状態を復元
