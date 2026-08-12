@@ -645,30 +645,31 @@ function overwriteSheet(sheetName, data) {
 
   const allValues = [headers, ...rows];
 
-  const range = sheet.getRange(
-    1,
-    1,
-    allValues.length,
-    headers.length
-  );
+const range = sheet.getRange(
+  1,
+  1,
+  allValues.length,
+  headers.length
+);
 
-  range.setValues(allValues);
+headers.forEach((header, index) => {
+  if (
+    header === "date" ||
+    header === "matchDate" ||
+    header === "initialPassword"
+  ) {
+    sheet
+      .getRange(
+        2,
+        index + 1,
+        rows.length,
+        1
+      )
+      .setNumberFormat("@");
+  }
+});
 
-  headers.forEach((header, index) => {
-    if (
-      header === "date" ||
-      header === "matchDate"
-    ) {
-      sheet
-        .getRange(
-          2,
-          index + 1,
-          rows.length,
-          1
-        )
-        .setNumberFormat("@");
-    }
-  });
+range.setValues(allValues);
 }
 
 function normalizeDateText(value) {

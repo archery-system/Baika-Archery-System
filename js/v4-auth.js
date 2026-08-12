@@ -63,15 +63,6 @@ const V4Auth = {
             );
         }
 
-        const cachedMembers =
-            this.loadMemberCache();
-
-        if (cachedMembers) {
-            this.members = cachedMembers;
-            this.memberPasswords = {};
-            return;
-        }
-
         const url =
             GAS_API_URL +
             (GAS_API_URL.includes("?") ? "&" : "?") +
@@ -96,9 +87,6 @@ const V4Auth = {
             Array.isArray(data.members)
         ) {
             this.members = data.members;
-            this.saveMemberCache(
-                data.members
-            );
         } else {
             this.members = [];
         }

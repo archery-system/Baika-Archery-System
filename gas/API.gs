@@ -572,8 +572,12 @@ function handleAddMemberAction_(payload) {
     ""
   ).trim();
 
-  const requestedRole =
-  String(payload.role || "");
+  const password = String(
+    payload.password || ""
+  );
+
+const requestedRole =
+String(payload.role || "");
 
 const role =
   requestedRole === ROLE_NAMES.ADMIN
@@ -654,6 +658,8 @@ upsertMetadataValue(
   "memberPasswords",
   passwords
 );
+
+clearMemberAuthCache_();
 
 console.log(
   "membersシート同期開始:",
@@ -832,14 +838,16 @@ updatedBy
     getMemberPasswords();
 
   upsertMetadataValue(
-    "memberMaster",
-    updatedMembers
-  );
+  "memberMaster",
+  updatedMembers
+);
 
-  syncMembersSheet(
-    updatedMembers,
-    passwords
-  );
+clearMemberAuthCache_();
+
+syncMembersSheet(
+  updatedMembers,
+  passwords
+);
 
   return createJsonResponse({
     success: true,
@@ -1025,14 +1033,16 @@ function handleUpdateMyProfileAction_(
     getMemberPasswords();
 
   upsertMetadataValue(
-    "memberMaster",
-    updatedMembers
-  );
+  "memberMaster",
+  updatedMembers
+);
 
-  syncMembersSheet(
-    updatedMembers,
-    passwords
-  );
+clearMemberAuthCache_();
+
+syncMembersSheet(
+  updatedMembers,
+  passwords
+);
 
   return createJsonResponse({
     success: true,
