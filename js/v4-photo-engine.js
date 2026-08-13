@@ -588,7 +588,12 @@
             this.state.x += centerX - projected.x;
             this.state.y += centerY - projected.y;
 
-            this.constrainPosition();
+            /*
+             * タップ位置を600%へ拡大するときは、
+             * statechangeでフォーカスモードへ切り替わる前でも
+             * 写真端まで中央へ移動できる範囲を使用する。
+             */
+            this.constrainPosition(true);
             this.applyTransform();
         }
 
@@ -641,7 +646,7 @@
             this.dispatchStateChange();
         }
 
-        constrainPosition() {
+        constrainPosition(forceFocusMode = false) {
             const bounds =
                 this.getDisplayBounds();
 
@@ -666,8 +671,13 @@
                     : 0;
 
             const focusMode =
-                document.documentElement.classList.contains("v4-photo-focus-mode") ||
-                document.body.classList.contains("v4-photo-focus-mode");
+                forceFocusMode ||
+                document.documentElement.classList.contains(
+                    "v4-photo-focus-mode"
+                ) ||
+                document.body.classList.contains(
+                    "v4-photo-focus-mode"
+                );
 
             /*
              * 全画面600%では、写真の四隅まで十字照準の中央へ
