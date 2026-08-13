@@ -1131,6 +1131,24 @@
             ) ||
             "大会名未設定";
 
+        const venue =
+            document.createElement(
+                "span"
+            );
+
+        venue.className =
+            "bas-match-record__venue";
+
+        venue.textContent =
+            normalizeText(
+                record.venue
+            )
+                ? "📍 " +
+                normalizeText(
+                    record.venue
+                )
+                : "";
+
         const date =
             document.createElement(
                 "span"
@@ -1145,6 +1163,11 @@
             );
 
         top.appendChild(title);
+
+        if (venue.textContent) {
+            top.appendChild(venue);
+        }
+
         top.appendChild(date);
 
         const meta =
@@ -1243,99 +1266,171 @@
             detail
         );
 
+        const memo =
+            normalizeText(
+                record.memo
+            );
+
+        if (memo) {
+            const memoRow =
+                document.createElement(
+                    "div"
+                );
+
+            memoRow.className =
+                "bas-match-record__memo";
+
+            const memoLabel =
+                document.createElement(
+                    "strong"
+                );
+
+            memoLabel.textContent =
+                "📝 大会メモ";
+
+            const memoText =
+                document.createElement(
+                    "p"
+                );
+
+            memoText.textContent =
+                memo;
+
+            memoRow.appendChild(
+                memoLabel
+            );
+
+            memoRow.appendChild(
+                memoText
+            );
+
+            article.appendChild(
+                memoRow
+            );
+        }
+
         const resultUrl =
             normalizeResultUrlForDisplay(
                 record.resultUrl
             );
 
-        if (resultUrl) {
-            const urlRow =
-                document.createElement(
-                    "p"
-                );
-
-            urlRow.className =
-                "bas-match-record__url";
-
-            const urlLabel =
-                document.createElement(
-                    "strong"
-                );
-
-            urlLabel.textContent =
-                "大会結果URL：";
-
-            const resultLink =
-                document.createElement(
-                    "a"
-                );
-
-            resultLink.href =
-                resultUrl;
-
-            resultLink.target =
-                "_blank";
-
-            resultLink.rel =
-                "noopener noreferrer";
-
-            resultLink.className =
-                "bas-match-record__url-link";
-
-            resultLink.textContent =
-                resultUrl;
-
-            urlRow.appendChild(
-                urlLabel
+        const canEdit =
+            canEditRecord(record) &&
+            normalizeText(
+                record.recordId
             );
-
-            urlRow.appendChild(
-                resultLink
-            );
-
-            article.appendChild(
-                urlRow
-            );
-        }
 
         if (
-            canEditRecord(record) &&
-            normalizeText(record.recordId)
+            resultUrl ||
+            canEdit
         ) {
-            const actions =
-                document.createElement("div");
-
-            actions.className =
-                "bas-match-record__actions";
-
-            const editLink =
-                document.createElement("a");
-
-            editLink.href =
-                "project-zero-match.html?recordId=" +
-                encodeURIComponent(
-                    normalizeText(
-                        record.recordId
-                    )
+            const footerRow =
+                document.createElement(
+                    "div"
                 );
 
-            editLink.addEventListener(
-                "click",
-                function () {
-                    saveEditingRecordToSession(
-                        record
+            footerRow.className =
+                "bas-match-record__footer";
+
+            if (resultUrl) {
+                const urlRow =
+                    document.createElement(
+                        "p"
                     );
-                }
+
+                urlRow.className =
+                    "bas-match-record__url";
+
+                const urlLabel =
+                    document.createElement(
+                        "strong"
+                    );
+
+                urlLabel.textContent =
+                    "大会結果URL：";
+
+                const resultLink =
+                    document.createElement(
+                        "a"
+                    );
+
+                resultLink.href =
+                    resultUrl;
+
+                resultLink.target =
+                    "_blank";
+
+                resultLink.rel =
+                    "noopener noreferrer";
+
+                resultLink.className =
+                    "bas-match-record__url-link";
+
+                resultLink.textContent =
+                    resultUrl;
+
+                urlRow.appendChild(
+                    urlLabel
+                );
+
+                urlRow.appendChild(
+                    resultLink
+                );
+
+                footerRow.appendChild(
+                    urlRow
+                );
+            }
+
+            if (canEdit) {
+                const actions =
+                    document.createElement(
+                        "div"
+                    );
+
+                actions.className =
+                    "bas-match-record__actions";
+
+                const editLink =
+                    document.createElement(
+                        "a"
+                    );
+
+                editLink.href =
+                    "project-zero-match.html?recordId=" +
+                    encodeURIComponent(
+                        normalizeText(
+                            record.recordId
+                        )
+                    );
+
+                editLink.addEventListener(
+                    "click",
+                    function () {
+                        saveEditingRecordToSession(
+                            record
+                        );
+                    }
+                );
+
+                editLink.className =
+                    "bas-button";
+
+                editLink.textContent =
+                    "記録を訂正する";
+
+                actions.appendChild(
+                    editLink
+                );
+
+                footerRow.appendChild(
+                    actions
+                );
+            }
+
+            article.appendChild(
+                footerRow
             );
-
-            editLink.className =
-                "bas-button";
-
-            editLink.textContent =
-                "記録を訂正する";
-
-            actions.appendChild(editLink);
-            article.appendChild(actions);
         }
 
         return article;

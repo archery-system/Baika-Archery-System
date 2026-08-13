@@ -738,3 +738,102 @@ body {
         width: 100%;
     }
 }
+
+/*
+ * 大会記録
+ * 会場・大会メモ・フッター
+ */
+
+/*
+ * 会場
+ */
+.bas-match-record__venue {
+    min-width: 0;
+    margin-left: auto;
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+}
+
+/*
+ * 大会メモ
+ */
+.bas-match-record__memo {
+    margin-top: var(--bas-space-2);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    background: rgb(251 247 250);
+}
+
+.bas-match-record__memo strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.bas-match-record__memo p {
+    margin: 0;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/*
+ * 大会結果URL ＋ 訂正ボタン
+ */
+.bas-match-record__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bas-space-3);
+    margin-top: var(--bas-space-2);
+}
+
+.bas-match-record__footer .bas-match-record__url {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.bas-match-record__footer .bas-match-record__actions {
+    flex: 0 0 auto;
+    padding-top: 0;
+}
+
+/*
+ * スマホ縦向き
+ */
+@media (max-width: 600px) {
+    .bas-match-record__top {
+        grid-template-columns:
+            minmax(0, 1fr)
+            auto;
+    }
+
+    .bas-match-record__title {
+        grid-column: 1 / -1;
+    }
+
+    .bas-match-record__venue {
+        margin-left: 0;
+    }
+
+    .bas-match-record__date {
+        justify-self: end;
+        white-space: nowrap;
+    }
+
+    .bas-match-record__footer {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .bas-match-record__footer .bas-match-record__actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .bas-match-record__footer
+        .bas-match-record__actions
+        .bas-button {
+        width: auto;
+    }
+}

@@ -74,8 +74,8 @@ count2Label: "10"
     secondHalfLabel: "後半 18m",
     firstHalfEnds: 5,
     secondHalfEnds: 5,
-    arrowsPerEnd: 3,
-    maxScorePerEnd: 30,
+    arrowsPerEnd: 6,
+    maxScorePerEnd: 60,
     count1Label: "10",
     count2Label: "9"
 }
@@ -480,6 +480,16 @@ function restoreEditingRecord(record) {
     setInputValue(
         "matchDate",
         record.matchDate
+    );
+
+        setInputValue(
+        "matchVenue",
+        record.venue || ""
+    );
+
+    setInputValue(
+        "matchMemo",
+        record.memo || ""
     );
 
     setInputValue(
@@ -1565,7 +1575,7 @@ const updatedAt =
     memberName:
         ownerMemberName,
 
-        matchName:
+                matchName:
             getTextInputValue(
                 "matchName"
             ),
@@ -1573,6 +1583,16 @@ const updatedAt =
         matchDate:
             getTextInputValue(
                 "matchDate"
+            ),
+
+        venue:
+            getTextInputValue(
+                "matchVenue"
+            ),
+
+        memo:
+            getTextInputValue(
+                "matchMemo"
             ),
 
         category:

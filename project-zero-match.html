@@ -1,78 +1,37 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
         大会記録入力 | Baika Archery System
     </title>
-    <meta
-        name="theme-color"
-        content="#9b2457"
-    >
+    <meta name="theme-color" content="#9b2457">
 
-    <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="icons/favicon-32.png"
-    >
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 
-    <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="icons/apple-touch-icon.png"
-    >
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
-    <link
-        rel="manifest"
-        href="manifest.webmanifest"
-    >
+    <link rel="manifest" href="manifest.webmanifest">
 
-    <link
-        rel="stylesheet"
-        href="css/foundation/tokens.css"
-    >
+    <link rel="stylesheet" href="css/foundation/tokens.css">
 
-    <link
-        rel="stylesheet"
-        href="css/foundation/base.css"
-    >
+    <link rel="stylesheet" href="css/foundation/base.css">
 
-    <link
-        rel="stylesheet"
-        href="css/layouts/app-layout.css"
-    >
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/header.css"
-    >
+    <link rel="stylesheet" href="css/components/header.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/page-header.css"
-    >
+    <link rel="stylesheet" href="css/components/page-header.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/card.css"
-    >
+    <link rel="stylesheet" href="css/components/card.css">
 
-    <link
-        rel="stylesheet"
-        href="css/components/button.css"
-    >
+    <link rel="stylesheet" href="css/components/button.css">
 
-<link
-    rel="stylesheet"
-    href="css/pages/match.css?v=1"
->
+    <link rel="stylesheet" href="css/pages/match.css?v=1">
 
 </head>
 
@@ -86,10 +45,7 @@
             <div class="bas-app__content">
 
                 <!-- 基本情報 -->
-                <section
-                    class="bas-card"
-                    aria-labelledby="matchFormTitle"
-                >
+                <section class="bas-card" aria-labelledby="matchFormTitle">
                     <h2 id="matchFormTitle">
                         大会記録入力
                     </h2>
@@ -104,13 +60,7 @@
                                 大会名
                             </label>
 
-                            <input
-                                type="text"
-                                id="matchName"
-                                name="matchName"
-                                autocomplete="off"
-                                required
-                            >
+                            <input type="text" id="matchName" name="matchName" autocomplete="off" required>
                         </div>
 
                         <div>
@@ -118,12 +68,16 @@
                                 開催日
                             </label>
 
-                            <input
-                                type="date"
-                                id="matchDate"
-                                name="matchDate"
-                                required
-                            >
+                            <input type="date" id="matchDate" name="matchDate" required>
+                        </div>
+
+                        <div>
+                            <label for="matchVenue">
+                                会場
+                            </label>
+
+                            <input type="text" id="matchVenue" name="matchVenue" autocomplete="off"
+                                placeholder="例：大阪市立修道館">
                         </div>
 
                         <div>
@@ -131,11 +85,7 @@
                                 種目
                             </label>
 
-                            <select
-                                id="matchCategory"
-                                name="matchCategory"
-                                required
-                            >
+                            <select id="matchCategory" name="matchCategory" required>
                                 <option value="">
                                     選択してください
                                 </option>
@@ -171,55 +121,53 @@
                                 公開設定
                             </label>
 
-                            <select
-                                id="matchVisibility"
-                                name="matchVisibility"
-                            >
+                            <select id="matchVisibility" name="matchVisibility">
                                 <option value="members">
-    部員全員に公開
-</option>
+                                    部員全員に公開
+                                </option>
 
-<option value="private">
-    本人・監督・管理者のみ
-</option>
+                                <option value="private">
+                                    本人・監督・管理者のみ
+                                </option>
                             </select>
                         </div>
 
+                                                <div>
+                            <label for="matchMemo">
+                                大会メモ
+                            </label>
+
+                            <textarea
+                                id="matchMemo"
+                                name="matchMemo"
+                                rows="4"
+                                maxlength="500"
+                                placeholder="天気、その日の調子、体調、気づきなどを自由に記録できます"
+                            ></textarea>
+                        </div>
+                        
                         <div>
-    <label for="matchResultUrl">
-        大会結果URL
-    </label>
+                            <label for="matchResultUrl">
+                                大会結果URL
+                            </label>
 
-    <input
-        type="url"
-        id="matchResultUrl"
-        name="matchResultUrl"
-        inputmode="url"
-        autocomplete="url"
-        placeholder="https://example.com/result"
-    >
+                            <input type="url" id="matchResultUrl" name="matchResultUrl" inputmode="url"
+                                autocomplete="url" placeholder="https://example.com/result">
 
-    <p>
-        大会結果や順位表が公開されている場合に入力します。
-    </p>
-</div>
+                            <p>
+                                大会結果や順位表が公開されている場合に入力します。
+                            </p>
+                        </div>
 
                         <div class="bas-match-actions">
-                            <button
-                                type="button"
-                                class="
+                            <button type="button" class="
                                     bas-button
                                     bas-button--primary
-                                "
-                                id="continueMatchInputButton"
-                            >
+                                " id="continueMatchInputButton">
                                 得点入力へ進む
                             </button>
 
-                            <a
-                                href="project-zero-record-center.html"
-                                class="bas-button"
-                            >
+                            <a href="project-zero-record-center.html" class="bas-button">
                                 記録センターへ戻る
                             </a>
                         </div>
@@ -227,12 +175,7 @@
                 </section>
 
                 <!-- 得点入力 -->
-                <section
-                    id="matchScoreSection"
-                    class="bas-card"
-                    aria-labelledby="matchScoreTitle"
-                    hidden
-                >
+                <section id="matchScoreSection" class="bas-card" aria-labelledby="matchScoreTitle" hidden>
                     <h2 id="matchScoreTitle">
                         得点入力
                     </h2>
@@ -274,49 +217,40 @@
                     <div id="matchEndInputs"></div>
 
                     <div class="bas-match-grand-total">
-    <p class="bas-match-grand-total__item">
-        総合計
-        <strong id="matchTotalScore">
-            0
-        </strong>
-        点
-    </p>
+                        <p class="bas-match-grand-total__item">
+                            総合計
+                            <strong id="matchTotalScore">
+                                0
+                            </strong>
+                            点
+                        </p>
 
-    <p class="bas-match-grand-total__item">
-    総<span id="matchTotalCount1Label">X</span>数
+                        <p class="bas-match-grand-total__item">
+                            総<span id="matchTotalCount1Label">X</span>数
 
-    <strong id="matchTotalX">
-        0
-    </strong>
-</p>
+                            <strong id="matchTotalX">
+                                0
+                            </strong>
+                        </p>
 
-    <p class="bas-match-grand-total__item">
-    総<span id="matchTotalCount2Label">10</span>数
+                        <p class="bas-match-grand-total__item">
+                            総<span id="matchTotalCount2Label">10</span>数
 
-    <strong id="matchTotalTen">
-        0
-    </strong>
-</p>
-</div>
+                            <strong id="matchTotalTen">
+                                0
+                            </strong>
+                        </p>
+                    </div>
 
                     <div class="bas-match-actions">
-                        <button
-                            type="button"
-                            class="
+                        <button type="button" class="
                                 bas-button
                                 bas-button--primary
-                            "
-                            id="saveMatchRecordButton"
-                            disabled
-                        >
+                            " id="saveMatchRecordButton" disabled>
                             大会記録を保存
                         </button>
 
-                        <button
-                            type="button"
-                            class="bas-button"
-                            id="backToMatchBasicButton"
-                        >
+                        <button type="button" class="bas-button" id="backToMatchBasicButton">
                             基本情報へ戻る
                         </button>
                     </div>
@@ -350,7 +284,7 @@
                     !window.V4Session ||
                     typeof window.V4Session
                         .requireLogin !==
-                        "function" ||
+                    "function" ||
                     !window.V4Session
                         .requireLogin()
                 ) {
@@ -361,7 +295,7 @@
                     window.BAS_HEADER &&
                     typeof window.BAS_HEADER
                         .render ===
-                        "function"
+                    "function"
                 ) {
                     window.BAS_HEADER.render({
                         targetId:
@@ -376,7 +310,7 @@
                     window.BAS_PAGE_HEADER &&
                     typeof window.BAS_PAGE_HEADER
                         .render ===
-                        "function"
+                    "function"
                 ) {
                     window.BAS_PAGE_HEADER.render({
                         targetId:
@@ -397,7 +331,7 @@
                     window.BAS_MATCH &&
                     typeof window.BAS_MATCH
                         .initialize ===
-                        "function"
+                    "function"
                 ) {
                     window.BAS_MATCH.initialize();
                 } else {
@@ -414,4 +348,5 @@
         );
     </script>
 </body>
+
 </html>
