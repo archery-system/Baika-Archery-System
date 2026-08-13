@@ -1198,7 +1198,8 @@ function syncPhotoPinsToGrouping(
     photoPins,
     naturalWidth,
     naturalHeight,
-    calibration
+    calibration,
+    convertedTargetPoints
 ) {
     if (
         !Array.isArray(photoPins) ||
@@ -1227,39 +1228,88 @@ function syncPhotoPinsToGrouping(
             const isMiss =
                 scoreLabel === "M";
 
-            const photoTargetX =
+            /*
+             * 写真側で計算済みの
+             * 300×300共通的座標を最優先する。
+             *
+             * これにより、
+             *
+             * 写真
+             * ↓
+             * 撮影時の黒色外周ガイド
+             * ↓
+             * convertPhotoPointToTarget()
+             * ↓
+             * 入力用的
+             * ↓
+             * グルーピング的
+             *
+             * の座標基準を完全に統一する。
+             */
+            const convertedPoint =
+                Array.isArray(convertedTargetPoints)
+                    ? convertedTargetPoints[index]
+                    : null;
+
+            let photoTargetX;
+            let photoTargetY;
+
+            if (
+                convertedPoint &&
+                Number.isFinite(
+                    Number(convertedPoint.x)
+                ) &&
+                Number.isFinite(
+                    Number(convertedPoint.y)
+                )
+            ) {
+                photoTargetX =
+                    Number(convertedPoint.x);
+
+                photoTargetY =
+                    Number(convertedPoint.y);
+            } else if (
                 calibration &&
-                    calibration.ready
-                    ? (
-                        150 +
-                        (
-                            Number(pin.x) -
-                            Number(calibration.centerX)
-                        ) /
-                        Number(calibration.radiusX) *
-                        150
-                    )
-                    : (
+                calibration.ready
+            ) {
+                /*
+                 * 撮影ガイド情報がない旧写真用。
+                 * 従来の4点校正を残す。
+                 */
+                photoTargetX =
+                    150 +
+                    (
+                        Number(pin.x) -
+                        Number(calibration.centerX)
+                    ) /
+                    Number(calibration.radiusX) *
+                    150;
+
+                photoTargetY =
+                    150 +
+                    (
+                        Number(pin.y) -
+                        Number(calibration.centerY)
+                    ) /
+                    Number(calibration.radiusY) *
+                    150;
+            } else {
+                /*
+                 * ガイド情報も4点校正もない写真は
+                 * 従来どおり写真全体を300×300へ変換する。
+                 */
+                photoTargetX =
+                    (
                         Number(pin.x) /
                         Number(naturalWidth)
                     ) * 300;
 
-            const photoTargetY =
-                calibration &&
-                    calibration.ready
-                    ? (
-                        150 +
-                        (
-                            Number(pin.y) -
-                            Number(calibration.centerY)
-                        ) /
-                        Number(calibration.radiusY) *
-                        150
-                    )
-                    : (
+                photoTargetY =
+                    (
                         Number(pin.y) /
                         Number(naturalHeight)
                     ) * 300;
+            }
 
             const previous =
                 previousTargetArrows[index];
@@ -1271,26 +1321,29 @@ function syncPhotoPinsToGrouping(
 
             return {
                 val: scoreLabel,
+
                 score:
                     isMiss
                         ? 0
-                        : (
-                            scoreLabel === "X"
-                                ? 10
-                                : Number(scoreLabel || 0)
-                        ),
+                        : Number(scoreLabel) || 0,
+
                 isMiss: isMiss,
+
                 x:
                     preserveManualAdjustment
                         ? Number(previous.x)
                         : photoTargetX,
+
                 y:
                     preserveManualAdjustment
                         ? Number(previous.y)
                         : photoTargetY,
+
                 targetAdjusted:
                     preserveManualAdjustment,
-                inputType: "photo-grouping"
+
+                inputType:
+                    "photo-grouping"
             };
         });
 

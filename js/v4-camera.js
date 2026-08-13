@@ -63,50 +63,50 @@
         el.finish.addEventListener("click", closeCamera);
         el.capture.addEventListener("click", capturePhoto);
         el.deleteLast.addEventListener("click", deleteLastCapture);
-       if (el.openList) {
-    el.openList.addEventListener(
-        "click",
-        function () {
-            const isMobileDevice =
-                /Android|iPhone|iPad|iPod/i.test(
-                    navigator.userAgent
-                );
+        if (el.openList) {
+            el.openList.addEventListener(
+                "click",
+                function () {
+                    const isMobileDevice =
+                        /Android|iPhone|iPad|iPod/i.test(
+                            navigator.userAgent
+                        );
 
-            if (isMobileDevice) {
-                /*
-                 * スマートフォンでは、
-                 * アプリの撮影専用モードで保存した
-                 * ガイド撮影済み写真だけを表示する。
-                 */
-                openPhotoList(true);
-                return;
-            }
+                    if (isMobileDevice) {
+                        /*
+                         * スマートフォンでは、
+                         * アプリの撮影専用モードで保存した
+                         * ガイド撮影済み写真だけを表示する。
+                         */
+                        openPhotoList(true);
+                        return;
+                    }
 
-            /*
-             * PCでは、端末内に保存されている
-             * JPG・PNGなどの写真を選択する。
-             */
-            const photoInput =
-                document.getElementById(
-                    "v4TargetPhotoInput"
-                );
+                    /*
+                     * PCでは、端末内に保存されている
+                     * JPG・PNGなどの写真を選択する。
+                     */
+                    const photoInput =
+                        document.getElementById(
+                            "v4TargetPhotoInput"
+                        );
 
-            if (!photoInput) {
-                window.alert(
-                    "写真選択機能を開けませんでした。"
-                );
-                return;
-            }
+                    if (!photoInput) {
+                        window.alert(
+                            "写真選択機能を開けませんでした。"
+                        );
+                        return;
+                    }
 
-            /*
-             * 同じ写真を続けて選択した場合も
-             * changeイベントが発生するようにする。
-             */
-            photoInput.value = "";
-            photoInput.click();
+                    /*
+                     * 同じ写真を続けて選択した場合も
+                     * changeイベントが発生するようにする。
+                     */
+                    photoInput.value = "";
+                    photoInput.click();
+                }
+            );
         }
-    );
-}
         if (el.closeList) el.closeList.addEventListener("click", closePhotoList);
         if (el.closePreview) el.closePreview.addEventListener("click", closePhotoPreview);
 
@@ -133,11 +133,11 @@
         refreshCounts();
         const params = new URLSearchParams(window.location.search);
 
-       if (params.get("mode") === "camera") {
-       window.setTimeout(() => {
-        el.open.click();
-       }, 300);
-      }
+        if (params.get("mode") === "camera") {
+            window.setTimeout(() => {
+                el.open.click();
+            }, 300);
+        }
     }
 
     async function openCamera() {
@@ -1148,20 +1148,20 @@
             const totalPinCount = impactPins.length;
             el.candidateList.innerHTML =
                 '<div class="v4-ai-carousel-nav">' +
-                    '<button type="button" data-ai-action="prev" aria-label="前の候補">‹</button>' +
-                    '<strong>候補 ' + (currentAiCandidateIndex + 1) + ' / ' + visibleCandidates.length + '</strong>' +
-                    '<button type="button" data-ai-action="next" aria-label="次の候補">›</button>' +
+                '<button type="button" data-ai-action="prev" aria-label="前の候補">‹</button>' +
+                '<strong>候補 ' + (currentAiCandidateIndex + 1) + ' / ' + visibleCandidates.length + '</strong>' +
+                '<button type="button" data-ai-action="next" aria-label="次の候補">›</button>' +
                 '</div>' +
                 '<div class="v4-ai-carousel-card' + (confirmed ? ' is-selected' : '') + '">' +
-                    '<span class="v4-ai-candidate-number">' + (currentAiCandidateIndex + 1) + '</span>' +
-                    '<span class="v4-ai-candidate-info"><strong>一致率 ' + percent + '%</strong><small>' + escapeHtml(matched) + '</small></span>' +
+                '<span class="v4-ai-candidate-number">' + (currentAiCandidateIndex + 1) + '</span>' +
+                '<span class="v4-ai-candidate-info"><strong>一致率 ' + percent + '%</strong><small>' + escapeHtml(matched) + '</small></span>' +
                 '</div>' +
                 '<div class="v4-ai-carousel-actions">' +
-                    '<button type="button" class="v4-ai-primary-action" data-ai-action="place" data-ai-candidate-id="' + currentCandidate.id + '">' + (hasImpact ? '刺さり位置を変更' : 'この矢の刺さり位置を指定') + '</button>' +
-                    '<button type="button" data-ai-action="exclude" data-ai-candidate-id="' + currentCandidate.id + '">候補から除外</button>' +
+                '<button type="button" class="v4-ai-primary-action" data-ai-action="place" data-ai-candidate-id="' + currentCandidate.id + '">' + (hasImpact ? '刺さり位置を変更' : 'この矢の刺さり位置を指定') + '</button>' +
+                '<button type="button" data-ai-action="exclude" data-ai-candidate-id="' + currentCandidate.id + '">候補から除外</button>' +
                 '</div>' +
                 '<div class="v4-ai-carousel-footer"><span>AI確認 ' + confirmedCount + ' / ' + visibleCandidates.length + '・手動 ' + manualCount + '・合計 ' + totalPinCount + ' / 12</span>' +
-                    '<button type="button" data-ai-action="toggle-pins">' + (showAllImpactPins ? '現在のピンだけ表示' : '全ピン表示') + '</button></div>';
+                '<button type="button" data-ai-action="toggle-pins">' + (showAllImpactPins ? '現在のピンだけ表示' : '全ピン表示') + '</button></div>';
         }
     }
 
@@ -1357,7 +1357,7 @@
 
             event.preventDefault();
             event.stopPropagation();
-            try { group.setPointerCapture(event.pointerId); } catch (ignore) {}
+            try { group.setPointerCapture(event.pointerId); } catch (ignore) { }
             impactDrag = {
                 pointerId: event.pointerId,
                 candidateId: candidateId,
@@ -1521,19 +1521,19 @@
 
             lastCaptureId = await addPhoto(record);
 
-if (
-    typeof addPhotoSession === "function" &&
-    window.BAS_STATE &&
-    BAS_STATE.currentPracticeSession &&
-    BAS_STATE.currentPracticeSession.active
-) {
-    addPhotoSession({
-        localPhotoId:
-            lastCaptureId
-    });
-}
+            if (
+                typeof addPhotoSession === "function" &&
+                window.BAS_STATE &&
+                BAS_STATE.currentPracticeSession &&
+                BAS_STATE.currentPracticeSession.active
+            ) {
+                addPhotoSession({
+                    localPhotoId:
+                        lastCaptureId
+                });
+            }
 
-sessionCount += 1;
+            sessionCount += 1;
             el.sessionCount.textContent = String(sessionCount);
             el.deleteLast.disabled = false;
             showCaptureFeedback(el, "End " + endNumber + " を保存しました");
@@ -1614,20 +1614,135 @@ sessionCount += 1;
         };
     }
 
-    function calculateGuideMetadata(stage, imageWidth, imageHeight) {
-        const rect = stage.getBoundingClientRect();
-        const diameterCss = Math.min(rect.width * 0.82, rect.height * 0.82);
-        const scaleX = imageWidth / rect.width;
-        const scaleY = imageHeight / rect.height;
+    function calculateGuideMetadata(
+        stage,
+        imageWidth,
+        imageHeight
+    ) {
+        const stageRect =
+            stage.getBoundingClientRect();
+
+        const guideCircle =
+            stage.querySelector(
+                ".v4-camera-guide-circle"
+            );
+
+        if (
+            !guideCircle ||
+            !stageRect.width ||
+            !stageRect.height ||
+            !imageWidth ||
+            !imageHeight
+        ) {
+            return null;
+        }
+
+        const guideRect =
+            guideCircle.getBoundingClientRect();
+
+        /*
+         * カメラ映像はCSSで
+         * object-fit: cover
+         * として表示している。
+         *
+         * そのため画面外へ切れている部分を含めて、
+         * 表示座標 → 元画像座標へ変換する。
+         */
+        const coverScale =
+            Math.max(
+                stageRect.width / imageWidth,
+                stageRect.height / imageHeight
+            );
+
+        const renderedWidth =
+            imageWidth * coverScale;
+
+        const renderedHeight =
+            imageHeight * coverScale;
+
+        const cropX =
+            (
+                renderedWidth -
+                stageRect.width
+            ) / 2;
+
+        const cropY =
+            (
+                renderedHeight -
+                stageRect.height
+            ) / 2;
+
+        /*
+         * ガイド円の中心を
+         * stage内のCSS座標へ変換する。
+         */
+        const guideCenterCssX =
+            guideRect.left -
+            stageRect.left +
+            guideRect.width / 2;
+
+        const guideCenterCssY =
+            guideRect.top -
+            stageRect.top +
+            guideRect.height / 2;
+
+        /*
+         * CSS表示座標から
+         * 元の保存画像座標へ変換。
+         */
+        const centerX =
+            (
+                guideCenterCssX +
+                cropX
+            ) / coverScale;
+
+        const centerY =
+            (
+                guideCenterCssY +
+                cropY
+            ) / coverScale;
+
+        const radiusX =
+            (
+                guideRect.width / 2
+            ) / coverScale;
+
+        const radiusY =
+            (
+                guideRect.height / 2
+            ) / coverScale;
+
         return {
-            centerX: imageWidth / 2,
-            centerY: imageHeight / 2,
-            radiusX: diameterCss * scaleX / 2,
-            radiusY: diameterCss * scaleY / 2,
-            normalizedCenterX: 0.5,
-            normalizedCenterY: 0.5,
-            normalizedRadiusX: (diameterCss / rect.width) / 2,
-            normalizedRadiusY: (diameterCss / rect.height) / 2
+            centerX: centerX,
+            centerY: centerY,
+
+            radiusX: radiusX,
+            radiusY: radiusY,
+
+            normalizedCenterX:
+                centerX / imageWidth,
+
+            normalizedCenterY:
+                centerY / imageHeight,
+
+            normalizedRadiusX:
+                radiusX / imageWidth,
+
+            normalizedRadiusY:
+                radiusY / imageHeight,
+
+            /*
+             * このガイドが何を意味するかを
+             * 明示して保存する。
+             *
+             * 通常的では、
+             * 黒色外周 = 的全体半径の80%
+             */
+            referenceType:
+                "blackOuter",
+
+            targetRadiusRatio:
+                0.8
         };
     }
 
@@ -1891,10 +2006,23 @@ sessionCount += 1;
         storeName: STORE_NAME,
         refreshCounts: refreshCounts,
         getAllPhotos: getAllPhotos,
-        openPicker: function () { return openPhotoList(true); },
+        getPhoto: getPhoto,
+        openPicker: function () {
+            return openPhotoList(true);
+        },
         openNextPendingPhoto: openNextPendingPhoto,
-        markPhotoComplete: function (photoId) { return setPhotoComplete(photoId, true); },
-        markPhotoPending: function (photoId) { return setPhotoComplete(photoId, false); },
+        markPhotoComplete: function (photoId) {
+            return setPhotoComplete(
+                photoId,
+                true
+            );
+        },
+        markPhotoPending: function (photoId) {
+            return setPhotoComplete(
+                photoId,
+                false
+            );
+        },
         deletePhoto: deletePhoto
     };
 })();

@@ -10,6 +10,7 @@
     let photoEngine = null;
     let photoFillSource = "";
     let currentPhotoUrl = "";
+    let currentPhotoGuide = null;
 
     const pins = [];
     let pinLayer = null;
@@ -968,34 +969,34 @@
                     const rect = elements.viewer.getBoundingClientRect();
                     setPhotoFocusMode(false, elements);
                     requestAnimationFrame(function () {
-    const nextRect =
-        elements.viewer.getBoundingClientRect();
+                        const nextRect =
+                            elements.viewer.getBoundingClientRect();
 
-    photoEngine.focusAt(
-        2.1,
-        nextRect.left + nextRect.width / 2,
-        nextRect.top + nextRect.height / 2
-    );
+                        photoEngine.focusAt(
+                            2.1,
+                            nextRect.left + nextRect.width / 2,
+                            nextRect.top + nextRect.height / 2
+                        );
 
-    /*
-     * 全画面解除後のレイアウト反映を待ってから、
-     * 入力的を画面内へ表示する。
-     */
-    requestAnimationFrame(function () {
-        const targetSvg =
-            document.getElementById("targetSvg");
+                        /*
+                         * 全画面解除後のレイアウト反映を待ってから、
+                         * 入力的を画面内へ表示する。
+                         */
+                        requestAnimationFrame(function () {
+                            const targetSvg =
+                                document.getElementById("targetSvg");
 
-        if (!targetSvg) {
-            return;
-        }
+                            if (!targetSvg) {
+                                return;
+                            }
 
-        targetSvg.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest"
-        });
-    });
-});
+                            targetSvg.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                                inline: "nearest"
+                            });
+                        });
+                    });
                 }
             );
         }
@@ -1207,17 +1208,173 @@
         );
     }
 
+    function convertPhotoPointToTarget(
+        imageX,
+        imageY
+    ) {
+        const x =
+            Number(imageX);
+
+        const y =
+            Number(imageY);
+
+        if (
+            !Number.isFinite(x) ||
+            !Number.isFinite(y)
+        ) {
+            return null;
+        }
+
+        /*
+         * 撮影専用モードで撮った写真の場合。
+         *
+         * 青いガイド円 =
+         * 実物の黒色外周。
+         *
+         * 黒色外周は
+         * 的全体半径の80%なので、
+         * 300×300的では半径120に対応する。
+         */
+        if (
+            currentPhotoGuide &&
+            Number.isFinite(
+                Number(
+                    currentPhotoGuide.centerX
+                )
+            ) &&
+            Number.isFinite(
+                Number(
+                    currentPhotoGuide.centerY
+                )
+            ) &&
+            Number.isFinite(
+                Number(
+                    currentPhotoGuide.radiusX
+                )
+            ) &&
+            Number.isFinite(
+                Number(
+                    currentPhotoGuide.radiusY
+                )
+            ) &&
+            Number(
+                currentPhotoGuide.radiusX
+            ) > 0 &&
+            Number(
+                currentPhotoGuide.radiusY
+            ) > 0
+        ) {
+            const centerX =
+                Number(
+                    currentPhotoGuide.centerX
+                );
+
+            const centerY =
+                Number(
+                    currentPhotoGuide.centerY
+                );
+
+            const radiusX =
+                Number(
+                    currentPhotoGuide.radiusX
+                );
+
+            const radiusY =
+                Number(
+                    currentPhotoGuide.radiusY
+                );
+
+            const targetBlackRadius =
+                120;
+
+            return {
+                x:
+                    150 +
+                    (
+                        (x - centerX) /
+                        radiusX
+                    ) *
+                    targetBlackRadius,
+
+                y:
+                    150 +
+                    (
+                        (y - centerY) /
+                        radiusY
+                    ) *
+                    targetBlackRadius,
+
+                source:
+                    "camera-guide"
+            };
+        }
+
+        /*
+         * 撮影ガイド情報がない写真は、
+         * 従来の4点校正を使用する。
+         */
+        const calibration =
+            getCalibration();
+
+        if (
+            calibration &&
+            calibration.ready
+        ) {
+            return {
+                x:
+                    150 +
+                    (
+                        (x -
+                            calibration.centerX) /
+                        calibration.radiusX
+                    ) *
+                    150,
+
+                y:
+                    150 +
+                    (
+                        (y -
+                            calibration.centerY) /
+                        calibration.radiusY
+                    ) *
+                    150,
+
+                source:
+                    "manual-calibration"
+            };
+        }
+
+        /*
+         * どちらの校正もない場合は
+         * 座標変換できない。
+         */
+        return null;
+    }
+
     function updateAutomaticPinScore(pin) {
         if (!pin || !photoEngine) return pin;
 
-        const state = photoEngine.getState();
-        const naturalWidth = Number(state.naturalWidth || 0);
-        const naturalHeight = Number(state.naturalHeight || 0);
-        if (!naturalWidth || !naturalHeight) return pin;
+        const targetPoint =
+            convertPhotoPointToTarget(
+                pin.x,
+                pin.y
+            );
 
-        const targetX = Number(pin.x) / naturalWidth * 300;
-        const targetY = Number(pin.y) / naturalHeight * 300;
-        const distance = Math.hypot(targetX - 150, targetY - 150);
+        if (!targetPoint) {
+            return pin;
+        }
+
+        const targetX =
+            targetPoint.x;
+
+        const targetY =
+            targetPoint.y;
+
+        const distance =
+            Math.hypot(
+                targetX - 150,
+                targetY - 150
+            );
 
         if (distance > 150) pin.score = "M";
         else if (distance <= 7.5) pin.score = "X";
@@ -1367,14 +1524,14 @@
 
         const targetArrows =
             window.baikaTargetModel &&
-            typeof window.baikaTargetModel.getArrows
+                typeof window.baikaTargetModel.getArrows
                 === "function"
                 ? window.baikaTargetModel.getArrows()
                 : [];
 
         const summarySource =
             Array.isArray(targetArrows) &&
-            targetArrows.length > 0
+                targetArrows.length > 0
                 ? targetArrows.map(function (arrow) {
                     return {
                         score:
@@ -1879,37 +2036,73 @@
         );
     }
 
-    function loadPhotoBlob(blob, photoId, elements) {
+    async function loadPhotoBlob(
+        blob,
+        photoId,
+        elements
+    ) {
         releasePhotoUrl();
         clearPins();
         closeScorePanel();
         updateUndoButton(elements);
+        currentPhotoGuide = null;
+
+        const numericPhotoId =
+            Number(photoId);
+
+        if (
+            Number.isFinite(numericPhotoId) &&
+            numericPhotoId > 0 &&
+            window.BaikaLocalPhotoStore &&
+            typeof window.BaikaLocalPhotoStore
+                .getPhoto === "function"
+        ) {
+            try {
+                const photoRecord =
+                    await window.BaikaLocalPhotoStore
+                        .getPhoto(numericPhotoId);
+
+                if (
+                    photoRecord &&
+                    photoRecord.guide &&
+                    typeof photoRecord.guide === "object"
+                ) {
+                    currentPhotoGuide =
+                        photoRecord.guide;
+                }
+            } catch (error) {
+                console.warn(
+                    "撮影ガイド情報を読み込めませんでした:",
+                    error
+                );
+            }
+        }
         currentPhotoUrl = URL.createObjectURL(blob);
         elements.preview.hidden = false;
         elements.preview.src = currentPhotoUrl;
         elements.preview.dataset.localPhotoId = String(photoId || "");
         clearArrowCandidates();
         elements.preview.addEventListener("load", function onLoad() {
-    elements.preview.removeEventListener("load", onLoad);
+            elements.preview.removeEventListener("load", onLoad);
 
-    photoEngine.reset();
-    updatePhotoUI(elements, true);
+            photoEngine.reset();
+            updatePhotoUI(elements, true);
 
-    /*
-     * 写真読込後は写真ビューアを表示位置へ移動する。
-     */
-    requestAnimationFrame(function () {
-        if (!elements.viewer) {
-            return;
-        }
+            /*
+             * 写真読込後は写真ビューアを表示位置へ移動する。
+             */
+            requestAnimationFrame(function () {
+                if (!elements.viewer) {
+                    return;
+                }
 
-        elements.viewer.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-            inline: "nearest"
+                elements.viewer.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                    inline: "nearest"
+                });
+            });
         });
-    });
-});
     }
 
     function handlePhotoSelection(event) {
@@ -2018,15 +2211,25 @@
 
         const state =
             photoEngine &&
-            typeof photoEngine.getState === "function"
+                typeof photoEngine.getState ===
+                "function"
                 ? photoEngine.getState()
                 : null;
+
+        const convertedTargetPoints =
+            pins.map(function (pin) {
+                return convertPhotoPointToTarget(
+                    pin.x,
+                    pin.y
+                );
+            });
 
         window.syncPhotoPinsToGrouping(
             pins,
             state ? state.naturalWidth : 0,
             state ? state.naturalHeight : 0,
-            getCalibration()
+            getCalibration(),
+            convertedTargetPoints
         );
     }
 
