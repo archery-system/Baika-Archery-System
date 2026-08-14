@@ -64,27 +64,6 @@
         el.capture.addEventListener("click", capturePhoto);
         el.deleteLast.addEventListener("click", deleteLastCapture);
 
-        /*
-         * Project Zero 撮影センターから
-         * practice.html?mode=camera で開かれた場合は、
-         * 撮影専用モードを自動的に起動する。
-         */
-        const pageParams =
-            new URLSearchParams(
-                window.location.search
-            );
-
-        if (
-            pageParams.get("mode") ===
-            "camera"
-        ) {
-            requestAnimationFrame(
-                function () {
-                    openCamera();
-                }
-            );
-        }
-
         if (el.openList) {
             el.openList.addEventListener(
                 "click",
