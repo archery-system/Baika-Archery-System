@@ -1158,11 +1158,47 @@
                  * 基準表示が210%でも必ず1回目は拡大になる。
                  */
                 if (state.scale < 5.95) {
+                    /*
+                     * タップした場所を写真そのものの座標で保存する。
+                     *
+                     * 600%フォーカス表示へ切り替わると
+                     * viewerの大きさが変化するため、
+                     * 最初のfocusAt()だけでは中央位置が
+                     * ずれることがある。
+                     */
+                    const focusImageX =
+                        point.imageX;
+
+                    const focusImageY =
+                        point.imageY;
+
+                    /*
+                     * まず600%へ拡大する。
+                     */
                     photoEngine.focusAt(
                         6,
                         point.clientX,
                         point.clientY
                     );
+
+                    /*
+                     * 600%フォーカス画面へのレイアウト変更後、
+                     * 元のタップ位置を新しいviewerの中央へ
+                     * もう一度正確に合わせる。
+                     */
+                    requestAnimationFrame(
+                        function () {
+                            requestAnimationFrame(
+                                function () {
+                                    photoEngine.centerImagePoint(
+                                        focusImageX,
+                                        focusImageY
+                                    );
+                                }
+                            );
+                        }
+                    );
+
                     return;
                 }
 

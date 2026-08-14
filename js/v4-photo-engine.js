@@ -597,6 +597,41 @@
             this.applyTransform();
         }
 
+        centerImagePoint(imageX, imageY) {
+            if (!this.state.loaded) {
+                return;
+            }
+
+            const projected =
+                this.imageToScreenPoint(
+                    imageX,
+                    imageY
+                );
+
+            const rect =
+                this.viewer.getBoundingClientRect();
+
+            const centerX =
+                rect.left +
+                rect.width / 2;
+
+            const centerY =
+                rect.top +
+                rect.height / 2;
+
+            this.state.x +=
+                centerX - projected.x;
+
+            this.state.y +=
+                centerY - projected.y;
+
+            /*
+             * 600%フォーカス時と同じ移動可能範囲を使う。
+             */
+            this.constrainPosition(true);
+            this.applyTransform();
+        }
+
         rotate(degrees) {
             if (!this.state.loaded) {
                 return;
