@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <meta name="theme-color" content="#24113f">
 
     <title>撮影センター | Baika Archery System</title>
+
+    <!-- Project Zero 共通デザイン -->
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+    <link rel="stylesheet" href="css/foundation/base.css">
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
+    <link rel="stylesheet" href="css/components/header.css">
 
     <!-- Ver4 共通デザイン -->
     <link rel="stylesheet" href="css/style.css">
@@ -33,31 +37,8 @@
         </div>
     </div>
 
-    <!-- 上部ヘッダー -->
-    <header class="camera-center-header">
-        <a
-            class="camera-center-back-button"
-            href="index.html"
-            aria-label="ホームへ戻る"
-        >
-            <span aria-hidden="true">←</span>
-            <span>ホーム</span>
-        </a>
-
-        <div class="camera-center-header-title">
-            <span class="camera-center-header-mark" aria-hidden="true">🏹</span>
-
-            <div>
-                <p class="camera-center-system-name">
-                    Baika Archery System
-                </p>
-
-                <p class="camera-center-system-subtitle">
-                    梅花女子大学アーチェリー部 練習支援システム
-                </p>
-            </div>
-        </div>
-    </header>
+    <!-- Project Zero 共通ヘッダー -->
+    <div id="app-header"></div>
 
     <!-- メイン画面 -->
     <main class="camera-center-main">
@@ -79,17 +60,10 @@
         </section>
 
         <!-- 機能メニュー -->
-        <section
-            class="camera-center-menu"
-            aria-label="撮影センターメニュー"
-        >
+        <section class="camera-center-menu" aria-label="撮影センターメニュー">
 
             <!-- 的写真撮影 -->
-            <button
-                class="camera-center-card camera-center-card-target"
-                type="button"
-                disabled
-            >
+            <a class="camera-center-card camera-center-card-target" href="practice.html?mode=camera">
                 <span class="camera-center-card-icon" aria-hidden="true">
                     🎯
                 </span>
@@ -105,16 +79,12 @@
                 </span>
 
                 <span class="camera-center-card-status">
-                    準備中
+                    撮影する
                 </span>
-            </button>
+            </a>
 
             <!-- フォーム動画撮影 -->
-            <button
-                class="camera-center-card camera-center-card-video"
-                type="button"
-                disabled
-            >
+            <button class="camera-center-card camera-center-card-video" type="button" disabled>
                 <span class="camera-center-card-icon" aria-hidden="true">
                     🎥
                 </span>
@@ -135,11 +105,7 @@
             </button>
 
             <!-- 撮影ライブラリ -->
-            <button
-                class="camera-center-card camera-center-card-library"
-                type="button"
-                disabled
-            >
+            <button class="camera-center-card camera-center-card-library" type="button" disabled>
                 <span class="camera-center-card-icon" aria-hidden="true">
                     🗂️
                 </span>
@@ -160,11 +126,7 @@
             </button>
 
             <!-- AI解析 -->
-            <button
-                class="camera-center-card camera-center-card-ai"
-                type="button"
-                disabled
-            >
+            <button class="camera-center-card camera-center-card-ai" type="button" disabled>
                 <span class="camera-center-card-icon" aria-hidden="true">
                     ✨
                 </span>
@@ -192,5 +154,63 @@
 
     </main>
 
+    <script src="js/core/organization.js"></script>
+    <script src="js/components/header.js"></script>
+
+    <script>
+    function updateCameraCenterHeaderHeight() {
+        const header =
+            document.querySelector(
+                ".bas-header"
+            );
+
+        if (!header) {
+            return;
+        }
+
+        const height =
+            Math.ceil(
+                header.getBoundingClientRect()
+                    .height
+            );
+
+        document.body.style.setProperty(
+            "--camera-center-header-height",
+            height + "px"
+        );
+    }
+
+    if (
+        window.BAS_HEADER &&
+        typeof window.BAS_HEADER.render ===
+        "function"
+    ) {
+        window.BAS_HEADER.render({
+            currentRoute: "cameraCenter"
+        });
+
+        updateCameraCenterHeaderHeight();
+
+        requestAnimationFrame(
+            updateCameraCenterHeaderHeight
+        );
+
+        window.addEventListener(
+            "resize",
+            updateCameraCenterHeaderHeight
+        );
+
+        window.addEventListener(
+            "orientationchange",
+            function () {
+                requestAnimationFrame(
+                    updateCameraCenterHeaderHeight
+                );
+            }
+        );
+    }
+</script>
+
 </body>
+
 </html>
