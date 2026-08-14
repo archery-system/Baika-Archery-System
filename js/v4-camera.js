@@ -173,7 +173,7 @@
             el.video.srcObject = stream;
             await el.video.play();
             el.capture.disabled = false;
-            el.message.textContent = "的の外周を円に合わせて撮影";
+            el.message.textContent = "黒色外周を円形ガイドに合わせて撮影";
         } catch (error) {
             console.error("Camera start failed:", error);
             el.message.textContent = "カメラを開始できませんでした。";
