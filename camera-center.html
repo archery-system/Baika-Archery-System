@@ -84,7 +84,7 @@
             </a>
 
             <!-- フォーム動画撮影 -->
-            <button class="camera-center-card camera-center-card-video" type="button" disabled>
+            <a class="camera-center-card camera-center-card-video" href="form-video.html">
                 <span class="camera-center-card-icon" aria-hidden="true">
                     🎥
                 </span>
@@ -100,9 +100,9 @@
                 </span>
 
                 <span class="camera-center-card-status">
-                    準備中
+                    撮影する
                 </span>
-            </button>
+            </a>
 
             <!-- 撮影ライブラリ -->
             <button class="camera-center-card camera-center-card-library" type="button" disabled>
@@ -158,58 +158,58 @@
     <script src="js/components/header.js"></script>
 
     <script>
-    function updateCameraCenterHeaderHeight() {
-        const header =
-            document.querySelector(
-                ".bas-header"
-            );
+        function updateCameraCenterHeaderHeight() {
+            const header =
+                document.querySelector(
+                    ".bas-header"
+                );
 
-        if (!header) {
-            return;
+            if (!header) {
+                return;
+            }
+
+            const height =
+                Math.ceil(
+                    header.getBoundingClientRect()
+                        .height
+                );
+
+            document.body.style.setProperty(
+                "--camera-center-header-height",
+                height + "px"
+            );
         }
 
-        const height =
-            Math.ceil(
-                header.getBoundingClientRect()
-                    .height
+        if (
+            window.BAS_HEADER &&
+            typeof window.BAS_HEADER.render ===
+            "function"
+        ) {
+            window.BAS_HEADER.render({
+                currentRoute: "cameraCenter"
+            });
+
+            updateCameraCenterHeaderHeight();
+
+            requestAnimationFrame(
+                updateCameraCenterHeaderHeight
             );
 
-        document.body.style.setProperty(
-            "--camera-center-header-height",
-            height + "px"
-        );
-    }
+            window.addEventListener(
+                "resize",
+                updateCameraCenterHeaderHeight
+            );
 
-    if (
-        window.BAS_HEADER &&
-        typeof window.BAS_HEADER.render ===
-        "function"
-    ) {
-        window.BAS_HEADER.render({
-            currentRoute: "cameraCenter"
-        });
-
-        updateCameraCenterHeaderHeight();
-
-        requestAnimationFrame(
-            updateCameraCenterHeaderHeight
-        );
-
-        window.addEventListener(
-            "resize",
-            updateCameraCenterHeaderHeight
-        );
-
-        window.addEventListener(
-            "orientationchange",
-            function () {
-                requestAnimationFrame(
-                    updateCameraCenterHeaderHeight
-                );
-            }
-        );
-    }
-</script>
+            window.addEventListener(
+                "orientationchange",
+                function () {
+                    requestAnimationFrame(
+                        updateCameraCenterHeaderHeight
+                    );
+                }
+            );
+        }
+    </script>
 
 </body>
 

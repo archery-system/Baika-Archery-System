@@ -46,6 +46,7 @@
     let photoSelectionMode = false;
     let photoPickerMode = false;
     let photoListFilter = "all";
+    let currentCameraCondition = null;
     const selectedPhotoIds = new Set();
     const PROFILE_PARTS = ["nock", "vane1", "vane2", "vane3"];
     const PROFILE_LABELS = { nock: "ノック", vane1: "羽①", vane2: "羽②", vane3: "羽③" };
@@ -63,6 +64,94 @@
         el.finish.addEventListener("click", closeCamera);
         el.capture.addEventListener("click", capturePhoto);
         el.deleteLast.addEventListener("click", deleteLastCapture);
+
+        if (el.conditionButton) {
+            el.conditionButton.addEventListener(
+                "click",
+                function () {
+                    if (!el.conditionPanel) {
+                        return;
+                    }
+
+                    el.conditionPanel.hidden =
+                        !el.conditionPanel.hidden;
+
+                    if (el.message) {
+                        el.message.hidden =
+                            !el.conditionPanel.hidden;
+                    }
+                }
+            );
+        }
+
+        if (el.conditionApply) {
+            el.conditionApply.addEventListener(
+                "click",
+                function () {
+                    const distance =
+                        el.conditionDistance
+                            ? el.conditionDistance.value
+                            : "";
+
+                    const weather =
+                        el.conditionWeather
+                            ? el.conditionWeather.value
+                            : "";
+
+                    const windStrength =
+                        el.conditionWindStrength
+                            ? el.conditionWindStrength.value
+                            : "";
+
+                    const windDirection =
+                        el.conditionWindDirection
+                            ? el.conditionWindDirection.value
+                            : "";
+
+                    currentCameraCondition = {
+                        distance: distance,
+                        weather: weather,
+                        windStrength: windStrength,
+                        windDirection: windDirection
+                    };
+
+                    if (el.conditionPanel) {
+                        el.conditionPanel.hidden = true;
+                    }
+
+                    if (el.message) {
+                        el.message.hidden = false;
+                    }
+
+                    if (el.conditionSummary) {
+                        el.conditionSummary.textContent =
+                            formatCameraConditionSummary({
+                                distance: distance,
+                                weather: weather,
+                                windStrength: windStrength,
+                                windDirection: windDirection
+                            });
+                    }
+                }
+            );
+        }
+
+        if (el.conditionClose) {
+            el.conditionClose.addEventListener(
+                "click",
+                function () {
+                    if (!el.conditionPanel) {
+                        return;
+                    }
+
+                    el.conditionPanel.hidden = true;
+
+                    if (el.message) {
+                        el.message.hidden = false;
+                    }
+                }
+            );
+        }
 
         if (el.openList) {
             el.openList.addEventListener(
@@ -184,9 +273,38 @@
 
     function closeCamera() {
         const el = getElements();
+
         stopCameraStream();
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        /*
+         * 撮影センターから
+         * practice.html?mode=camera で入った場合は、
+         * 撮影終了／×で撮影センターへ戻る。
+         */
+        if (
+            params.get("mode") ===
+            "camera"
+        ) {
+            window.location.href =
+                "camera-center.html";
+
+            return;
+        }
+
+        /*
+         * 練習入力から通常起動した場合は、
+         * これまでどおり撮影画面だけ閉じる。
+         */
         el.modal.hidden = true;
-        document.body.classList.remove("v4-camera-open");
+
+        document.body.classList.remove(
+            "v4-camera-open"
+        );
     }
 
     async function openPhotoList(pickerMode) {
@@ -1291,7 +1409,8 @@
                     blob: photo.blob,
                     name: "target-photo-" + photo.id + ".jpg",
                     status: status,
-                    statusLabel: statusLabel
+                    statusLabel: statusLabel,
+                    distance: photo.distance || ""
                 }
             }));
             closePhotoList();
@@ -1514,6 +1633,9 @@
                 memberName: settings.memberName,
                 practiceDate: settings.practiceDate,
                 distance: settings.distance,
+                weather: settings.weather,
+                windStrength: settings.windStrength,
+                windDirection: settings.windDirection,
                 status: "pending",
                 guide: guide,
                 width: canvas.width,
@@ -1604,14 +1726,152 @@
         return stamp + "_" + distanceText + "_End" + pad(endNumber, 2) + ".jpg";
     }
 
+    function formatCameraConditionSummary(settings) {
+        const weatherLabels = {
+            sunny: "晴れ",
+            cloudy: "曇り",
+            rainy: "雨",
+            snowy: "雪",
+            other: "その他"
+        };
+
+        const windStrengthLabels = {
+            none: "無風",
+            weak: "弱い",
+            normal: "普通",
+            strong: "強い"
+        };
+
+        const windDirectionLabels = {
+            "north-west": "↖",
+            north: "↑",
+            "north-east": "↗",
+            west: "←",
+            east: "→",
+            "south-west": "↙",
+            south: "↓",
+            "south-east": "↘"
+        };
+
+        const items = [];
+
+        if (settings.distance) {
+            items.push(settings.distance);
+        }
+
+        if (settings.weather) {
+            items.push(
+                weatherLabels[
+                settings.weather
+                ] || settings.weather
+            );
+        }
+
+        if (settings.windStrength) {
+            items.push(
+                "風：" +
+                (
+                    windStrengthLabels[
+                    settings.windStrength
+                    ] ||
+                    settings.windStrength
+                )
+            );
+        }
+
+        if (settings.windDirection) {
+            items.push(
+                windDirectionLabels[
+                settings.windDirection
+                ] ||
+                settings.windDirection
+            );
+        }
+
+        if (items.length === 0) {
+            return "条件：未設定";
+        }
+
+        return "条件：" + items.join("｜");
+    }
+
     function readPracticeSettings() {
-        const member = document.getElementById("v4LoggedInMemberName");
-        const date = document.getElementById("v4PracticeDate");
-        const distance = document.getElementById("v4DistanceSelect");
+        const member =
+            document.getElementById(
+                "v4LoggedInMemberName"
+            );
+
+        const date =
+            document.getElementById(
+                "v4PracticeDate"
+            );
+
+        const distance =
+            document.getElementById(
+                "v4DistanceSelect"
+            );
+
+        const weather =
+            document.getElementById(
+                "v4ConditionWeather"
+            );
+
+        const windStrength =
+            document.getElementById(
+                "v4ConditionWindStrength"
+            );
+
+        const windDirection =
+            document.getElementById(
+                "v4ConditionWindDirectionValue"
+            );
+
         return {
-            memberName: member ? member.textContent.trim() : "",
-            practiceDate: date ? date.value : "",
-            distance: distance ? distance.value : ""
+            memberName:
+                member
+                    ? member.textContent.trim()
+                    : "",
+
+            practiceDate:
+                date
+                    ? date.value
+                    : "",
+
+            distance:
+                currentCameraCondition
+                    ? currentCameraCondition.distance
+                    : (
+                        distance
+                            ? distance.value
+                            : ""
+                    ),
+
+            weather:
+                currentCameraCondition
+                    ? currentCameraCondition.weather
+                    : (
+                        weather
+                            ? weather.value
+                            : ""
+                    ),
+
+            windStrength:
+                currentCameraCondition
+                    ? currentCameraCondition.windStrength
+                    : (
+                        windStrength
+                            ? windStrength.value
+                            : ""
+                    ),
+
+            windDirection:
+                currentCameraCondition
+                    ? currentCameraCondition.windDirection
+                    : (
+                        windDirection
+                            ? windDirection.value
+                            : ""
+                    )
         };
     }
 
@@ -1908,6 +2168,52 @@
             modal: document.getElementById("v4CameraModal"),
             close: document.getElementById("v4CloseCameraButton"),
             finish: document.getElementById("v4FinishCameraButton"),
+
+            conditionButton:
+                document.getElementById(
+                    "v4CameraConditionButton"
+                ),
+
+            conditionPanel:
+                document.getElementById(
+                    "v4CameraConditionPanel"
+                ),
+
+            conditionClose:
+                document.getElementById(
+                    "v4CameraConditionCloseButton"
+                ),
+
+            conditionApply:
+                document.getElementById(
+                    "v4CameraConditionApplyButton"
+                ),
+
+            conditionSummary:
+                document.getElementById(
+                    "v4CameraConditionSummary"
+                ),
+
+            conditionDistance:
+                document.getElementById(
+                    "v4CameraConditionDistance"
+                ),
+
+            conditionWeather:
+                document.getElementById(
+                    "v4CameraConditionWeather"
+                ),
+
+            conditionWindStrength:
+                document.getElementById(
+                    "v4CameraConditionWindStrength"
+                ),
+
+            conditionWindDirection:
+                document.getElementById(
+                    "v4CameraConditionWindDirection"
+                ),
+
             capture: document.getElementById("v4CaptureButton"),
             deleteLast: document.getElementById("v4DeleteLastCaptureButton"),
             video: document.getElementById("v4CameraVideo"),

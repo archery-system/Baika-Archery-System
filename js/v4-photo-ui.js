@@ -1007,42 +1007,42 @@
         }
 
         if (elements.backToOverviewButton) {
-    elements.backToOverviewButton.addEventListener(
-        "click",
-        function () {
-            /*
-             * ピン登録や入力的への移動は行わず、
-             * 写真を通常の210%表示へ戻す。
-             *
-             * フォーカス解除後は、
-             * 練習入力ページ上部ではなく
-             * 写真ビューア位置へ戻す。
-             */
-            setPhotoFocusMode(
-                false,
-                elements
-            );
-
-            requestAnimationFrame(
+            elements.backToOverviewButton.addEventListener(
+                "click",
                 function () {
-                    resetPhotoToBaseScale(
+                    /*
+                     * ピン登録や入力的への移動は行わず、
+                     * 写真を通常の210%表示へ戻す。
+                     *
+                     * フォーカス解除後は、
+                     * 練習入力ページ上部ではなく
+                     * 写真ビューア位置へ戻す。
+                     */
+                    setPhotoFocusMode(
+                        false,
                         elements
                     );
 
                     requestAnimationFrame(
                         function () {
-                            elements.viewer.scrollIntoView({
-                                behavior: "auto",
-                                block: "center",
-                                inline: "nearest"
-                            });
+                            resetPhotoToBaseScale(
+                                elements
+                            );
+
+                            requestAnimationFrame(
+                                function () {
+                                    elements.viewer.scrollIntoView({
+                                        behavior: "auto",
+                                        block: "center",
+                                        inline: "nearest"
+                                    });
+                                }
+                            );
                         }
                     );
                 }
             );
         }
-    );
-}
 
         /*
          * Step60-5:
@@ -1059,8 +1059,41 @@
 
         window.addEventListener("baika:select-local-photo", function (event) {
             const detail = event.detail || {};
-            if (!detail.blob) return;
-            loadPhotoBlob(detail.blob, detail.photoId, elements);
+
+            if (!detail.blob) {
+                return;
+            }
+
+            /*
+             * 撮影時に保存された距離がある場合は、
+             * 練習入力の距離へ自動反映する。
+             */
+            if (detail.distance) {
+                const distanceSelect =
+                    document.getElementById(
+                        "v4DistanceSelect"
+                    );
+
+                if (distanceSelect) {
+                    distanceSelect.value =
+                        detail.distance;
+
+                    distanceSelect.dispatchEvent(
+                        new Event(
+                            "change",
+                            {
+                                bubbles: true
+                            }
+                        )
+                    );
+                }
+            }
+
+            loadPhotoBlob(
+                detail.blob,
+                detail.photoId,
+                elements
+            );
         });
 
         if (elements.clearButton) {

@@ -916,9 +916,90 @@
                 </div>
 
                 <div class="v4-camera-overlay-top">
-                    <div class="v4-camera-info">
-                        <span>今回：<strong id="v4CameraSessionCount">0</strong>枚</span>
-                        <span>端末内：<strong id="v4CameraTotalCount">0</strong>枚</span>
+                    <div class="v4-camera-top-controls">
+                        <div class="v4-camera-info">
+                            <span>今回：<strong id="v4CameraSessionCount">0</strong>枚</span>
+                            <span>端末内：<strong id="v4CameraTotalCount">0</strong>枚</span>
+                        </div>
+
+                        <div id="v4CameraConditionSummary" class="v4-camera-condition-summary" aria-live="polite">
+                            条件：未設定
+                        </div>
+
+                        <button type="button" id="v4CameraConditionButton" class="v4-camera-condition-button">
+                            ⚙ 撮影条件
+                        </button>
+                    </div>
+                </div>
+
+                <div id="v4CameraConditionPanel" class="v4-camera-condition-panel" hidden>
+                    <div class="v4-camera-condition-panel-header">
+                        <strong>⚙ 撮影条件</strong>
+
+                        <button type="button" id="v4CameraConditionCloseButton" class="v4-camera-condition-close"
+                            aria-label="撮影条件を閉じる">
+                            ×
+                        </button>
+                    </div>
+
+                    <div class="v4-camera-condition-panel-body">
+                        <label>
+                            距離
+
+                            <select id="v4CameraConditionDistance">
+                                <option value="">未入力</option>
+                                <option value="18m">18m</option>
+                                <option value="30m">30m</option>
+                                <option value="50m">50m</option>
+                                <option value="60m">60m</option>
+                                <option value="70m">70m</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            天気
+
+                            <select id="v4CameraConditionWeather">
+                                <option value="">未入力</option>
+                                <option value="sunny">晴れ</option>
+                                <option value="cloudy">曇り</option>
+                                <option value="rainy">雨</option>
+                                <option value="snowy">雪</option>
+                                <option value="other">その他</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            風の強さ
+
+                            <select id="v4CameraConditionWindStrength">
+                                <option value="">未入力</option>
+                                <option value="none">無風</option>
+                                <option value="weak">弱い</option>
+                                <option value="normal">普通</option>
+                                <option value="strong">強い</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            風向
+
+                            <select id="v4CameraConditionWindDirection">
+                                <option value="">未入力</option>
+                                <option value="north-west">右手前 → 左奥</option>
+                                <option value="north">手前 → 奥</option>
+                                <option value="north-east">左手前 → 右奥</option>
+                                <option value="west">右 → 左</option>
+                                <option value="east">左 → 右</option>
+                                <option value="south-west">右奥 → 左手前</option>
+                                <option value="south">奥 → 手前</option>
+                                <option value="south-east">左奥 → 右手前</option>
+                            </select>
+                        </label>
+
+                        <button type="button" id="v4CameraConditionApplyButton" class="v4-camera-condition-apply">
+                            この条件を使用
+                        </button>
                     </div>
                 </div>
 
