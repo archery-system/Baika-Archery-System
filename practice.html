@@ -306,6 +306,10 @@
                             <button type="button" id="v4PhotoFullscreenClose" class="v4-photo-fullscreen-close" hidden>✓
                                 入力的を確認</button>
 
+                            <button type="button" id="v4PhotoBackToOverview" class="v4-photo-back-to-overview" hidden>
+                                ↩ 全体表示へ戻る
+                            </button>
+
                             <p class="v4-photo-description">
                                 射ち終えた的の写真を選択し、写真を確認しながら着弾位置を入力できます。
                             </p>
@@ -940,58 +944,58 @@
     <script src="js/core/state.js"></script>
 
     <script>
-    function updatePracticeHeaderHeight() {
-        const header =
-            document.querySelector(
-                ".bas-header"
-            );
+        function updatePracticeHeaderHeight() {
+            const header =
+                document.querySelector(
+                    ".bas-header"
+                );
 
-        if (!header) {
-            return;
+            if (!header) {
+                return;
+            }
+
+            const height =
+                Math.ceil(
+                    header.getBoundingClientRect()
+                        .height
+                );
+
+            document.body.style.setProperty(
+                "--v4-common-header-height",
+                height + "px"
+            );
         }
 
-        const height =
-            Math.ceil(
-                header.getBoundingClientRect()
-                    .height
+        if (
+            window.BAS_HEADER &&
+            typeof window.BAS_HEADER.render ===
+            "function"
+        ) {
+            window.BAS_HEADER.render({
+                currentRoute: "practice"
+            });
+
+            updatePracticeHeaderHeight();
+
+            requestAnimationFrame(
+                updatePracticeHeaderHeight
             );
 
-        document.body.style.setProperty(
-            "--v4-common-header-height",
-            height + "px"
-        );
-    }
+            window.addEventListener(
+                "resize",
+                updatePracticeHeaderHeight
+            );
 
-    if (
-        window.BAS_HEADER &&
-        typeof window.BAS_HEADER.render ===
-            "function"
-    ) {
-        window.BAS_HEADER.render({
-            currentRoute: "practice"
-        });
-
-        updatePracticeHeaderHeight();
-
-        requestAnimationFrame(
-            updatePracticeHeaderHeight
-        );
-
-        window.addEventListener(
-            "resize",
-            updatePracticeHeaderHeight
-        );
-
-        window.addEventListener(
-            "orientationchange",
-            function () {
-                requestAnimationFrame(
-                    updatePracticeHeaderHeight
-                );
-            }
-        );
-    }
-</script>
+            window.addEventListener(
+                "orientationchange",
+                function () {
+                    requestAnimationFrame(
+                        updatePracticeHeaderHeight
+                    );
+                }
+            );
+        }
+    </script>
     <script src="js/v4-input.js?v=676"></script>
     <script src="js/v4-photo-engine.js?v=630"></script>
     <script src="js/v4-layout.js?v=29b4"></script>

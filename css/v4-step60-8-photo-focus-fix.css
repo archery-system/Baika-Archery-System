@@ -9,7 +9,7 @@ body.v4-photo-focus-mode {
 }
 
 /* JSでbody直下へ移動した写真パネルを、Visual Viewport全体へ固定する */
-body.v4-photo-focus-mode > .v4-photo-panel {
+body.v4-photo-focus-mode>.v4-photo-panel {
   position: fixed !important;
   top: 0 !important;
   right: 0 !important;
@@ -37,11 +37,15 @@ body.v4-photo-focus-mode > .v4-photo-panel {
   overflow: hidden !important;
 }
 
-body.v4-photo-focus-mode > .v4-photo-panel > :not(.v4-photo-interaction-area):not(.v4-photo-fullscreen-close) {
+body.v4-photo-focus-mode
+> .v4-photo-panel
+> :not(.v4-photo-interaction-area)
+:not(.v4-photo-fullscreen-close)
+:not(.v4-photo-back-to-overview) {
   display: none !important;
 }
 
-body.v4-photo-focus-mode > .v4-photo-panel .v4-photo-interaction-area {
+body.v4-photo-focus-mode>.v4-photo-panel .v4-photo-interaction-area {
   flex: 1 1 0 !important;
   width: 100% !important;
   height: 100% !important;
@@ -51,7 +55,7 @@ body.v4-photo-focus-mode > .v4-photo-panel .v4-photo-interaction-area {
   overflow: hidden !important;
 }
 
-body.v4-photo-focus-mode > .v4-photo-panel .v4-photo-viewer {
+body.v4-photo-focus-mode>.v4-photo-panel .v4-photo-viewer {
   flex: 1 1 0 !important;
   width: 100% !important;
   height: 100% !important;

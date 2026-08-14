@@ -945,6 +945,11 @@
             elements.fullscreenCloseButton.hidden = !shouldEnable;
         }
 
+        if (elements.backToOverviewButton) {
+            elements.backToOverviewButton.hidden =
+                !shouldEnable;
+        }
+
         /*
          * パネルをbody直下へ移動した直後は、iPhone Safariで
          * 旧サイズの座標変換が残ることがある。2フレーム待って
@@ -1000,6 +1005,44 @@
                 }
             );
         }
+
+        if (elements.backToOverviewButton) {
+    elements.backToOverviewButton.addEventListener(
+        "click",
+        function () {
+            /*
+             * ピン登録や入力的への移動は行わず、
+             * 写真を通常の210%表示へ戻す。
+             *
+             * フォーカス解除後は、
+             * 練習入力ページ上部ではなく
+             * 写真ビューア位置へ戻す。
+             */
+            setPhotoFocusMode(
+                false,
+                elements
+            );
+
+            requestAnimationFrame(
+                function () {
+                    resetPhotoToBaseScale(
+                        elements
+                    );
+
+                    requestAnimationFrame(
+                        function () {
+                            elements.viewer.scrollIntoView({
+                                behavior: "auto",
+                                block: "center",
+                                inline: "nearest"
+                            });
+                        }
+                    );
+                }
+            );
+        }
+    );
+}
 
         /*
          * Step60-5:
@@ -2414,6 +2457,11 @@
             fullscreenCloseButton:
                 document.getElementById(
                     "v4PhotoFullscreenClose"
+                ),
+
+            backToOverviewButton:
+                document.getElementById(
+                    "v4PhotoBackToOverview"
                 )
         };
     }

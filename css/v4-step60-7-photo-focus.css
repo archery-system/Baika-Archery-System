@@ -32,8 +32,12 @@ html.v4-photo-focus-mode .v4-photo-panel {
   display:flex !important;
   flex-direction:column !important;
 }
-html.v4-photo-focus-mode .v4-photo-panel > :not(.v4-photo-interaction-area):not(.v4-photo-fullscreen-close) {
-  display:none !important;
+html.v4-photo-focus-mode
+.v4-photo-panel
+> :not(.v4-photo-interaction-area)
+:not(.v4-photo-fullscreen-close)
+:not(.v4-photo-back-to-overview) {
+  display: none !important;
 }
 html.v4-photo-focus-mode .v4-photo-interaction-area {
   flex:1 1 auto !important;
@@ -53,6 +57,21 @@ html.v4-photo-focus-mode .v4-photo-fullscreen-close {
   position:fixed !important;
   top:max(8px, env(safe-area-inset-top)) !important;
   right:max(8px, env(safe-area-inset-right)) !important;
+  z-index:10005 !important;
+  border:0 !important;
+  border-radius:10px !important;
+  padding:10px 14px !important;
+  font-weight:700 !important;
+  background:rgba(255,255,255,.94) !important;
+  color:#4f2683 !important;
+  box-shadow:0 2px 12px rgba(0,0,0,.35) !important;
+}
+
+html.v4-photo-focus-mode .v4-photo-back-to-overview {
+  display:block !important;
+  position:fixed !important;
+  top:max(8px, env(safe-area-inset-top)) !important;
+  left:max(8px, env(safe-area-inset-left)) !important;
   z-index:10005 !important;
   border:0 !important;
   border-radius:10px !important;
