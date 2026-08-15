@@ -47,6 +47,8 @@
     let photoPickerMode = false;
     let photoListFilter = "all";
     let currentCameraCondition = null;
+    const CAMERA_CONDITION_STORAGE_KEY =
+        "baikaCameraConditionDailyV1";
     const selectedPhotoIds = new Set();
     const PROFILE_PARTS = ["nock", "vane1", "vane2", "vane3"];
     const PROFILE_LABELS = { nock: "ノック", vane1: "羽①", vane2: "羽②", vane3: "羽③" };
@@ -58,6 +60,41 @@
         ensurePhotoManagementControls();
         el = getElements();
         if (!el.open || !el.modal || !el.video) return;
+
+        const savedCondition =
+            loadDailyCameraCondition();
+
+        if (savedCondition) {
+            currentCameraCondition =
+                savedCondition;
+
+            if (el.conditionDistance) {
+                el.conditionDistance.value =
+                    savedCondition.distance;
+            }
+
+            if (el.conditionWeather) {
+                el.conditionWeather.value =
+                    savedCondition.weather;
+            }
+
+            if (el.conditionWindStrength) {
+                el.conditionWindStrength.value =
+                    savedCondition.windStrength;
+            }
+
+            if (el.conditionWindDirection) {
+                el.conditionWindDirection.value =
+                    savedCondition.windDirection;
+            }
+
+            if (el.conditionSummary) {
+                el.conditionSummary.textContent =
+                    formatCameraConditionSummary(
+                        savedCondition
+                    );
+            }
+        }
 
         el.open.addEventListener("click", openCamera);
         el.close.addEventListener("click", closeCamera);
@@ -114,6 +151,10 @@
                         windStrength: windStrength,
                         windDirection: windDirection
                     };
+
+                    saveDailyCameraCondition(
+                        currentCameraCondition
+                    );
 
                     if (el.conditionPanel) {
                         el.conditionPanel.hidden = true;
@@ -1727,6 +1768,88 @@
             + pad(date.getSeconds(), 2);
         const distanceText = String(distance || "distance").replace(/[^0-9A-Za-z_-]/g, "");
         return stamp + "_" + distanceText + "_End" + pad(endNumber, 2) + ".jpg";
+    }
+
+    function saveDailyCameraCondition(condition) {
+        try {
+            const today =
+                new Date().toLocaleDateString(
+                    "sv-SE"
+                );
+
+            localStorage.setItem(
+                CAMERA_CONDITION_STORAGE_KEY,
+                JSON.stringify({
+                    date: today,
+                    condition: {
+                        distance:
+                            condition.distance || "",
+                        weather:
+                            condition.weather || "",
+                        windStrength:
+                            condition.windStrength || "",
+                        windDirection:
+                            condition.windDirection || ""
+                    }
+                })
+            );
+        } catch (error) {
+            console.warn(
+                "Camera condition save failed:",
+                error
+            );
+        }
+    }
+
+    function loadDailyCameraCondition() {
+        try {
+            const stored =
+                localStorage.getItem(
+                    CAMERA_CONDITION_STORAGE_KEY
+                );
+
+            if (!stored) {
+                return null;
+            }
+
+            const parsed =
+                JSON.parse(stored);
+
+            const today =
+                new Date().toLocaleDateString(
+                    "sv-SE"
+                );
+
+            if (
+                !parsed ||
+                parsed.date !== today ||
+                !parsed.condition
+            ) {
+                localStorage.removeItem(
+                    CAMERA_CONDITION_STORAGE_KEY
+                );
+
+                return null;
+            }
+
+            return {
+                distance:
+                    parsed.condition.distance || "",
+                weather:
+                    parsed.condition.weather || "",
+                windStrength:
+                    parsed.condition.windStrength || "",
+                windDirection:
+                    parsed.condition.windDirection || ""
+            };
+        } catch (error) {
+            console.warn(
+                "Camera condition load failed:",
+                error
+            );
+
+            return null;
+        }
     }
 
     function formatCameraConditionSummary(settings) {
