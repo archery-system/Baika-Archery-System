@@ -1410,7 +1410,10 @@
                     name: "target-photo-" + photo.id + ".jpg",
                     status: status,
                     statusLabel: statusLabel,
-                    distance: photo.distance || ""
+                    distance: photo.distance || "",
+                    weather: photo.weather || "",
+                    windStrength: photo.windStrength || "",
+                    windDirection: photo.windDirection || ""
                 }
             }));
             closePhotoList();

@@ -1089,6 +1089,123 @@
                 }
             }
 
+            /*
+ * 撮影時に保存された天気がある場合は、
+ * 練習入力の天気へ自動反映する。
+ */
+            if (detail.weather) {
+                const weatherSelect =
+                    document.getElementById(
+                        "v4ConditionWeather"
+                    );
+
+                if (weatherSelect) {
+                    weatherSelect.value =
+                        detail.weather;
+
+                    weatherSelect.dispatchEvent(
+                        new Event(
+                            "change",
+                            {
+                                bubbles: true
+                            }
+                        )
+                    );
+                }
+            }
+
+            /*
+             * 撮影時に保存された風の強さがある場合は、
+             * 練習入力の風の強さへ自動反映する。
+             */
+            if (detail.windStrength) {
+                const windStrengthSelect =
+                    document.getElementById(
+                        "v4ConditionWindStrength"
+                    );
+
+                if (windStrengthSelect) {
+                    windStrengthSelect.value =
+                        detail.windStrength;
+
+                    windStrengthSelect.dispatchEvent(
+                        new Event(
+                            "change",
+                            {
+                                bubbles: true
+                            }
+                        )
+                    );
+                }
+            }
+
+            /*
+ * 撮影時に保存された風向がある場合は、
+ * 練習入力の風向へ自動反映する。
+ */
+            if (detail.windDirection) {
+                const windDirectionInput =
+                    document.getElementById(
+                        "v4ConditionWindDirectionValue"
+                    );
+
+                const windDirectionContainer =
+                    document.getElementById(
+                        "v4ConditionWindDirection"
+                    );
+
+                const windDirectionLabel =
+                    document.getElementById(
+                        "v4ConditionWindDirectionLabel"
+                    );
+
+                if (windDirectionInput) {
+                    windDirectionInput.value =
+                        detail.windDirection;
+                }
+
+                if (windDirectionContainer) {
+                    const buttons =
+                        windDirectionContainer.querySelectorAll(
+                            ".v4-wind-direction-button"
+                        );
+
+                    buttons.forEach(function (button) {
+                        const selected =
+                            button.dataset.windDirection ===
+                            detail.windDirection;
+
+                        button.classList.toggle(
+                            "is-selected",
+                            selected
+                        );
+
+                        button.setAttribute(
+                            "aria-pressed",
+                            selected ? "true" : "false"
+                        );
+                    });
+                }
+
+                if (windDirectionLabel) {
+                    const directionLabels = {
+                        "north-west": "右手前から左奥へ",
+                        north: "手前から奥へ",
+                        "north-east": "左手前から右奥へ",
+                        west: "右から左へ",
+                        east: "左から右へ",
+                        "south-west": "右奥から左手前へ",
+                        south: "奥から手前へ",
+                        "south-east": "左奥から右手前へ"
+                    };
+
+                    windDirectionLabel.textContent =
+                        directionLabels[
+                        detail.windDirection
+                        ] || "未入力";
+                }
+            }
+
             loadPhotoBlob(
                 detail.blob,
                 detail.photoId,
