@@ -74,6 +74,7 @@
         createApplyToEndButton(elements);
         createUndoButton(elements);
         createScoreSummary(elements);
+        createScorePanel(elements);
         bindUIEvents(elements);
         updatePhotoUI(elements, false);
 
@@ -1417,6 +1418,7 @@
                     y: Math.round(aimPoint.y),
                     score: null
                 };
+
                 updateAutomaticPinScore(newPin);
                 pins.push(newPin);
 
@@ -1427,6 +1429,19 @@
                 updateScoreList(elements);
                 updateApplyToEndButton();
                 syncGroupingFromPhoto();
+
+                /*
+                 * 写真上でピンを確定した直後に、
+                 * 実際の得点を選択できるようにする。
+                 */
+                requestAnimationFrame(
+                    function () {
+                        editPinScore(
+                            newPin,
+                            elements
+                        );
+                    }
+                );
 
                 /*
                  * Step57:
@@ -1713,32 +1728,18 @@
         scoreSummary =
             document.createElement("div");
 
-        scoreSummary.style.display = "grid";
-        scoreSummary.style.gridTemplateColumns =
-            "repeat(4, minmax(0, 1fr))";
-        scoreSummary.style.gap = "6px";
+        scoreSummary.className =
+            "v4-target-score-summary";
+
         scoreSummary.style.width = "100%";
-        scoreSummary.style.marginTop = "8px";
-        scoreSummary.style.padding = "10px";
-        scoreSummary.style.borderRadius = "12px";
-        scoreSummary.style.background =
-            "rgba(109, 40, 217, 0.08)";
-        scoreSummary.style.color = "#38275c";
-        scoreSummary.style.fontWeight = "800";
-        scoreSummary.style.textAlign = "center";
-
-        const targetSummaryHost =
+        
+        const photoSummaryHost =
             document.getElementById(
-                "v4TargetScoreSummary"
+                "v4PhotoScoreDisplay"
             );
 
-        if (targetSummaryHost) {
-            targetSummaryHost.replaceChildren(
-                scoreSummary
-            );
-        } else if (elements.clearButton) {
-            elements.clearButton.insertAdjacentElement(
-                "beforebegin",
+        if (photoSummaryHost) {
+            photoSummaryHost.replaceChildren(
                 scoreSummary
             );
         }
@@ -1751,36 +1752,41 @@
             return;
         }
 
-        const targetArrows =
-            window.baikaTargetModel &&
-                typeof window.baikaTargetModel.getArrows
-                === "function"
-                ? window.baikaTargetModel.getArrows()
-                : [];
+        if (pins.length === 0) {
+            scoreSummary.textContent =
+                "着弾を入力すると得点を表示します";
 
-        const summarySource =
-            Array.isArray(targetArrows) &&
-                targetArrows.length > 0
-                ? targetArrows.map(function (arrow) {
-                    return {
-                        score:
-                            arrow.val === "M"
-                                ? "M"
-                                : arrow.val
-                    };
-                })
-                : pins;
+            return;
+        }
 
-        const scoredPins =
-            summarySource.filter(function (pin) {
-                return pin.score !== null &&
-                    pin.score !== "" &&
-                    pin.score !== undefined;
+        const scoreLabels =
+            pins.map(function (pin, index) {
+                const label =
+                    pin &&
+                        pin.score !== null &&
+                        pin.score !== undefined &&
+                        pin.score !== ""
+                        ? String(pin.score)
+                        : "－";
+
+                return `${index + 1}:${label}`;
             });
 
         const total =
-            scoredPins.reduce(function (sum, pin) {
-                const score = String(pin.score).toUpperCase();
+            pins.reduce(function (sum, pin) {
+                if (
+                    !pin ||
+                    pin.score === null ||
+                    pin.score === undefined ||
+                    pin.score === ""
+                ) {
+                    return sum;
+                }
+
+                const score =
+                    String(
+                        pin.score
+                    ).toUpperCase();
 
                 if (score === "X") {
                     return sum + 10;
@@ -1790,53 +1796,43 @@
                     return sum;
                 }
 
-                return sum + Number(score || 0);
+                return sum +
+                    Number(score || 0);
             }, 0);
 
-        const xCount =
-            scoredPins.filter(function (pin) {
-                return String(pin.score).toUpperCase() === "X";
-            }).length;
-
-        const tenCount =
-            scoredPins.filter(function (pin) {
-                const score = String(pin.score).toUpperCase();
-                return score === "X" || score === "10";
-            }).length;
-
-        const missCount =
-            scoredPins.filter(function (pin) {
-                return String(pin.score).toUpperCase() === "M";
-            }).length;
-
         const average =
-            scoredPins.length > 0
-                ? (total / scoredPins.length).toFixed(1)
+            pins.length > 0
+                ? (
+                    total /
+                    pins.length
+                ).toFixed(1)
                 : "0.0";
 
-        scoreSummary.innerHTML =
-            `<div>本数<br><strong>${scoredPins.length}</strong></div>`
-            + `<div>合計<br><strong>${total}</strong></div>`
-            + `<div>平均<br><strong>${average}</strong></div>`
-            + `<div>X<br><strong>${xCount}</strong></div>`
-            + `<div>10以上<br><strong>${tenCount}</strong></div>`
-            + `<div>M<br><strong>${missCount}</strong></div>`;
+        scoreSummary.textContent =
+            `${scoreLabels.join("  ")}　｜　本数 ${pins.length}　合計 ${total}　平均 ${average}`;
     }
 
     function createScoreList(elements) {
         scoreList =
             document.createElement("div");
 
-        scoreList.style.display = "grid";
-        scoreList.style.gridTemplateColumns =
-            "repeat(3, minmax(0, 1fr))";
-        scoreList.style.gap = "6px";
+        scoreList.style.display = "flex";
+        scoreList.style.flexWrap = "wrap";
+        scoreList.style.alignItems = "center";
+        scoreList.style.justifyContent = "center";
+        scoreList.style.gap = "4px 8px";
         scoreList.style.width = "100%";
-        scoreList.style.marginTop = "8px";
+        scoreList.style.marginTop = "6px";
+        scoreList.style.fontSize = "12px";
+        scoreList.style.lineHeight = "1.4";
 
-        if (elements.clearButton) {
-            elements.clearButton.insertAdjacentElement(
-                "beforebegin",
+        const photoScoreListHost =
+            document.getElementById(
+                "v4PhotoScoreList"
+            );
+
+        if (photoScoreListHost) {
+            photoScoreListHost.replaceChildren(
                 scoreList
             );
         }
@@ -1851,58 +1847,54 @@
 
         scoreList.replaceChildren();
 
-        for (let index = 0; index < 6; index += 1) {
-            const pin = pins[index];
-
+        pins.forEach(function (pin, index) {
             const button =
                 document.createElement("button");
 
             button.type = "button";
-            button.style.minHeight = "46px";
-            button.style.padding = "8px";
+
+            button.style.minHeight = "28px";
+            button.style.padding = "3px 7px";
             button.style.border =
                 "1px solid rgba(109, 40, 217, 0.18)";
-            button.style.borderRadius = "10px";
+            button.style.borderRadius = "999px";
             button.style.background =
-                pin
-                    ? "rgba(255, 255, 255, 0.96)"
-                    : "rgba(243, 244, 246, 0.9)";
+                "rgba(255, 255, 255, 0.94)";
             button.style.color = "#38275c";
+            button.style.font = "inherit";
+            button.style.fontSize = "12px";
             button.style.fontWeight = "800";
-            button.style.cursor =
-                pin ? "pointer" : "default";
+            button.style.cursor = "pointer";
             button.style.touchAction = "manipulation";
 
             const number =
                 String(index + 1);
 
             const score =
-                pin && pin.score !== null
+                pin.score !== null &&
+                    pin.score !== undefined &&
+                    pin.score !== ""
                     ? pin.score
                     : "－";
 
             button.textContent =
-                `${number}　${score}`;
+                `${number}:${score}`;
 
-            button.disabled = !pin;
+            button.addEventListener(
+                "click",
+                function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
 
-            if (pin) {
-                button.addEventListener(
-                    "click",
-                    function (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-
-                        editPinScore(
-                            pin,
-                            elements
-                        );
-                    }
-                );
-            }
+                    editPinScore(
+                        pin,
+                        elements
+                    );
+                }
+            );
 
             scoreList.appendChild(button);
-        }
+        });
     }
 
     function createScorePanel(elements) {
@@ -2053,6 +2045,43 @@
         elements
     ) {
         scoreEditingPin = pin;
+
+        const viewerRect =
+            elements.viewer.getBoundingClientRect();
+
+        const isWide =
+            viewerRect.width >
+            viewerRect.height;
+
+        if (isWide) {
+            /*
+             * スマホ横向き・PCでは、
+             * 中央照準を隠さないよう
+             * 得点パネルを右側へ配置する。
+             */
+            scorePanel.style.left = "auto";
+            scorePanel.style.right = "12px";
+            scorePanel.style.top = "50%";
+            scorePanel.style.bottom = "auto";
+            scorePanel.style.transform =
+                "translateY(-50%)";
+            scorePanel.style.width =
+                "min(260px, calc(45% - 18px))";
+        } else {
+            /*
+             * スマホ縦向きでは、
+             * 今までどおり照準の下へ表示する。
+             */
+            scorePanel.style.left = "50%";
+            scorePanel.style.right = "auto";
+            scorePanel.style.top = "auto";
+            scorePanel.style.bottom = "12px";
+            scorePanel.style.transform =
+                "translateX(-50%)";
+            scorePanel.style.width =
+                "calc(100% - 24px)";
+        }
+
         scorePanel.style.display = "grid";
     }
 

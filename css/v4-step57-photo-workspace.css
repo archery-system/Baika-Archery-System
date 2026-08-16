@@ -53,6 +53,7 @@
 }
 
 @media (orientation: landscape) and (max-height: 700px) and (max-width: 1100px) {
+
     html,
     body {
         overscroll-behavior: none;
@@ -67,12 +68,12 @@
         padding: 8px !important;
     }
 
-    .v4-photo-workspace-card > .v4-card-title {
+    .v4-photo-workspace-card>.v4-card-title {
         margin-bottom: 3px !important;
         font-size: 14px !important;
     }
 
-    .v4-photo-workspace-card > .v4-card-subtitle,
+    .v4-photo-workspace-card>.v4-card-subtitle,
     .v4-photo-panel .v4-photo-description,
     .v4-camera-local-status,
     .v4-grouping-note {
@@ -94,7 +95,7 @@
         padding: 7px !important;
     }
 
-    .v4-photo-workspace-card .v4-target-layout > .v4-target-panel:nth-child(3) {
+    .v4-photo-workspace-card .v4-target-layout>.v4-target-panel:nth-child(3) {
         display: none !important;
     }
 
@@ -160,7 +161,8 @@
         margin: 0 auto !important;
     }
 
-    .v4-input-target-panel .v4-target-score-summary {
+    .v4-input-target-panel .v4-target-score-summary,
+    .v4-photo-panel .v4-target-score-summary {
         margin-top: 4px !important;
         min-height: 28px !important;
         font-size: 11px !important;

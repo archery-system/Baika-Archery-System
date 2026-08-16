@@ -59,7 +59,7 @@
         let el = getElements();
         ensurePhotoManagementControls();
         el = getElements();
-        if (!el.open || !el.modal || !el.video) return;
+        if (!el.modal || !el.video) return;
 
         const savedCondition =
             loadDailyCameraCondition();
@@ -96,7 +96,12 @@
             }
         }
 
-        el.open.addEventListener("click", openCamera);
+        if (el.open) {
+            el.open.addEventListener(
+                "click",
+                openCamera
+            );
+        }
         el.close.addEventListener("click", closeCamera);
         el.finish.addEventListener("click", closeCamera);
         el.capture.addEventListener("click", capturePhoto);
@@ -265,9 +270,12 @@
         const params = new URLSearchParams(window.location.search);
 
         if (params.get("mode") === "camera") {
-            window.setTimeout(() => {
-                el.open.click();
-            }, 300);
+            window.setTimeout(
+                function () {
+                    openCamera();
+                },
+                300
+            );
         }
     }
 

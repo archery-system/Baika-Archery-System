@@ -1319,25 +1319,44 @@ function syncPhotoPinsToGrouping(
                 previous.targetAdjusted === true &&
                 pin.photoPositionChanged !== true;
 
+            /*
+             * 入力的で実際に使用する座標。
+             *
+             * 一度入力的で手動調整したピンは
+             * その位置を維持する。
+             */
+            const targetX =
+                preserveManualAdjustment
+                    ? Number(previous.x)
+                    : photoTargetX;
+
+            const targetY =
+                preserveManualAdjustment
+                    ? Number(previous.y)
+                    : photoTargetY;
+
+            /*
+             * 写真的で入力した得点は照合用として
+             * 写真的側だけに保持する。
+             *
+             * 入力的の得点は、入力的上の着弾位置から
+             * 改めて計算する。
+             */
+            const calculatedArrow =
+                calculateArrowScore(
+                    targetX,
+                    targetY
+                );
+
             return {
-                val: scoreLabel,
+                val: calculatedArrow.val,
+                score: calculatedArrow.score,
 
-                score:
-                    isMiss
-                        ? 0
-                        : Number(scoreLabel) || 0,
+                isMiss:
+                    calculatedArrow.val === "M",
 
-                isMiss: isMiss,
-
-                x:
-                    preserveManualAdjustment
-                        ? Number(previous.x)
-                        : photoTargetX,
-
-                y:
-                    preserveManualAdjustment
-                        ? Number(previous.y)
-                        : photoTargetY,
+                x: targetX,
+                y: targetY,
 
                 targetAdjusted:
                     preserveManualAdjustment,

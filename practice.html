@@ -328,6 +328,12 @@
                                 </div>
                             </div>
 
+                            <!-- 写真的に入力した得点の確認 -->
+                            <div id="v4PhotoScoreDisplay" class="v4-photo-score-display" aria-live="polite">
+                                <div id="v4PhotoScoreList"></div>
+                                <div id="v4PhotoScoreSummary"></div>
+                            </div>
+
                             <div id="v4PhotoQuickActions" class="v4-photo-quick-actions" aria-label="写真入力の修正操作">
                                 <button type="button" id="v4TargetPhotoClear" class="v4-photo-clear-button"
                                     disabled>写真を閉じる</button>
@@ -335,12 +341,11 @@
 
                             <div class="v4-camera-launch-area v4-camera-launch-area-bottom">
                                 <div class="v4-camera-launch-buttons">
-                                    <button type="button" id="v4OpenCameraButton" class="v4-camera-launch-button">📷
-                                        撮影専用モードを開く</button>
                                     <button type="button" id="v4OpenPhotoListButton" class="v4-photo-list-button">
                                         🖼️ 写真を選ぶ
                                     </button>
                                 </div>
+                                
                                 <div class="v4-camera-local-status" aria-live="polite">
                                     この端末に保存済み：<strong id="v4LocalPhotoCount">0</strong>枚
                                 </div>
