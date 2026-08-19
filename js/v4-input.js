@@ -261,6 +261,37 @@ document.addEventListener(
         drawGroupingTargetSvg();
         updateCurrentEndDisplay();
         updateScoreInputState();
+
+        const applyPhotoScoresButton =
+            document.getElementById(
+                "v4ApplyPhotoScoresButton"
+            );
+
+        if (applyPhotoScoresButton) {
+            applyPhotoScoresButton.addEventListener(
+                "click",
+                function () {
+                    const shouldApply =
+                        window.confirm(
+                            "写真的の得点を入力的へ反映しますか？\n\n"
+                            + "入力的のピン位置は変更せず、得点だけを書き換えます。"
+                        );
+
+                    if (!shouldApply) {
+                        return;
+                    }
+
+                    const applied =
+                        applyPhotoScoresToTarget();
+
+                    if (!applied) {
+                        window.alert(
+                            "反映できる写真得点または入力的のピンがありません。"
+                        );
+                    }
+                }
+            );
+        }
     }
 );
 
@@ -1376,6 +1407,88 @@ function syncPhotoPinsToGrouping(
      */
     syncCurrentPracticeInputToProjectZero();
 }
+
+function applyPhotoScoresToTarget() {
+    const photoPins =
+        Array.isArray(window.baikaPhotoPins)
+            ? window.baikaPhotoPins
+            : [];
+
+    if (
+        photoPins.length === 0 ||
+        photoGroupingArrows.length === 0
+    ) {
+        return false;
+    }
+
+    const count =
+        Math.min(
+            photoPins.length,
+            photoGroupingArrows.length
+        );
+
+    for (
+        let index = 0;
+        index < count;
+        index += 1
+    ) {
+        const photoPin =
+            photoPins[index];
+
+        const targetArrow =
+            photoGroupingArrows[index];
+
+        if (
+            !photoPin ||
+            !targetArrow ||
+            photoPin.score === null ||
+            photoPin.score === undefined ||
+            photoPin.score === ""
+        ) {
+            continue;
+        }
+
+        const label =
+            String(
+                photoPin.score
+            )
+                .trim()
+                .toUpperCase();
+
+        let numericScore = 0;
+
+        if (
+            label === "X" ||
+            label === "10"
+        ) {
+            numericScore = 10;
+        } else if (label !== "M") {
+            numericScore =
+                Number(label) || 0;
+        }
+
+        /*
+         * 入力的の位置は変更しない。
+         * 写真的で確認した得点だけを反映する。
+         */
+        targetArrow.val = label;
+        targetArrow.score =
+            numericScore;
+        targetArrow.isMiss =
+            label === "M";
+    }
+
+    renderTargetPins();
+    renderGroupingPins();
+    updateCurrentEndDisplay();
+    updateScoreInputState();
+    syncCurrentPracticeInputToProjectZero();
+
+    return true;
+}
+
+window.applyPhotoScoresToTarget =
+    applyPhotoScoresToTarget;
 
 window.syncPhotoPinsToGrouping =
     syncPhotoPinsToGrouping;

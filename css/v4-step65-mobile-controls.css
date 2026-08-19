@@ -1,3 +1,18 @@
+.v4-photo-interaction-area #v4TargetPhotoViewer {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* 得点転記ボタンは通常向きでは表示しない */
+.v4-photo-score-apply-button {
+    display: none !important;
+}
+
+/* 通常向きでは従来どおり縦並び */
+.v4-landscape-sticky-stage {
+    display: contents;
+}
+
 /*
  * Baika Archery System Ver4 - Step66
  * スマホ横向き：写真的と入力的を同じ高さでヘッダー直下に固定し、
@@ -19,6 +34,10 @@
 .v4-photo-interaction-area #v4TargetPhotoViewer {
     width: 100% !important;
     min-width: 0 !important;
+
+    .v4-photo-score-apply-button {
+        display: none !important;
+    }
 }
 
 /* 通常向きでは従来どおり縦並び */
@@ -190,6 +209,16 @@ body.v4-photo-focus-mode #v4TargetPhotoClear {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 3px !important;
+    }
+
+    html.v4-is-landscape-layout .v4-photo-score-apply-button {
+        display: block !important;
+        width: 100% !important;
+        min-height: 30px !important;
+        padding: 3px 8px !important;
+        border-radius: 999px !important;
+        box-sizing: border-box !important;
+        white-space: nowrap !important;
     }
 
     html.v4-is-landscape-layout .v4-camera-launch-buttons button {
@@ -409,6 +438,11 @@ body.v4-photo-focus-mode #v4TargetPhotoClear {
         align-self: start !important;
         margin-top: 0 !important;
         transform: none !important;
+    }
+
+    /* ピン調整パネルの上端を入力的画像の上端へ揃える */
+    html.v4-is-landscape-layout #v4PinAdjustPanel.v4-pin-adjust-panel-right {
+        margin-top: 50px !important;
     }
 
     html.v4-is-landscape-layout #v4PinAdjustPanel.v4-pin-adjust-panel-right {
