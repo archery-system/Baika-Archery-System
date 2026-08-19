@@ -7,9 +7,32 @@
 
 .bas-page-header {
     display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.bas-page-header__main {
+    display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 24px;
+    min-width: 0;
+}
+
+.bas-page-header__action {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    border: 1px solid rgba(109, 40, 217, 0.18);
+    border-radius: 999px;
+    background: #fff;
+    color: #6d28d9;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .bas-page-header__eyebrow {
@@ -45,4 +68,16 @@
         font-size: 0.95rem;
     }
 
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+
+    .bas-page-header {
+        flex-direction: column;
+    }
+
+    .bas-page-header__action {
+        align-self: flex-start;
+        white-space: normal;
+    }
 }

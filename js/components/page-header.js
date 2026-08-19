@@ -10,35 +10,81 @@
     function createPageHeader(options) {
         const settings = options || {};
 
-        const header = document.createElement("header");
-        header.className = "bas-page-header";
+        const header =
+            document.createElement("header");
+
+        header.className =
+            "bas-page-header";
+
+        const main =
+            document.createElement("div");
+
+        main.className =
+            "bas-page-header__main";
 
         if (settings.eyebrow) {
-            const eyebrow = document.createElement("p");
+            const eyebrow =
+                document.createElement("p");
 
-            eyebrow.className = "bas-page-header__eyebrow";
-            eyebrow.textContent = settings.eyebrow;
+            eyebrow.className =
+                "bas-page-header__eyebrow";
 
-            header.append(eyebrow);
+            eyebrow.textContent =
+                settings.eyebrow;
+
+            main.append(eyebrow);
         }
 
-        const title = document.createElement("h1");
+        const title =
+            document.createElement("h1");
 
-        title.className = "bas-page-header__title";
+        title.className =
+            "bas-page-header__title";
+
         title.textContent =
-            settings.title || "Baika Archery System";
+            settings.title ||
+            "Baika Archery System";
 
-        header.append(title);
+        main.append(title);
 
         if (settings.description) {
-            const description = document.createElement("p");
+            const description =
+                document.createElement("p");
 
             description.className =
                 "bas-page-header__description";
 
-            description.textContent = settings.description;
+            description.textContent =
+                settings.description;
 
-            header.append(description);
+            main.append(description);
+        }
+
+        header.append(main);
+
+        if (
+            settings.actionHref &&
+            settings.actionLabel
+        ) {
+            const action =
+                document.createElement("a");
+
+            action.className =
+                "bas-page-header__action";
+
+            action.href =
+                settings.actionHref;
+
+            action.target =
+                "_blank";
+
+            action.rel =
+                "noopener noreferrer";
+
+            action.textContent =
+                settings.actionLabel;
+
+            header.append(action);
         }
 
         return header;
