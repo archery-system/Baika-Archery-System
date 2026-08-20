@@ -1943,22 +1943,29 @@ function enqueuePracticeRecord(
     const queue =
         loadPracticeSaveQueue();
 
+    const recordId =
+        typeof crypto !== "undefined" &&
+            typeof crypto.randomUUID ===
+            "function"
+            ? crypto.randomUUID()
+            : [
+                "practice",
+                Date.now(),
+                Math.random()
+                    .toString(36)
+                    .slice(2)
+            ].join("-");
+
     queue.push({
         id:
-            typeof crypto !== "undefined" &&
-                typeof crypto.randomUUID ===
-                "function"
-                ? crypto.randomUUID()
-                : [
-                    "practice",
-                    Date.now(),
-                    Math.random()
-                        .toString(36)
-                        .slice(2)
-                ].join("-"),
+            recordId,
 
-        record:
-            record
+        record: {
+            ...record,
+
+            recordId:
+                recordId
+        }
     });
 
     savePracticeSaveQueue(

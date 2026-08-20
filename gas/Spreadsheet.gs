@@ -562,6 +562,216 @@ function appendPracticeRecord(record) {
   }
 }
 
+/**
+ * recordIdを指定して練習記録1件を削除する。
+ *
+ * 記録した本人、または管理者だけ削除できる。
+ *
+ * @param {string} recordId
+ * @param {string} requesterMemberId
+ * @param {string} requesterPassword
+ * @returns {Object}
+ */
+function deletePracticeRecordById(
+  recordId,
+  requesterMemberId,
+  requesterPassword
+) {
+  const normalizedRecordId =
+    String(recordId || "").trim();
+
+  const normalizedRequesterMemberId =
+    String(
+      requesterMemberId || ""
+    ).trim();
+
+  if (!normalizedRecordId) {
+    throw new Error(
+      "練習記録IDが指定されていません。"
+    );
+  }
+
+  if (!normalizedRequesterMemberId) {
+    throw new Error(
+      "削除する部員を確認できません。"
+    );
+  }
+
+  /*
+   * 削除要求者をGAS側で再認証する。
+   */
+  const authenticationResult =
+    authenticateMember(
+      normalizedRequesterMemberId,
+      requesterPassword
+    );
+
+  if (
+    !authenticationResult ||
+    authenticationResult.success !== true ||
+    !authenticationResult.member
+  ) {
+    throw new Error(
+      authenticationResult &&
+        authenticationResult.message
+        ? authenticationResult.message
+        : "本人確認に失敗しました。"
+    );
+  }
+
+  const requester =
+    authenticationResult.member;
+
+  const requesterIsAdmin =
+    requester.role ===
+    ROLE_NAMES.ADMIN;
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.PRACTICE
+      );
+
+    const lastRow =
+      sheet.getLastRow();
+
+    const lastColumn =
+      sheet.getLastColumn();
+
+    if (
+      lastRow < 2 ||
+      lastColumn < 1
+    ) {
+      throw new Error(
+        "削除する練習記録が見つかりません。"
+      );
+    }
+
+    const headers =
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          lastColumn
+        )
+        .getValues()[0]
+        .map(function (header) {
+          return String(
+            header || ""
+          ).trim();
+        });
+
+    const recordIdColumn =
+      headers.indexOf(
+        "recordId"
+      ) + 1;
+
+    const memberIdColumn =
+      headers.indexOf(
+        "memberId"
+      ) + 1;
+
+    if (recordIdColumn <= 0) {
+      throw new Error(
+        "練習記録ID列が見つかりません。"
+      );
+    }
+
+    if (memberIdColumn <= 0) {
+      throw new Error(
+        "部員ID列が見つかりません。"
+      );
+    }
+
+    const values =
+      sheet
+        .getRange(
+          2,
+          1,
+          lastRow - 1,
+          lastColumn
+        )
+        .getValues();
+
+    let targetRow = 0;
+    let ownerMemberId = "";
+
+    for (
+      let index = 0;
+      index < values.length;
+      index += 1
+    ) {
+      const rowRecordId =
+        String(
+          values[index][
+            recordIdColumn - 1
+          ] || ""
+        ).trim();
+
+      if (
+        rowRecordId ===
+        normalizedRecordId
+      ) {
+        targetRow =
+          index + 2;
+
+        ownerMemberId =
+          String(
+            values[index][
+              memberIdColumn - 1
+            ] || ""
+          ).trim();
+
+        break;
+      }
+    }
+
+    if (!targetRow) {
+      throw new Error(
+        "削除する練習記録が見つかりません。"
+      );
+    }
+
+    /*
+     * 本人または管理者だけ削除可能。
+     */
+    if (
+      !requesterIsAdmin &&
+      ownerMemberId !==
+        String(
+          requester.memberId || ""
+        ).trim()
+    ) {
+      throw new Error(
+        "この練習記録を削除する権限がありません。"
+      );
+    }
+
+    sheet.deleteRow(
+      targetRow
+    );
+
+    return {
+      recordId:
+        normalizedRecordId,
+
+      rowNumber:
+        targetRow,
+
+      operation:
+        "deleted"
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function overwriteSheet(sheetName, data) {
   const sheet = getOrCreateSheet(sheetName);
   sheet.clearContents();

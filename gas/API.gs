@@ -446,6 +446,74 @@ if (action === "appendPracticeRecord") {
 }
 
 /*
+ * 練習記録1件を削除する。
+ *
+ * 記録した本人、または管理者だけ削除可能。
+ */
+if (action === "deletePracticeRecord") {
+  const recordId =
+    String(
+      payload.recordId || ""
+    ).trim();
+
+  const requesterMemberId =
+    String(
+      payload.requesterMemberId || ""
+    ).trim();
+
+  const requesterPassword =
+    String(
+      payload.password || ""
+    );
+
+  if (!recordId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "削除する練習記録IDが指定されていません。"
+    });
+  }
+
+  if (!requesterMemberId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "削除する部員を確認できません。"
+    });
+  }
+
+  if (!requesterPassword) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "本人確認のためパスワードを入力してください。"
+    });
+  }
+
+  const result =
+    deletePracticeRecordById(
+      recordId,
+      requesterMemberId,
+      requesterPassword
+    );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      "練習記録を削除しました。",
+
+    recordId:
+      result.recordId,
+
+    operation:
+      result.operation,
+
+    rowNumber:
+      result.rowNumber
+  });
+}
+
+/*
  * ここから下は既存互換処理。
  *
  * 現在のcloud.jsは、

@@ -574,3 +574,11 @@
 .bas-records__practice-detail[hidden] {
     display: none;
 }
+
+/* ==========================================
+   Practice Record Action Buttons
+========================================== */
+
+.bas-match-record__actions .bas-button {
+    border-radius: 999px;
+}

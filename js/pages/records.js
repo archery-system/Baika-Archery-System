@@ -970,6 +970,174 @@
             detailButton
         );
 
+        /*
+         * 練習記録削除ボタン
+         *
+         * このカードに含まれる6射記録を
+         * recordId単位で削除する。
+         */
+        const deleteButton =
+            document.createElement("button");
+
+        deleteButton.type =
+            "button";
+
+        deleteButton.className =
+            "bas-button";
+
+        deleteButton.textContent =
+            "🗑 削除";
+
+        deleteButton.addEventListener(
+            "click",
+            async function () {
+                const recordsToDelete =
+                    Array.isArray(session.ends)
+                        ? session.ends
+                        : [];
+
+                const recordIds =
+                    recordsToDelete
+                        .map(function (record) {
+                            return String(
+                                record &&
+                                record.recordId ||
+                                ""
+                            ).trim();
+                        });
+
+                /*
+                 * 旧形式の記録が含まれる場合は
+                 * 部分削除を防ぐ。
+                 */
+                if (
+                    recordIds.length === 0 ||
+                    recordIds.some(function (recordId) {
+                        return !recordId;
+                    })
+                ) {
+                    window.alert(
+                        "この練習記録は旧形式のため、"
+                        + "この画面から削除できません。"
+                    );
+
+                    return;
+                }
+
+                const confirmed =
+                    window.confirm(
+                        [
+                            "この練習記録を削除しますか？",
+                            "",
+                            `日付：${formatDisplayDate(session.date)}`,
+                            `距離：${formatDistance(session.distance)}`,
+                            `射数：${session.total.arrowCount}射`,
+                            `合計：${session.total.total}点`,
+                            "",
+                            "この操作は元に戻せません。"
+                        ].join("\n")
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const memberData =
+                    getLoggedInMemberData();
+
+                if (
+                    !memberData ||
+                    !memberData.memberId
+                ) {
+                    window.alert(
+                        "ログイン中の部員を確認できません。"
+                    );
+
+                    return;
+                }
+
+                const password =
+                    window.prompt(
+                        "本人確認のため、現在のパスワードを入力してください。"
+                    );
+
+                if (password === null) {
+                    return;
+                }
+
+                if (!password) {
+                    window.alert(
+                        "パスワードを入力してください。"
+                    );
+
+                    return;
+                }
+
+                if (
+                    !window.BAS_CLOUD ||
+                    typeof window.BAS_CLOUD
+                        .deletePracticeRecord !==
+                    "function"
+                ) {
+                    window.alert(
+                        "練習記録の削除機能を読み込めませんでした。"
+                    );
+
+                    return;
+                }
+
+                deleteButton.disabled =
+                    true;
+
+                deleteButton.textContent =
+                    "削除中…";
+
+                try {
+                    /*
+                     * 1エンドずつ安全に削除する。
+                     */
+                    for (
+                        const recordId of recordIds
+                    ) {
+                        await window.BAS_CLOUD
+                            .deletePracticeRecord(
+                                recordId,
+                                memberData.memberId,
+                                password
+                            );
+                    }
+
+                    window.alert(
+                        "練習記録を削除しました。"
+                    );
+
+                    /*
+                     * クラウドから最新状態を再取得する。
+                     */
+                    await loadAndRenderRecords(
+                        memberData,
+                        false
+                    );
+                } catch (error) {
+                    deleteButton.disabled =
+                        false;
+
+                    deleteButton.textContent =
+                        "🗑 削除";
+
+                    window.alert(
+                        error instanceof Error
+                            ? error.message
+                            : "練習記録を削除できませんでした。"
+                    );
+                }
+            }
+        );
+
+        actions.appendChild(
+            deleteButton
+        );
+
         const detail =
             document.createElement("div");
 
@@ -1173,9 +1341,152 @@
         const total =
             createTotalElement(record);
 
+        /*
+         * 1エンド削除ボタン
+         */
+        const deleteEndActions =
+            document.createElement("div");
+
+        deleteEndActions.className =
+            "bas-match-record__actions";
+
+        const deleteEndButton =
+            document.createElement("button");
+
+        deleteEndButton.type =
+            "button";
+
+        deleteEndButton.className =
+            "bas-button";
+
+        deleteEndButton.textContent =
+            "🗑 この1エンドを削除";
+
+        deleteEndButton.addEventListener(
+            "click",
+            async function () {
+                const recordId =
+                    String(
+                        record &&
+                        record.recordId ||
+                        ""
+                    ).trim();
+
+                if (!recordId) {
+                    window.alert(
+                        "この1エンドは旧形式のため削除できません。"
+                    );
+
+                    return;
+                }
+
+                const confirmed =
+                    window.confirm(
+                        [
+                            "この1エンドだけを削除しますか？",
+                            "",
+                            `日付：${formatDisplayDate(record.date)}`,
+                            `距離：${formatDistance(record.distance)}`,
+                            `6射：${getArrowValues(record).join("・")}`,
+                            "",
+                            "この操作は元に戻せません。"
+                        ].join("\n")
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                const memberData =
+                    getLoggedInMemberData();
+
+                if (
+                    !memberData ||
+                    !memberData.memberId
+                ) {
+                    window.alert(
+                        "ログイン中の部員を確認できません。"
+                    );
+
+                    return;
+                }
+
+                const password =
+                    window.prompt(
+                        "本人確認のため、現在のパスワードを入力してください。"
+                    );
+
+                if (password === null) {
+                    return;
+                }
+
+                if (!password) {
+                    window.alert(
+                        "パスワードを入力してください。"
+                    );
+
+                    return;
+                }
+
+                if (
+                    !window.BAS_CLOUD ||
+                    typeof window.BAS_CLOUD
+                        .deletePracticeRecord !==
+                    "function"
+                ) {
+                    window.alert(
+                        "練習記録の削除機能を読み込めませんでした。"
+                    );
+
+                    return;
+                }
+
+                deleteEndButton.disabled =
+                    true;
+
+                deleteEndButton.textContent =
+                    "削除中…";
+
+                try {
+                    await window.BAS_CLOUD
+                        .deletePracticeRecord(
+                            recordId,
+                            memberData.memberId,
+                            password
+                        );
+
+                    window.alert(
+                        "1エンドを削除しました。"
+                    );
+
+                    await loadAndRenderRecords(
+                        memberData,
+                        false
+                    );
+                } catch (error) {
+                    deleteEndButton.disabled =
+                        false;
+
+                    deleteEndButton.textContent =
+                        "🗑 この1エンドを削除";
+
+                    window.alert(
+                        error instanceof Error
+                            ? error.message
+                            : "1エンドを削除できませんでした。"
+                    );
+                }
+            }
+        );
+
+        deleteEndActions.appendChild(
+            deleteEndButton
+        );
+
         article.appendChild(header);
         article.appendChild(arrows);
         article.appendChild(total);
+        article.appendChild(deleteEndActions);
 
         return article;
     }
