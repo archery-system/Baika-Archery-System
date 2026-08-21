@@ -6,6 +6,7 @@
 
 const SHEET_NAMES = {
   PRACTICE: "practice",
+  GROUPING: "grouping",
   MATCH: "match",
   METADATA: "metadata",
   MEMBERS: "members",

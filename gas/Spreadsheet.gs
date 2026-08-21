@@ -404,6 +404,107 @@ function upsertMatchRecord(record) {
 }
 
 /**
+ * グルーピング記録をgroupingシートへ1件追加する。
+ *
+ * 全件上書きせず、
+ * 新しいグルーピング記録1件だけを末尾へ追加する。
+ *
+ * @param {Object} record
+ * @returns {Object}
+ */
+function appendGroupingRecord(record) {
+  if (
+    !record ||
+    typeof record !== "object"
+  ) {
+    throw new Error(
+      "保存するグルーピング記録が指定されていません。"
+    );
+  }
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.GROUPING
+      );
+
+    const headers = [
+      "id",
+      "savedAt",
+      "memberId",
+      "memberName",
+      "practiceDate",
+      "distance",
+      "conditionFeeling",
+      "conditionWeather",
+      "conditionWindStrength",
+      "conditionWindDirection",
+      "conditionTheme",
+      "conditionMemo",
+      "arrows"
+    ];
+
+    if (sheet.getLastRow() === 0) {
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          headers.length
+        )
+        .setValues([
+          headers
+        ]);
+    }
+
+    const row = headers.map(
+      function (header) {
+        const value =
+          record[header];
+
+        if (
+          header === "arrows" &&
+          Array.isArray(value)
+        ) {
+          return JSON.stringify(value);
+        }
+
+        return value == null
+          ? ""
+          : value;
+      }
+    );
+
+    const rowNumber =
+      sheet.getLastRow() + 1;
+
+    sheet
+      .getRange(
+        rowNumber,
+        1,
+        1,
+        row.length
+      )
+      .setValues([
+        row
+      ]);
+
+    return {
+      operation: "append",
+      rowNumber: rowNumber
+    };
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * 練習記録をpracticeシートへ1件追加する
  *
  * 全件上書きせず、

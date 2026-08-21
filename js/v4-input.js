@@ -222,6 +222,62 @@ const V4_GAS_API_URL =
 /**
  * 現在入力中の着弾をProject ZeroのStateへ同期する
  */
+
+/**
+ * グルーピング記録1件をGoogleスプレッドシートへ保存する。
+ *
+ * @param {Object} record
+ * @returns {Promise<Object>}
+ */
+async function appendGroupingRecordToCloud(
+    record
+) {
+    const payload = {
+        action:
+            "appendGroupingRecord",
+
+        record:
+            record
+    };
+
+    const response =
+        await fetch(
+            V4_GAS_API_URL,
+            {
+                method:
+                    "POST",
+
+                body:
+                    JSON.stringify(
+                        payload
+                    )
+            }
+        );
+
+    if (!response.ok) {
+        throw new Error(
+            "グルーピング記録の送信に失敗しました。"
+        );
+    }
+
+    const result =
+        await response.json();
+
+    if (
+        !result ||
+        result.success !== true
+    ) {
+        throw new Error(
+            result &&
+                result.message
+                ? result.message
+                : "グルーピング記録を保存できませんでした。"
+        );
+    }
+
+    return result;
+}
+
 function syncCurrentPracticeInputToProjectZero() {
     if (typeof setState !== "function") {
         return;
@@ -2813,7 +2869,7 @@ function bindGroupingSaveButton() {
 
     button.addEventListener(
         "click",
-        function () {
+        async function () {
 
             if (
                 registeredGroupingArrows.length === 0
@@ -2924,9 +2980,6 @@ function bindGroupingSaveButton() {
                 return;
             }
 
-            const history =
-                loadGroupingHistory();
-
             const savedAt =
                 new Date().toISOString();
 
@@ -2978,11 +3031,28 @@ function bindGroupingSaveButton() {
                     )
             };
 
-            history.push(record);
+            try {
+                await appendGroupingRecordToCloud(
+                    record
+                );
+            } catch (error) {
+                console.error(
+                    "グルーピング記録のクラウド保存に失敗しました。",
+                    error
+                );
 
-            saveGroupingHistory(history);
+                window.alert(
+                    "グルーピング記録を保存できませんでした。\n"
+                    + "通信状態を確認して、もう一度保存してください。"
+                );
+
+                return;
+            }
 
             isGroupingSaved = true;
+
+            button.textContent =
+                "✅ 保存済み";
 
             registeredGroupingArrows = [];
             photoGroupingArrows = [];

@@ -24,14 +24,15 @@ function handleGet(e) {
      * 既存の一括取得処理を維持する。
      */
     if (!action) {
-  const data = {
-    practice: readSheetData(SHEET_NAMES.PRACTICE),
-    match: readSheetData(SHEET_NAMES.MATCH),
-    metadata: readSheetData(SHEET_NAMES.METADATA)
-  };
+        const data = {
+          practice: readSheetData(SHEET_NAMES.PRACTICE),
+          grouping: readSheetData(SHEET_NAMES.GROUPING),
+          match: readSheetData(SHEET_NAMES.MATCH),
+          metadata: readSheetData(SHEET_NAMES.METADATA)
+        };
 
-  return createJsonResponse(data);
-}
+        return createJsonResponse(data);
+     }
 
 /*
  * 大会記録一覧用。
@@ -405,6 +406,44 @@ if (action === "saveMatchRecord") {
   return handleSaveMatchRecordAction_(
     payload
   );
+}
+
+/**
+ * グルーピング記録1件を保存する。
+ *
+ * groupingシート全体を書き直さず、
+ * 新しい1件だけを末尾へ追加する。
+ */
+if (action === "appendGroupingRecord") {
+  const record =
+    payload &&
+    payload.record &&
+    typeof payload.record === "object"
+      ? payload.record
+      : null;
+
+  if (!record) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "保存するグルーピング記録が指定されていません。"
+    });
+  }
+
+  const result =
+    appendGroupingRecord(
+      record
+    );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      "グルーピング記録を追加しました。",
+    operation:
+      result.operation,
+    rowNumber:
+      result.rowNumber
+  });
 }
 
 /*

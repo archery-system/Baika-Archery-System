@@ -63,6 +63,54 @@
     }
 
     /**
+     * GASからグルーピング記録一覧を取得する
+     *
+     * @returns {Promise<Array>}
+     */
+    async function loadGroupingRecords() {
+        const result = await loadAllData();
+
+        if (!Array.isArray(result.grouping)) {
+            return [];
+        }
+
+        return result.grouping.map(
+            function (record) {
+                if (
+                    !record ||
+                    typeof record !== "object"
+                ) {
+                    return record;
+                }
+
+                let arrows = record.arrows;
+
+                if (typeof arrows === "string") {
+                    try {
+                        arrows =
+                            JSON.parse(arrows);
+                    } catch (error) {
+                        console.warn(
+                            "[グルーピング記録] arrowsを解析できませんでした。",
+                            error
+                        );
+
+                        arrows = [];
+                    }
+                }
+
+                return {
+                    ...record,
+                    arrows:
+                        Array.isArray(arrows)
+                            ? arrows
+                            : []
+                };
+            }
+        );
+    }
+
+    /**
      * GASから大会記録一覧だけを取得する
      *
      * practice・metadataは取得しない。
@@ -471,6 +519,9 @@
 
         loadPracticeRecords:
             loadPracticeRecords,
+
+        loadGroupingRecords:
+            loadGroupingRecords,
 
         loadMatchRecords:
             loadMatchRecords,

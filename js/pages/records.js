@@ -1982,7 +1982,7 @@
             );
     }
 
-    function loadGroupingRecords() {
+    async function loadGroupingRecords() {
 
         if (
             !window.V4Session ||
@@ -1992,20 +1992,60 @@
             return;
         }
 
-        const memberId =
-            window.V4Session.getLoggedInMemberId();
-
-        const key =
-            "baika-grouping-history-" +
-            memberId;
-
-        const history =
-            JSON.parse(
-                localStorage.getItem(key) || "[]"
+        if (
+            !window.BAS_CLOUD ||
+            typeof window.BAS_CLOUD.loadGroupingRecords
+            !== "function"
+        ) {
+            console.error(
+                "[グルーピング記録] 読込機能を利用できません。"
             );
 
-        renderGroupingRecords(history);
+            return;
+        }
 
+        const memberId =
+            String(
+                window.V4Session.getLoggedInMemberId() || ""
+            ).trim();
+
+        if (!memberId) {
+            return;
+        }
+
+        try {
+            const allRecords =
+                await window.BAS_CLOUD
+                    .loadGroupingRecords();
+
+            const memberRecords =
+                Array.isArray(allRecords)
+                    ? allRecords.filter(
+                        function (record) {
+                            return (
+                                String(
+                                    record &&
+                                    record.memberId ||
+                                    ""
+                                ).trim() ===
+                                memberId
+                            );
+                        }
+                    )
+                    : [];
+
+            renderGroupingRecords(
+                memberRecords
+            );
+
+        } catch (error) {
+            console.error(
+                "[グルーピング記録] 記録の取得に失敗しました。",
+                error
+            );
+
+            renderGroupingRecords([]);
+        }
     }
 
     /**
