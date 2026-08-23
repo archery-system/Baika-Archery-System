@@ -263,6 +263,23 @@
 
         showUserName(memberData.memberName);
 
+        try {
+            const members =
+                await loadMembers();
+
+            renderMemberSelect(
+                members,
+                memberData.memberId
+            );
+
+            bindMemberSelectChange();
+        } catch (error) {
+            console.error(
+                "[記録] 部員一覧の取得に失敗しました。",
+                error
+            );
+        }
+
         initializeTabs();
 
         initializeGroupingComparison();
@@ -289,7 +306,8 @@
                 );
 
             renderRecords(
-                cachedSortedRecords
+                cachedSortedRecords,
+                memberData
             );
         } else {
             showLoading();
@@ -340,6 +358,228 @@
         };
     }
 
+    /**
+     * GASから部員一覧を取得する
+     *
+     * @returns {Promise<Array>}
+     */
+    async function loadMembers() {
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const separator =
+            V4_GAS_API_URL.includes("?")
+                ? "&"
+                : "?";
+
+        const requestUrl =
+            `${V4_GAS_API_URL}${separator}action=getMembers`;
+
+        const response =
+            await fetch(
+                requestUrl,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "部員一覧の取得に失敗しました。"
+            );
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            !result ||
+            result.success !== true ||
+            !Array.isArray(result.members)
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "部員一覧の応答形式が正しくありません。"
+            );
+        }
+
+        return result.members;
+    }
+
+    /**
+     * 記録閲覧用の部員選択欄を更新する
+     *
+     * ログイン画面と同じルールで、
+     * active=true かつ sortOrder が設定された部員だけを
+     * sortOrder 昇順で表示する。
+     */
+    function renderMemberSelect(
+        members,
+        selectedMemberId
+    ) {
+        const select =
+            document.getElementById(
+                "recordsMemberSelect"
+            );
+
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+
+        const visibleMembers =
+            Array.isArray(members)
+                ? members
+                    .filter(function (member) {
+                        if (
+                            !member ||
+                            typeof member !== "object" ||
+                            member.active === false
+                        ) {
+                            return false;
+                        }
+
+                        const sortOrderRaw =
+                            member.sortOrder;
+
+                        if (
+                            sortOrderRaw === null ||
+                            sortOrderRaw === undefined ||
+                            String(sortOrderRaw).trim() === ""
+                        ) {
+                            return false;
+                        }
+
+                        const sortOrder =
+                            Number(sortOrderRaw);
+
+                        return (
+                            Number.isInteger(sortOrder) &&
+                            sortOrder >= 1
+                        );
+                    })
+                    .sort(function (a, b) {
+                        return (
+                            Number(a.sortOrder) -
+                            Number(b.sortOrder)
+                        );
+                    })
+                : [];
+
+        visibleMembers.forEach(
+            function (member) {
+                const memberId =
+                    String(
+                        member.memberId ||
+                        member.name ||
+                        member.displayName ||
+                        ""
+                    ).trim();
+
+                const displayName =
+                    String(
+                        member.displayName ||
+                        member.name ||
+                        memberId
+                    ).trim();
+
+                if (!memberId || !displayName) {
+                    return;
+                }
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    memberId;
+
+                option.textContent =
+                    displayName;
+
+                select.appendChild(
+                    option
+                );
+            }
+        );
+
+        if (selectedMemberId) {
+            select.value =
+                String(
+                    selectedMemberId
+                );
+        }
+    }
+
+    /**
+ * 部員選択変更時に、
+ * 選択した部員の記録を再読み込みする
+ */
+    function bindMemberSelectChange() {
+        const select =
+            document.getElementById(
+                "recordsMemberSelect"
+            );
+
+        if (!select) {
+            return;
+        }
+
+        select.addEventListener(
+            "change",
+            async function () {
+                const selectedMemberId =
+                    String(
+                        select.value || ""
+                    ).trim();
+
+                if (!selectedMemberId) {
+                    return;
+                }
+
+                const selectedOption =
+                    select.options[
+                    select.selectedIndex
+                    ];
+
+                const selectedMemberName =
+                    selectedOption
+                        ? selectedOption.textContent.trim()
+                        : "";
+
+                const targetMemberData = {
+                    memberId:
+                        selectedMemberId,
+
+                    memberName:
+                        selectedMemberName
+                };
+
+                showUserName(
+                    selectedMemberName
+                );
+
+                await loadAndRenderRecords(
+                    targetMemberData,
+                    false
+                );
+
+                await loadGroupingRecords(
+                    targetMemberData
+                );
+            }
+        );
+    }
 
     /**
      * GASから記録を取得して表示する
@@ -392,7 +632,8 @@
                 );
 
             renderRecords(
-                sortedRecords
+                sortedRecords,
+                memberData
             );
         } catch (error) {
             console.error(
@@ -750,7 +991,10 @@
     /**
      * 記録一覧を表示する
      */
-    function renderRecords(records) {
+    function renderRecords(
+        records,
+        memberData
+    ) {
         const recordsList =
             document.getElementById(
                 "recordsList"
@@ -792,7 +1036,8 @@
             fragment.appendChild(
                 createPracticeSessionCard(
                     session,
-                    index
+                    index,
+                    memberData
                 )
             );
         });
@@ -809,7 +1054,8 @@
 
     function createPracticeSessionCard(
         session,
-        index
+        index,
+        memberData
     ) {
         const article =
             document.createElement("article");
@@ -1134,9 +1380,24 @@
             }
         );
 
-        actions.appendChild(
-            deleteButton
-        );
+        const loggedInMemberData =
+            getLoggedInMemberData();
+
+        const isOwnRecordView =
+            loggedInMemberData &&
+            memberData &&
+            String(
+                loggedInMemberData.memberId || ""
+            ).trim() ===
+            String(
+                memberData.memberId || ""
+            ).trim();
+
+        if (isOwnRecordView) {
+            actions.appendChild(
+                deleteButton
+            );
+        }
 
         const detail =
             document.createElement("div");
@@ -1153,7 +1414,8 @@
             const endCard =
                 createRecordCard(
                     record,
-                    endIndex
+                    endIndex,
+                    memberData
                 );
 
             detail.appendChild(endCard);
@@ -1278,7 +1540,8 @@
 
     function createRecordCard(
         record,
-        index
+        index,
+        memberData
     ) {
         const article =
             document.createElement("article");
@@ -1479,9 +1742,24 @@
             }
         );
 
-        deleteEndActions.appendChild(
-            deleteEndButton
-        );
+        const loggedInMemberData =
+            getLoggedInMemberData();
+
+        const isOwnRecordView =
+            loggedInMemberData &&
+            memberData &&
+            String(
+                loggedInMemberData.memberId || ""
+            ).trim() ===
+            String(
+                memberData.memberId || ""
+            ).trim();
+
+        if (isOwnRecordView) {
+            deleteEndActions.appendChild(
+                deleteEndButton
+            );
+        }
 
         article.appendChild(header);
         article.appendChild(arrows);
@@ -1982,15 +2260,9 @@
             );
     }
 
-    async function loadGroupingRecords() {
-
-        if (
-            !window.V4Session ||
-            typeof window.V4Session.getLoggedInMemberId
-            !== "function"
-        ) {
-            return;
-        }
+    async function loadGroupingRecords(
+        memberData
+    ) {
 
         if (
             !window.BAS_CLOUD ||
@@ -2004,9 +2276,15 @@
             return;
         }
 
+        const targetMemberData =
+            memberData &&
+                typeof memberData === "object"
+                ? memberData
+                : getLoggedInMemberData();
+
         const memberId =
             String(
-                window.V4Session.getLoggedInMemberId() || ""
+                targetMemberData.memberId || ""
             ).trim();
 
         if (!memberId) {

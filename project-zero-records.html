@@ -10,28 +10,13 @@
     <title>
         練習記録 | Baika Archery System
     </title>
-    <meta
-        name="theme-color"
-        content="#9b2457"
-    >
+    <meta name="theme-color" content="#9b2457">
 
-    <link
-        rel="icon"
-        type="image/png"
-        sizes="32x32"
-        href="icons/favicon-32.png"
-    >
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 
-    <link
-        rel="apple-touch-icon"
-        sizes="180x180"
-        href="icons/apple-touch-icon.png"
-    >
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
-    <link
-        rel="manifest"
-        href="manifest.webmanifest"
-    >
+    <link rel="manifest" href="manifest.webmanifest">
 
     <link rel="stylesheet" href="css/foundation/tokens.css">
     <link rel="stylesheet" href="css/foundation/base.css">
@@ -63,9 +48,20 @@
 
                         <div>
 
-                            <p class="bas-records__label">
-                                ログイン中
-                            </p>
+                            <div class="bas-records__member-row">
+
+                                <p class="bas-records__label">
+                                    記録を見る部員
+                                </p>
+
+                                <select id="recordsMemberSelect" class="bas-records__member-select"
+                                    aria-label="記録を見る部員を選択">
+                                    <option value="">
+                                        部員を読み込んでいます
+                                    </option>
+                                </select>
+
+                            </div>
 
                             <h2 id="recordsUserName" class="bas-records__user-name">
                                 読み込み中
@@ -80,7 +76,7 @@
                     </div>
 
                     <p class="bas-records__description">
-                        ログイン中の部員本人の記録だけを表示しています。
+                        選択した部員の記録を表示しています。
                     </p>
 
                 </section>
