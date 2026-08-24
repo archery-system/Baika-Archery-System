@@ -351,10 +351,20 @@
                 ).trim()
                 : "";
 
+        const role =
+            sessionData
+                ? String(
+                    sessionData.role || ""
+                ).trim()
+                : "";
+
         return {
             memberId: memberId,
+
             memberName:
-                memberName || "ログインユーザー"
+                memberName || "ログインユーザー",
+
+            role: role
         };
     }
 
@@ -2313,7 +2323,8 @@
                     : [];
 
             renderGroupingRecords(
-                memberRecords
+                memberRecords,
+                targetMemberData
             );
 
         } catch (error) {
@@ -2322,7 +2333,10 @@
                 error
             );
 
-            renderGroupingRecords([]);
+            renderGroupingRecords(
+                [],
+                targetMemberData
+            );
         }
     }
 
@@ -2399,7 +2413,10 @@
         return originalValue;
     }
 
-    function renderGroupingRecords(history) {
+    function renderGroupingRecords(
+        history,
+        memberData
+    ) {
 
         const list =
             document.getElementById(
@@ -2535,6 +2552,40 @@
         `
                         : "";
 
+                const loggedInMemberData =
+                    getLoggedInMemberData();
+
+                const isOwnRecordView =
+                    loggedInMemberData &&
+                    memberData &&
+                    String(
+                        loggedInMemberData.memberId || ""
+                    ).trim() ===
+                    String(
+                        memberData.memberId || ""
+                    ).trim();
+
+                const isAdmin =
+                    loggedInMemberData &&
+                    loggedInMemberData.role === "admin";
+
+                const canDeleteGroupingRecord =
+                    isOwnRecordView ||
+                    isAdmin;
+
+                const deleteButtonHtml =
+                    canDeleteGroupingRecord
+                        ? `
+        <button
+            class="bas-records__grouping-button"
+            type="button"
+            data-grouping-delete-id="${escapeHtml(record.id)}"
+        >
+            🗑 削除
+        </button>
+        `
+                        : "";
+
                 card.innerHTML =
                     `
     <h3>${record.practiceDate}</h3>
@@ -2568,6 +2619,8 @@ ${conditionHtml}
 >
     比較に追加
 </button>
+
+${deleteButtonHtml}
 
     </div>
     `;
@@ -2691,6 +2744,131 @@ ${conditionHtml}
                                 "[グルーピング比較] 選択追加",
                                 selectedGroupingRecords
                             );
+                        }
+                    );
+                }
+
+                const deleteButton =
+                    card.querySelector(
+                        "[data-grouping-delete-id]"
+                    );
+
+                if (deleteButton) {
+                    deleteButton.addEventListener(
+                        "click",
+                        async function () {
+                            const recordId =
+                                String(
+                                    record.id || ""
+                                ).trim();
+
+                            if (!recordId) {
+                                window.alert(
+                                    "削除するグルーピング記録を確認できません。"
+                                );
+
+                                return;
+                            }
+
+                            const confirmed =
+                                window.confirm(
+                                    [
+                                        "このグルーピング記録を削除しますか？",
+                                        "",
+                                        `日付：${record.practiceDate || ""}`,
+                                        `距離：${record.distance || ""}`,
+                                        `射数：${Array.isArray(record.arrows)
+                                            ? record.arrows.length
+                                            : 0
+                                        }射`,
+                                        "",
+                                        "この操作は元に戻せません。"
+                                    ].join("\n")
+                                );
+
+                            if (!confirmed) {
+                                return;
+                            }
+
+                            const requesterMemberData =
+                                getLoggedInMemberData();
+
+                            if (
+                                !requesterMemberData ||
+                                !requesterMemberData.memberId
+                            ) {
+                                window.alert(
+                                    "ログイン中の部員を確認できません。"
+                                );
+
+                                return;
+                            }
+
+                            const password =
+                                window.prompt(
+                                    "本人確認のため、現在のパスワードを入力してください。"
+                                );
+
+                            if (password === null) {
+                                return;
+                            }
+
+                            if (!password) {
+                                window.alert(
+                                    "パスワードを入力してください。"
+                                );
+
+                                return;
+                            }
+
+                            if (
+                                !window.BAS_CLOUD ||
+                                typeof window.BAS_CLOUD
+                                    .deleteGroupingRecord !==
+                                "function"
+                            ) {
+                                window.alert(
+                                    "グルーピング記録の削除機能を読み込めませんでした。"
+                                );
+
+                                return;
+                            }
+
+                            deleteButton.disabled =
+                                true;
+
+                            deleteButton.textContent =
+                                "削除中…";
+
+                            try {
+                                await window.BAS_CLOUD
+                                    .deleteGroupingRecord(
+                                        recordId,
+                                        requesterMemberData.memberId,
+                                        password
+                                    );
+
+                                window.alert(
+                                    "グルーピング記録を削除しました。"
+                                );
+
+                                await loadGroupingRecords(
+                                    memberData
+                                );
+
+                            } catch (error) {
+                                deleteButton.disabled =
+                                    false;
+
+                                deleteButton.textContent =
+                                    "🗑 削除";
+
+                                window.alert(
+                                    error instanceof Error
+                                        ? error.message
+                                        : "グルーピング記録を削除できませんでした。"
+                                );
+                            }
                         }
                     );
                 }

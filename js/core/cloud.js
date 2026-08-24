@@ -345,6 +345,91 @@
     }
 
     /**
+ * グルーピング記録1件をクラウドから削除する
+ *
+ * @param {string} recordId
+ * @param {string} requesterMemberId
+ * @param {string} password
+ * @returns {Promise<Object>}
+ */
+    async function deleteGroupingRecord(
+        recordId,
+        requesterMemberId,
+        password
+    ) {
+        const normalizedRecordId =
+            String(recordId || "").trim();
+
+        const normalizedRequesterMemberId =
+            String(
+                requesterMemberId || ""
+            ).trim();
+
+        if (!normalizedRecordId) {
+            throw new Error(
+                "削除するグルーピング記録IDが指定されていません。"
+            );
+        }
+
+        if (!normalizedRequesterMemberId) {
+            throw new Error(
+                "削除する部員を確認できません。"
+            );
+        }
+
+        if (!password) {
+            throw new Error(
+                "本人確認のためパスワードを入力してください。"
+            );
+        }
+
+        const response =
+            await fetch(
+                V4_GAS_API_URL,
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+                        action:
+                            "deleteGroupingRecord",
+
+                        recordId:
+                            normalizedRecordId,
+
+                        requesterMemberId:
+                            normalizedRequesterMemberId,
+
+                        password:
+                            password
+                    })
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "グルーピング記録を削除できませんでした。"
+            );
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result &&
+                    result.message
+                    ? result.message
+                    : "グルーピング記録を削除できませんでした。"
+            );
+        }
+
+        return result;
+    }
+
+    /**
      * 大会記録をクラウドへ全件保存する
      *
      * @param {Array} records
@@ -531,6 +616,9 @@
 
         deletePracticeRecord:
             deletePracticeRecord,
+
+        deleteGroupingRecord:
+            deleteGroupingRecord,
 
         overwriteMatchRecords:
             overwriteMatchRecords,
