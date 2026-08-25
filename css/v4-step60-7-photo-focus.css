@@ -81,3 +81,25 @@ html.v4-photo-focus-mode .v4-photo-back-to-overview {
   color:#4f2683 !important;
   box-shadow:0 2px 12px rgba(0,0,0,.35) !important;
 }
+
+html.v4-photo-focus-mode .v4-photo-focus-zoom-button {
+  display: block !important;
+  position: fixed !important;
+  top: max(8px, env(safe-area-inset-top)) !important;
+  z-index: 10005 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-weight: 700 !important;
+  background: rgba(255,255,255,.94) !important;
+  color: #4f2683 !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.35) !important;
+}
+
+html.v4-photo-focus-mode #v4PhotoZoom800 {
+  left: calc(max(8px, env(safe-area-inset-left)) + 150px) !important;
+}
+
+html.v4-photo-focus-mode #v4PhotoZoom1000 {
+  left: calc(max(8px, env(safe-area-inset-left)) + 225px) !important;
+}

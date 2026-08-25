@@ -64,7 +64,7 @@
             elements.preview,
             {
                 minScale: 1,
-                maxScale: 6,
+                maxScale: 10,
                 zoomStep: 0.2
             }
         );
@@ -951,6 +951,16 @@
                 !shouldEnable;
         }
 
+        if (elements.zoom800Button) {
+            elements.zoom800Button.hidden =
+                !shouldEnable;
+        }
+
+        if (elements.zoom1000Button) {
+            elements.zoom1000Button.hidden =
+                !shouldEnable;
+        }
+
         /*
          * パネルをbody直下へ移動した直後は、iPhone Safariで
          * 旧サイズの座標変換が残ることがある。2フレーム待って
@@ -1040,6 +1050,38 @@
                                 }
                             );
                         }
+                    );
+                }
+            );
+        }
+
+        if (elements.zoom800Button) {
+            elements.zoom800Button.addEventListener(
+                "click",
+                function () {
+                    const rect =
+                        elements.viewer.getBoundingClientRect();
+
+                    photoEngine.zoomAt(
+                        8,
+                        rect.left + rect.width / 2,
+                        rect.top + rect.height / 2
+                    );
+                }
+            );
+        }
+
+        if (elements.zoom1000Button) {
+            elements.zoom1000Button.addEventListener(
+                "click",
+                function () {
+                    const rect =
+                        elements.viewer.getBoundingClientRect();
+
+                    photoEngine.zoomAt(
+                        10,
+                        rect.left + rect.width / 2,
+                        rect.top + rect.height / 2
                     );
                 }
             );
@@ -1210,7 +1252,8 @@
             loadPhotoBlob(
                 detail.blob,
                 detail.photoId,
-                elements
+                elements,
+                detail.draftPins
             );
         });
 
@@ -1732,7 +1775,7 @@
             "v4-target-score-summary";
 
         scoreSummary.style.width = "100%";
-        
+
         const photoSummaryHost =
             document.getElementById(
                 "v4PhotoScoreDisplay"
@@ -2297,10 +2340,81 @@
     async function loadPhotoBlob(
         blob,
         photoId,
-        elements
+        elements,
+        savedDraftPins
     ) {
         releasePhotoUrl();
-        clearPins();
+
+        /*
+         * Step69-AD:
+         * 写真の切り替え時は画面上のピンだけを初期化する。
+         *
+         * clearPins() を使うと、切り替え前の写真IDに対して
+         * 空の draftPins が保存される可能性があるため使用しない。
+         */
+        pins.length = 0;
+
+        if (pinLayer) {
+            pinLayer.replaceChildren();
+        }
+
+        updateScoreSummary();
+        updateScoreList(elements);
+        updateApplyToEndButton();
+
+        if (Array.isArray(savedDraftPins)) {
+            savedDraftPins.forEach(function (savedPin) {
+                const x =
+                    Number(
+                        savedPin &&
+                        savedPin.x
+                    );
+
+                const y =
+                    Number(
+                        savedPin &&
+                        savedPin.y
+                    );
+
+                if (
+                    !Number.isFinite(x) ||
+                    !Number.isFinite(y)
+                ) {
+                    return;
+                }
+
+                const savedScore =
+                    savedPin &&
+                        savedPin.score != null &&
+                        String(savedPin.score).trim() !== ""
+                        ? String(savedPin.score).trim()
+                        : null;
+
+                const restoredPin = {
+                    x: Math.round(x),
+                    y: Math.round(y),
+                    score: savedScore
+                };
+
+                /*
+                 * 保存済み得点がない場合だけ、
+                 * 現在の位置から得点を自動計算する。
+                 *
+                 * 手動でX・10・Mなどへ修正していた場合は、
+                 * その保存値を優先して復元する。
+                 */
+                if (savedScore === null) {
+                    updateAutomaticPinScore(
+                        restoredPin
+                    );
+                }
+
+                pins.push(
+                    restoredPin
+                );
+            });
+        }
+
         closeScorePanel();
         updateUndoButton(elements);
         currentPhotoGuide = null;
@@ -2345,6 +2459,18 @@
 
             photoEngine.reset();
             updatePhotoUI(elements, true);
+
+            /*
+             * Step69-U:
+             * この写真に途中保存されたピンがある場合、
+             * 写真の読み込み完了後に画面へ復元する。
+             */
+            renderPins(elements);
+            updateUndoButton(elements);
+            updateScoreSummary();
+            updateScoreList(elements);
+            updateApplyToEndButton();
+            syncGroupingFromPhoto();
 
             /*
              * 写真読込後は写真ビューアを表示位置へ移動する。
@@ -2421,7 +2547,27 @@
         const elements = getPhotoElements();
 
         releasePhotoUrl();
-        clearPins();
+
+        /*
+         * Step69-Y:
+         * 写真を閉じるだけでは、
+         * この写真の途中保存ピンを削除しない。
+         *
+         * clearPins() を使うと
+         * syncGroupingFromPhoto() を経由して
+         * 空の pins が draftPins として保存されるため、
+         * 画面上のピンだけを消す。
+         */
+        pins.length = 0;
+
+        if (pinLayer) {
+            pinLayer.replaceChildren();
+        }
+
+        updateScoreSummary();
+        updateScoreList(elements);
+        updateApplyToEndButton();
+
         clearArrowCandidates();
         closeScorePanel();
         updateUndoButton(elements);
@@ -2489,6 +2635,36 @@
             getCalibration(),
             convertedTargetPoints
         );
+
+        const elements =
+            getPhotoElements();
+
+        const photoId =
+            Number(
+                elements.preview &&
+                elements.preview.dataset.localPhotoId
+            );
+
+        if (
+            Number.isFinite(photoId) &&
+            photoId > 0 &&
+            window.BaikaLocalPhotoStore &&
+            typeof window.BaikaLocalPhotoStore
+                .saveDraftPins === "function"
+        ) {
+            window.BaikaLocalPhotoStore
+                .saveDraftPins(
+                    photoId,
+                    pins
+                )
+                .catch(function (error) {
+                    console.warn(
+                        "写真入力途中のピンを保存できませんでした:",
+                        error
+                    );
+                });
+        }
+
     }
 
 
@@ -2641,6 +2817,16 @@
             backToOverviewButton:
                 document.getElementById(
                     "v4PhotoBackToOverview"
+                ),
+
+            zoom800Button:
+                document.getElementById(
+                    "v4PhotoZoom800"
+                ),
+
+            zoom1000Button:
+                document.getElementById(
+                    "v4PhotoZoom1000"
                 )
         };
     }

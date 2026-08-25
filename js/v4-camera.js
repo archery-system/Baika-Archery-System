@@ -1441,6 +1441,24 @@
             const photo = await getPhoto(Number(photoId));
             if (!photo || !photo.blob) return;
 
+            /*
+             * Step69-I:
+             * この写真に途中まで入力した着弾ピンがある場合、
+             * IndexedDB から読み込んで入力画面へ引き継ぐ。
+             */
+            let savedPins = null;
+
+            try {
+                savedPins = await getPins(
+                    Number(photo.id)
+                );
+            } catch (error) {
+                console.warn(
+                    "Saved photo pins load failed:",
+                    error
+                );
+            }
+
             // Step52: よく似た的写真の取り違えを防ぐため、
             // 入力画面へ表示する前に「入力済み／未入力」を必ず確認する。
             const status = getPhotoStatus(photo);
@@ -1452,19 +1470,44 @@
 
             if (!window.confirm(confirmMessage)) return;
 
-            window.dispatchEvent(new CustomEvent("baika:select-local-photo", {
-                detail: {
-                    photoId: Number(photo.id),
-                    blob: photo.blob,
-                    name: "target-photo-" + photo.id + ".jpg",
-                    status: status,
-                    statusLabel: statusLabel,
-                    distance: photo.distance || "",
-                    weather: photo.weather || "",
-                    windStrength: photo.windStrength || "",
-                    windDirection: photo.windDirection || ""
-                }
-            }));
+            window.dispatchEvent(
+                new CustomEvent(
+                    "baika:select-local-photo",
+                    {
+                        detail: {
+                            photoId: Number(photo.id),
+                            blob: photo.blob,
+                            name:
+                                "target-photo-" +
+                                photo.id +
+                                ".jpg",
+                            status: status,
+                            statusLabel: statusLabel,
+                            distance:
+                                photo.distance || "",
+                            weather:
+                                photo.weather || "",
+                            windStrength:
+                                photo.windStrength || "",
+                            windDirection:
+                                photo.windDirection || "",
+
+                            /*
+                             * Step69-I:
+                             * 保存済みの着弾ピンを
+                             * 練習入力側へ引き継ぐ。
+                             */
+                            draftPins:
+                                savedPins &&
+                                    Array.isArray(
+                                        savedPins.draftPins
+                                    )
+                                    ? savedPins.draftPins
+                                    : []
+                        }
+                    }
+                )
+            );
             closePhotoList();
         } catch (error) {
             console.error("Photo selection failed:", error);
@@ -2204,6 +2247,50 @@
         return requestResult(db.transaction(PINS_STORE_NAME, "readwrite").objectStore(PINS_STORE_NAME).put(record));
     }
 
+    async function saveDraftPins(
+        photoId,
+        draftPins
+    ) {
+        const id =
+            Number(photoId);
+
+        if (
+            !Number.isFinite(id) ||
+            id <= 0
+        ) {
+            return;
+        }
+
+        let record =
+            await getPins(id);
+
+        if (
+            !record ||
+            typeof record !== "object"
+        ) {
+            record = {
+                photoId: id,
+                impactPins: []
+            };
+        }
+
+        record.photoId =
+            id;
+
+        record.draftPins =
+            Array.isArray(draftPins)
+                ? draftPins.map(function (pin) {
+                    return {
+                        ...pin
+                    };
+                })
+                : [];
+
+        await putPins(
+            record
+        );
+    }
+
     function requestResult(request) {
         return new Promise(function (resolve, reject) {
             request.onsuccess = function () { resolve(request.result); };
@@ -2448,6 +2535,10 @@
         refreshCounts: refreshCounts,
         getAllPhotos: getAllPhotos,
         getPhoto: getPhoto,
+
+        saveDraftPins:
+            saveDraftPins,
+
         openPicker: function () {
             return openPhotoList(true);
         },
