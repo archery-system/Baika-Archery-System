@@ -7,9 +7,21 @@
 (function () {
     "use strict";
 
+    const DB_NAME =
+        "baika-archery-form-video-local";
+
+    const DB_VERSION =
+        1;
+
+    const VIDEO_STORE_NAME =
+        "formVideos";
+
+    let databasePromise = null;
+
     let cameraStream = null;
 
     let mediaRecorder = null;
+
     let recordedChunks = [];
     let recordedVideoUrl = null;
 
@@ -17,6 +29,133 @@
         "DOMContentLoaded",
         initializeFormVideo
     );
+
+    function openDatabase() {
+        if (databasePromise) {
+            return databasePromise;
+        }
+
+        databasePromise =
+            new Promise(function (
+                resolve,
+                reject
+            ) {
+                const request =
+                    indexedDB.open(
+                        DB_NAME,
+                        DB_VERSION
+                    );
+
+                request.onupgradeneeded =
+                    function () {
+                        const db =
+                            request.result;
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    VIDEO_STORE_NAME
+                                )
+                        ) {
+                            const store =
+                                db.createObjectStore(
+                                    VIDEO_STORE_NAME,
+                                    {
+                                        keyPath: "id",
+                                        autoIncrement: true
+                                    }
+                                );
+
+                            store.createIndex(
+                                "createdAt",
+                                "createdAt",
+                                {
+                                    unique: false
+                                }
+                            );
+                        }
+                    };
+
+                request.onsuccess =
+                    function () {
+                        resolve(
+                            request.result
+                        );
+                    };
+
+                request.onerror =
+                    function () {
+                        reject(
+                            request.error
+                        );
+                    };
+            });
+
+        return databasePromise;
+    }
+
+    async function saveFormVideo(
+        videoBlob,
+        mimeType
+    ) {
+        const db =
+            await openDatabase();
+
+        const record = {
+            createdAt:
+                new Date().toISOString(),
+
+            mimeType:
+                String(
+                    mimeType ||
+                    videoBlob.type ||
+                    ""
+                ),
+
+            size:
+                Number(
+                    videoBlob.size || 0
+                ),
+
+            blob:
+                videoBlob
+        };
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    VIDEO_STORE_NAME,
+                    "readwrite"
+                );
+
+            const store =
+                transaction.objectStore(
+                    VIDEO_STORE_NAME
+                );
+
+            const request =
+                store.add(
+                    record
+                );
+
+            request.onsuccess =
+                function () {
+                    resolve(
+                        request.result
+                    );
+                };
+
+            request.onerror =
+                function () {
+                    reject(
+                        request.error
+                    );
+                };
+        });
+    }
 
     function initializeFormVideo() {
         const elements =
@@ -218,7 +357,7 @@
         mediaRecorder.stop();
     }
 
-    function handleRecordingStop() {
+    async function handleRecordingStop() {
         const elements =
             getElements();
 
@@ -245,6 +384,29 @@
                     type: mimeType
                 }
             );
+
+        try {
+            const savedVideoId =
+                await saveFormVideo(
+                    videoBlob,
+                    mimeType
+                );
+
+            console.log(
+                "フォーム動画を端末へ保存しました:",
+                savedVideoId
+            );
+
+        } catch (error) {
+            console.error(
+                "Form video save failed:",
+                error
+            );
+
+            updateStatus(
+                "動画は撮影できましたが、端末内へ保存できませんでした。"
+            );
+        }
 
         recordedVideoUrl =
             URL.createObjectURL(
