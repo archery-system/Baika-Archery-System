@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        フォーム動画撮影 | Baika Archery System
+    </title>
+
+    <!-- Project Zero 共通デザイン -->
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+
+    <link rel="stylesheet" href="css/foundation/base.css">
+
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
+
+    <link rel="stylesheet" href="css/components/header.css">
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/v4.css">
+
+    <link rel="stylesheet" href="css/v4-form-video.css">
+
+</head>
+
+<body class="form-video-page">
+
+    <!-- Project Zero 共通ヘッダー -->
+    <div id="app-header"></div>
+
+    <main class="bas-app__main form-video-main">
+
+        <section class="form-video-hero">
+
+            <p class="form-video-hero-label">
+                撮影センター
+            </p>
+
+            <h1>
+                🎥 フォーム動画撮影
+            </h1>
+
+            <p class="form-video-description">
+                アーチェリーの射形を動画で撮影し、
+                フォーム確認や今後のAI分析に使用します。
+            </p>
+
+        </section>
+
+        <section class="form-video-card">
+
+            <h2>
+                撮影
+            </h2>
+
+            <div id="formVideoCameraArea" class="form-video-camera-area">
+
+                <video id="formVideoPreview" class="form-video-preview" autoplay muted playsinline></video>
+
+            </div>
+
+            <div class="form-video-controls">
+
+                <button type="button" id="formVideoStartCamera" class="form-video-button form-video-button--camera">
+                    📷 カメラを起動
+                </button>
+
+                <button type="button" id="formVideoStartRecording" class="form-video-button form-video-button--record"
+                    disabled>
+                    🔴 録画開始
+                </button>
+
+                <button type="button" id="formVideoStopRecording" class="form-video-button form-video-button--stop"
+                    disabled>
+                    ⏹ 録画停止
+                </button>
+
+            </div>
+
+            <p id="formVideoStatus" class="form-video-status">
+                カメラを起動してください。
+            </p>
+
+        </section>
+
+        <section class="form-video-card">
+
+            <h2>
+                撮影した動画
+            </h2>
+
+            <video id="formVideoPlayback" class="form-video-playback" controls playsinline hidden></video>
+
+            <p id="formVideoEmpty" class="form-video-empty">
+                まだ動画は撮影されていません。
+            </p>
+
+        </section>
+
+        <p class="form-video-back">
+            <a href="camera-center.html">
+                ← 撮影センターへ戻る
+            </a>
+        </p>
+
+    </main>
+
+    <script src="js/core/organization.js"></script>
+    <script src="js/components/header.js"></script>
+    <script src="js/v4-form-video.js"></script>
+
+
+    <script>
+            if (
+            window.BAS_HEADER &&
+            typeof window.BAS_HEADER.render === "function"
+            ) {
+                window.BAS_HEADER.render({
+                    currentRoute: "cameraCenter"
+                });
+        }
+    </script>
+
+</body>
+
+</html>
