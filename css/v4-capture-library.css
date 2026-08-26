@@ -1,0 +1,154 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Capture Library
+ */
+
+.capture-library-page {
+    min-height: 100vh;
+    background:
+        linear-gradient(180deg,
+            rgba(244, 240, 250, 0.96),
+            rgba(255, 255, 255, 0.98));
+}
+
+.capture-library-main {
+    display: grid;
+    gap: 22px;
+    width: min(calc(100% - 32px),
+            960px);
+    margin-inline: auto;
+    padding-block: 24px 48px;
+}
+
+.capture-library-hero {
+    text-align: center;
+}
+
+.capture-library-label {
+    margin: 0 0 6px;
+    color: #6b4a8e;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.capture-library-hero h1 {
+    margin: 0;
+    color: #351c57;
+    font-size: clamp(1.7rem,
+            6vw,
+            2.4rem);
+}
+
+.capture-library-description {
+    margin: 10px auto 0;
+    max-width: 40rem;
+    color: #625b6b;
+    line-height: 1.7;
+}
+
+.capture-library-section {
+    padding: 20px;
+    border: 1px solid rgba(79, 38, 131, 0.14);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow:
+        0 10px 30px rgba(52, 28, 87, 0.08);
+}
+
+.capture-library-section h2 {
+    margin: 0 0 16px;
+    color: #351c57;
+    font-size: 1.2rem;
+}
+
+.capture-library-list {
+    display: grid;
+    gap: 18px;
+}
+
+.capture-library-list article {
+    overflow: hidden;
+    padding: 14px;
+    border: 1px solid rgba(79, 38, 131, 0.12);
+    border-radius: 16px;
+    background: #fff;
+}
+
+.capture-library-list article h3 {
+    margin: 0 0 10px;
+    color: #351c57;
+    font-size: 1rem;
+}
+
+.capture-library-list article video {
+    display: block;
+    width: 100%;
+    max-height: 65vh;
+    border-radius: 12px;
+    background: #111;
+    object-fit: contain;
+}
+
+.capture-library-list article p {
+    margin: 10px 0 0;
+    color: #726b79;
+    font-size: 0.88rem;
+}
+
+.capture-library-delete-button {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    border: 1px solid rgba(180, 35, 24, 0.22);
+    border-radius: 12px;
+    color: #b42318;
+    background: #fff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.capture-library-delete-button:hover {
+    background: rgba(180, 35, 24, 0.06);
+}
+
+.capture-library-delete-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.capture-library-back {
+    text-align: center;
+}
+
+.capture-library-back a {
+    color: #4f2683;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+@media (max-width: 600px) {
+    .capture-library-main {
+        width: min(calc(100% - 20px),
+                960px);
+        gap: 16px;
+        padding-block: 16px 32px;
+    }
+
+    .capture-library-section {
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .capture-library-list {
+        gap: 14px;
+    }
+
+    .capture-library-list article {
+        padding: 10px;
+        border-radius: 14px;
+    }
+}

@@ -179,6 +179,53 @@
         }
     }
 
+    async function deleteFormVideo(
+        videoId
+    ) {
+        const id =
+            Number(videoId);
+
+        if (
+            !Number.isFinite(id) ||
+            id <= 0
+        ) {
+            return;
+        }
+
+        const db =
+            await openDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    VIDEO_STORE_NAME,
+                    "readwrite"
+                );
+
+            const request =
+                transaction
+                    .objectStore(
+                        VIDEO_STORE_NAME
+                    )
+                    .delete(id);
+
+            request.onsuccess =
+                function () {
+                    resolve();
+                };
+
+            request.onerror =
+                function () {
+                    reject(
+                        request.error
+                    );
+                };
+        });
+    }
+
     function renderFormVideos(
         list,
         videos
@@ -270,6 +317,64 @@
                     record.size
                 );
 
+            const deleteButton =
+                document.createElement(
+                    "button"
+                );
+
+            deleteButton.type =
+                "button";
+
+            deleteButton.className =
+                "capture-library-delete-button";
+
+            deleteButton.textContent =
+                "🗑 削除";
+
+            deleteButton.addEventListener(
+                "click",
+                async function () {
+                    const confirmed =
+                        window.confirm(
+                            "このフォーム動画を削除しますか？\n\n削除すると元に戻せません。"
+                        );
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    deleteButton.disabled =
+                        true;
+
+                    deleteButton.textContent =
+                        "削除中…";
+
+                    try {
+                        await deleteFormVideo(
+                            record.id
+                        );
+
+                        await loadFormVideos();
+
+                    } catch (error) {
+                        console.error(
+                            "Form video delete failed:",
+                            error
+                        );
+
+                        window.alert(
+                            "フォーム動画を削除できませんでした。"
+                        );
+
+                        deleteButton.disabled =
+                            false;
+
+                        deleteButton.textContent =
+                            "🗑 削除";
+                    }
+                }
+            );
+
             card.appendChild(
                 title
             );
@@ -280,6 +385,10 @@
 
             card.appendChild(
                 meta
+            );
+
+            card.appendChild(
+                deleteButton
             );
 
             list.appendChild(
