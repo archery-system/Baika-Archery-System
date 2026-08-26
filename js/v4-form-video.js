@@ -9,6 +9,10 @@
 
     let cameraStream = null;
 
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let recordedVideoUrl = null;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeFormVideo
@@ -33,6 +37,16 @@
             startCamera
         );
 
+        elements.startRecordingButton.addEventListener(
+            "click",
+            startRecording
+        );
+
+        elements.stopRecordingButton.addEventListener(
+            "click",
+            stopRecording
+        );
+
         /*
          * ページを離れるときは
          * カメラを停止する。
@@ -50,7 +64,7 @@
         if (
             !navigator.mediaDevices ||
             typeof navigator.mediaDevices.getUserMedia !==
-                "function"
+            "function"
         ) {
             updateStatus(
                 "このブラウザではカメラを使用できません。"
@@ -107,9 +121,179 @@
         }
     }
 
+    function startRecording() {
+        const elements =
+            getElements();
+
+        if (!cameraStream) {
+            updateStatus(
+                "先にカメラを起動してください。"
+            );
+            return;
+        }
+
+        if (
+            typeof MediaRecorder ===
+            "undefined"
+        ) {
+            updateStatus(
+                "このブラウザでは動画録画を使用できません。"
+            );
+            return;
+        }
+
+        recordedChunks = [];
+
+        try {
+            mediaRecorder =
+                new MediaRecorder(
+                    cameraStream
+                );
+
+            mediaRecorder.addEventListener(
+                "dataavailable",
+                function (event) {
+                    if (
+                        event.data &&
+                        event.data.size > 0
+                    ) {
+                        recordedChunks.push(
+                            event.data
+                        );
+                    }
+                }
+            );
+
+            mediaRecorder.addEventListener(
+                "stop",
+                handleRecordingStop
+            );
+
+            mediaRecorder.start();
+
+            elements.startRecordingButton.disabled =
+                true;
+
+            elements.stopRecordingButton.disabled =
+                false;
+
+            elements.startCameraButton.disabled =
+                true;
+
+            updateStatus(
+                "🔴 録画中です。"
+            );
+
+        } catch (error) {
+            console.error(
+                "Form video recording start failed:",
+                error
+            );
+
+            updateStatus(
+                "録画を開始できませんでした。"
+            );
+        }
+    }
+
+    function stopRecording() {
+        const elements =
+            getElements();
+
+        if (
+            !mediaRecorder ||
+            mediaRecorder.state ===
+            "inactive"
+        ) {
+            return;
+        }
+
+        elements.stopRecordingButton.disabled =
+            true;
+
+        updateStatus(
+            "録画を停止しています…"
+        );
+
+        mediaRecorder.stop();
+    }
+
+    function handleRecordingStop() {
+        const elements =
+            getElements();
+
+        if (
+            recordedVideoUrl
+        ) {
+            URL.revokeObjectURL(
+                recordedVideoUrl
+            );
+
+            recordedVideoUrl = null;
+        }
+
+        const mimeType =
+            mediaRecorder &&
+                mediaRecorder.mimeType
+                ? mediaRecorder.mimeType
+                : "video/webm";
+
+        const videoBlob =
+            new Blob(
+                recordedChunks,
+                {
+                    type: mimeType
+                }
+            );
+
+        recordedVideoUrl =
+            URL.createObjectURL(
+                videoBlob
+            );
+
+        elements.playback.src =
+            recordedVideoUrl;
+
+        elements.playback.hidden =
+            false;
+
+        elements.empty.hidden =
+            true;
+
+        elements.startRecordingButton.disabled =
+            false;
+
+        elements.stopRecordingButton.disabled =
+            true;
+
+        elements.startCameraButton.disabled =
+            false;
+
+        updateStatus(
+            "録画が完了しました。下の動画で確認できます。"
+        );
+
+        mediaRecorder = null;
+    }
+
     function stopCamera() {
         if (!cameraStream) {
             return;
+        }
+
+        if (
+            mediaRecorder &&
+            mediaRecorder.state !==
+            "inactive"
+        ) {
+            try {
+                mediaRecorder.stop();
+            } catch (error) {
+                console.warn(
+                    "録画停止に失敗しました:",
+                    error
+                );
+            }
         }
 
         cameraStream
