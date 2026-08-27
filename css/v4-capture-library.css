@@ -120,6 +120,34 @@
     cursor: not-allowed;
 }
 
+.capture-library-photo-list {
+    grid-template-columns:
+        repeat(auto-fit,
+            minmax(220px, 1fr));
+}
+
+.capture-library-photo-list article {
+    display: flex;
+    flex-direction: column;
+}
+
+.capture-library-photo-list article img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    background: #111;
+    object-fit: contain;
+}
+
+.capture-library-photo-list article h3 {
+    line-height: 1.5;
+}
+
+.capture-library-photo-list article p {
+    margin-top: 10px;
+}
+
 .capture-library-back {
     text-align: center;
 }
@@ -151,4 +179,9 @@
         padding: 10px;
         border-radius: 14px;
     }
+
+    .capture-library-photo-list {
+        grid-template-columns: 1fr;
+    }
+
 }

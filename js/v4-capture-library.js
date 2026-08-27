@@ -16,6 +16,20 @@
     const VIDEO_STORE_NAME =
         "formVideos";
 
+    const PHOTO_DB_NAME =
+        "baika-archery-local";
+
+    const PHOTO_DB_VERSION =
+        2;
+
+    const PHOTO_STORE_NAME =
+        "targetPhotos";
+
+    const PHOTO_STATUS_STORAGE_KEY =
+        "baikaPhotoStatusV1";
+
+    let photoDatabasePromise = null;
+
     let databasePromise = null;
     let objectUrls = [];
 
@@ -30,6 +44,7 @@
     );
 
     function initializeCaptureLibrary() {
+        loadTargetPhotos();
         loadFormVideos();
     }
 
@@ -97,6 +112,136 @@
         return databasePromise;
     }
 
+    function openPhotoDatabase() {
+        if (photoDatabasePromise) {
+            return photoDatabasePromise;
+        }
+
+        photoDatabasePromise =
+            new Promise(function (
+                resolve,
+                reject
+            ) {
+                const request =
+                    indexedDB.open(
+                        PHOTO_DB_NAME,
+                        PHOTO_DB_VERSION
+                    );
+
+                request.onsuccess =
+                    function () {
+                        resolve(
+                            request.result
+                        );
+                    };
+
+                request.onerror =
+                    function () {
+                        reject(
+                            request.error
+                        );
+                    };
+            });
+
+        return photoDatabasePromise;
+    }
+
+    async function getAllTargetPhotos() {
+        const db =
+            await openPhotoDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    PHOTO_STORE_NAME,
+                    "readonly"
+                );
+
+            const request =
+                transaction
+                    .objectStore(
+                        PHOTO_STORE_NAME
+                    )
+                    .getAll();
+
+            request.onsuccess =
+                function () {
+                    resolve(
+                        Array.isArray(
+                            request.result
+                        )
+                            ? request.result
+                            : []
+                    );
+                };
+
+            request.onerror =
+                function () {
+                    reject(
+                        request.error
+                    );
+                };
+        });
+    }
+
+    function readPhotoStatusMap() {
+        try {
+            const parsed =
+                JSON.parse(
+                    localStorage.getItem(
+                        PHOTO_STATUS_STORAGE_KEY
+                    ) || "{}"
+                );
+
+            return (
+                parsed &&
+                    typeof parsed === "object"
+                    ? parsed
+                    : {}
+            );
+        } catch (error) {
+            console.warn(
+                "Photo status read failed:",
+                error
+            );
+
+            return {};
+        }
+    }
+
+    function getPhotoStatus(photo) {
+        if (
+            !photo ||
+            photo.id == null
+        ) {
+            return "pending";
+        }
+
+        const map =
+            readPhotoStatusMap();
+
+        const saved =
+            map[
+            String(photo.id)
+            ];
+
+        if (
+            saved === "complete" ||
+            saved === "pending"
+        ) {
+            return saved;
+        }
+
+        return (
+            photo.status === "complete"
+                ? "complete"
+                : "pending"
+        );
+    }
+
     async function getAllFormVideos() {
         const db =
             await openDatabase();
@@ -135,6 +280,160 @@
                         request.error
                     );
                 };
+        });
+    }
+
+    async function loadTargetPhotos() {
+        const list =
+            document.getElementById(
+                "targetPhotoLibraryList"
+            );
+
+        if (!list) {
+            return;
+        }
+
+        try {
+            const photos =
+                await getAllTargetPhotos();
+
+            photos.sort(function (a, b) {
+                return String(
+                    b.createdAt || ""
+                ).localeCompare(
+                    String(
+                        a.createdAt || ""
+                    )
+                );
+            });
+
+            renderTargetPhotos(
+                list,
+                photos
+            );
+
+        } catch (error) {
+            console.error(
+                "Target photo library load failed:",
+                error
+            );
+
+            list.textContent =
+                "的写真を読み込めませんでした。";
+        }
+    }
+
+    function renderTargetPhotos(
+        list,
+        photos
+    ) {
+        list.replaceChildren();
+
+        if (
+            !Array.isArray(photos) ||
+            photos.length === 0
+        ) {
+            const empty =
+                document.createElement(
+                    "p"
+                );
+
+            empty.textContent =
+                "保存されている的写真はありません。";
+
+            list.appendChild(
+                empty
+            );
+
+            return;
+        }
+
+        photos.forEach(function (
+            record
+        ) {
+            if (
+                !record ||
+                !(record.blob instanceof Blob)
+            ) {
+                return;
+            }
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+            const title =
+                document.createElement(
+                    "h3"
+                );
+
+            const status =
+                getPhotoStatus(
+                    record
+                );
+
+            title.textContent =
+                "🎯 " +
+                (
+                    record.distance ||
+                    "距離未設定"
+                ) +
+                "・" +
+                (
+                    status === "complete"
+                        ? "入力済み"
+                        : "未入力"
+                );
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+            const url =
+                URL.createObjectURL(
+                    record.blob
+                );
+
+            objectUrls.push(
+                url
+            );
+
+            image.src =
+                url;
+
+            image.alt =
+                "撮影した的写真";
+
+            image.loading =
+                "lazy";
+
+            const meta =
+                document.createElement(
+                    "p"
+                );
+
+            meta.textContent =
+                formatDateTime(
+                    record.createdAt
+                );
+
+            card.appendChild(
+                title
+            );
+
+            card.appendChild(
+                image
+            );
+
+            card.appendChild(
+                meta
+            );
+
+            list.appendChild(
+                card
+            );
         });
     }
 
