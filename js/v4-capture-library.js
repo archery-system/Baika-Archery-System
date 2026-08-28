@@ -35,6 +35,9 @@
 
     let currentPhotoViewerUrl = null;
 
+    let currentTargetPhotos = [];
+    let currentPhotoViewerIndex = -1;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeCaptureLibrary
@@ -53,6 +56,16 @@
     }
 
     function bindTargetPhotoViewer() {
+        const prevButton =
+            document.getElementById(
+                "targetPhotoViewerPrev"
+            );
+
+        const nextButton =
+            document.getElementById(
+                "targetPhotoViewerNext"
+            );
+
         const closeButton =
             document.getElementById(
                 "targetPhotoViewerClose"
@@ -77,6 +90,24 @@
             );
         }
 
+        if (prevButton) {
+            prevButton.addEventListener(
+                "click",
+                function () {
+                    showPreviousTargetPhoto();
+                }
+            );
+        }
+
+        if (nextButton) {
+            nextButton.addEventListener(
+                "click",
+                function () {
+                    showNextTargetPhoto();
+                }
+            );
+        }
+
         document.addEventListener(
             "keydown",
             function (event) {
@@ -90,13 +121,58 @@
     }
 
     function openTargetPhotoViewer(
-        record,
-        status
+        record
     ) {
+        if (!record) {
+            return;
+        }
+
+        const index =
+            currentTargetPhotos.findIndex(
+                function (item) {
+                    return (
+                        item &&
+                        item.id === record.id
+                    );
+                }
+            );
+
+        if (index < 0) {
+            return;
+        }
+
+        currentPhotoViewerIndex =
+            index;
+
+        renderCurrentTargetPhoto();
+
         const viewer =
             document.getElementById(
                 "targetPhotoViewer"
             );
+
+        if (!viewer) {
+            return;
+        }
+
+        viewer.hidden = false;
+
+        document.body.style.overflow =
+            "hidden";
+    }
+
+    function renderCurrentTargetPhoto() {
+        const record =
+            currentTargetPhotos[
+            currentPhotoViewerIndex
+            ];
+
+        if (
+            !record ||
+            !(record.blob instanceof Blob)
+        ) {
+            return;
+        }
 
         const image =
             document.getElementById(
@@ -113,13 +189,20 @@
                 "targetPhotoViewerMeta"
             );
 
+        const prevButton =
+            document.getElementById(
+                "targetPhotoViewerPrev"
+            );
+
+        const nextButton =
+            document.getElementById(
+                "targetPhotoViewerNext"
+            );
+
         if (
-            !viewer ||
             !image ||
             !title ||
-            !meta ||
-            !record ||
-            !(record.blob instanceof Blob)
+            !meta
         ) {
             return;
         }
@@ -140,28 +223,64 @@
         image.src =
             currentPhotoViewerUrl;
 
-        title.textContent =
-            "🎯 " +
-            (
-                record.distance ||
-                "距離未設定"
+        const status =
+            getPhotoStatus(
+                record
             );
 
-        meta.textContent =
-            (
-                status === "complete"
-                    ? "✅ 入力済み"
-                    : "● 未入力"
-            ) +
-            " ・ " +
+        title.textContent =
             formatDateTime(
                 record.createdAt
             );
 
-        viewer.hidden = false;
+        meta.textContent =
+            "🎯 " +
+            (
+                record.distance ||
+                "距離未設定"
+            ) +
+            " ・ " +
+            (
+                status === "complete"
+                    ? "✅ 入力済み"
+                    : "● 未入力"
+            );
 
-        document.body.style.overflow =
-            "hidden";
+        if (prevButton) {
+            prevButton.disabled =
+                currentPhotoViewerIndex <= 0;
+        }
+
+        if (nextButton) {
+            nextButton.disabled =
+                currentPhotoViewerIndex >=
+                currentTargetPhotos.length - 1;
+        }
+    }
+
+    function showPreviousTargetPhoto() {
+        if (
+            currentPhotoViewerIndex <= 0
+        ) {
+            return;
+        }
+
+        currentPhotoViewerIndex -= 1;
+
+        renderCurrentTargetPhoto();
+    }
+
+    function showNextTargetPhoto() {
+        if (
+            currentPhotoViewerIndex >=
+            currentTargetPhotos.length - 1
+        ) {
+            return;
+        }
+
+        currentPhotoViewerIndex += 1;
+
+        renderCurrentTargetPhoto();
     }
 
     function closeTargetPhotoViewer() {
@@ -458,9 +577,12 @@
                 );
             });
 
+            currentTargetPhotos =
+                photos.slice();
+
             renderTargetPhotos(
                 list,
-                photos
+                currentTargetPhotos
             );
 
         } catch (error) {
@@ -525,10 +647,8 @@
                 );
 
             title.textContent =
-                "🎯 " +
-                (
-                    record.distance ||
-                    "距離未設定"
+                formatDateTime(
+                    record.createdAt
                 );
 
             const statusText =
@@ -555,8 +675,10 @@
                 "capture-library-photo-date";
 
             meta.textContent =
-                formatDateTime(
-                    record.createdAt
+                "🎯 " +
+                (
+                    record.distance ||
+                    "距離未設定"
                 );
 
             card.appendChild(
@@ -591,8 +713,7 @@
                 "click",
                 function () {
                     openTargetPhotoViewer(
-                        record,
-                        status
+                        record
                     );
                 }
             );
@@ -607,8 +728,7 @@
                         event.preventDefault();
 
                         openTargetPhotoViewer(
-                            record,
-                            status
+                            record
                         );
                     }
                 }

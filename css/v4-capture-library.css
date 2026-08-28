@@ -266,6 +266,45 @@
     cursor: pointer;
 }
 
+.capture-library-photo-viewer__gallery {
+    display: grid;
+    grid-template-columns:
+        auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+
+    min-height: 0;
+}
+
+.capture-library-photo-viewer__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 64px;
+
+    border: 0;
+    border-radius: 12px;
+
+    color: #351c57;
+    background: #f1edf5;
+
+    font-size: 1.5rem;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.capture-library-photo-viewer__nav:hover {
+    background: #e5dced;
+}
+
+.capture-library-photo-viewer__nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
 .capture-library-photo-viewer__image-wrap {
     display: flex;
     align-items: center;
@@ -324,5 +363,26 @@
     .capture-library-photo-list {
         grid-template-columns: 1fr;
     }
+
+.capture-library-photo-viewer {
+    padding: 10px;
+}
+
+.capture-library-photo-viewer__panel {
+    padding: 12px;
+}
+
+.capture-library-photo-viewer__gallery {
+    grid-template-columns:
+        44px minmax(0, 1fr) 44px;
+    gap: 6px;
+}
+
+.capture-library-photo-viewer__nav {
+    width: 44px;
+    height: 56px;
+
+    font-size: 1.35rem;
+}
 
 }
