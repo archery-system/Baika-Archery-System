@@ -79,6 +79,34 @@
 
     </main>
 
+    <!-- 的写真 拡大表示 -->
+    <div id="targetPhotoViewer" class="capture-library-photo-viewer" hidden>
+        <div class="capture-library-photo-viewer__backdrop" data-photo-viewer-close></div>
+
+        <div class="capture-library-photo-viewer__panel" role="dialog" aria-modal="true"
+            aria-labelledby="targetPhotoViewerTitle">
+            <div class="capture-library-photo-viewer__header">
+                <div>
+                    <h2 id="targetPhotoViewerTitle">
+                        🎯 的写真
+                    </h2>
+
+                    <p id="targetPhotoViewerMeta">
+                    </p>
+                </div>
+
+                <button type="button" id="targetPhotoViewerClose" class="capture-library-photo-viewer__close"
+                    aria-label="写真を閉じる">
+                    ✕
+                </button>
+            </div>
+
+            <div class="capture-library-photo-viewer__image-wrap">
+                <img id="targetPhotoViewerImage" alt="撮影した的写真">
+            </div>
+        </div>
+    </div>
+
     <script src="js/core/organization.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/v4-capture-library.js"></script>

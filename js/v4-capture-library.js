@@ -33,6 +33,8 @@
     let databasePromise = null;
     let objectUrls = [];
 
+    let currentPhotoViewerUrl = null;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeCaptureLibrary
@@ -44,8 +46,157 @@
     );
 
     function initializeCaptureLibrary() {
+        bindTargetPhotoViewer();
+
         loadTargetPhotos();
         loadFormVideos();
+    }
+
+    function bindTargetPhotoViewer() {
+        const closeButton =
+            document.getElementById(
+                "targetPhotoViewerClose"
+            );
+
+        const backdrop =
+            document.querySelector(
+                "[data-photo-viewer-close]"
+            );
+
+        if (closeButton) {
+            closeButton.addEventListener(
+                "click",
+                closeTargetPhotoViewer
+            );
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener(
+                "click",
+                closeTargetPhotoViewer
+            );
+        }
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+                if (
+                    event.key === "Escape"
+                ) {
+                    closeTargetPhotoViewer();
+                }
+            }
+        );
+    }
+
+    function openTargetPhotoViewer(
+        record,
+        status
+    ) {
+        const viewer =
+            document.getElementById(
+                "targetPhotoViewer"
+            );
+
+        const image =
+            document.getElementById(
+                "targetPhotoViewerImage"
+            );
+
+        const title =
+            document.getElementById(
+                "targetPhotoViewerTitle"
+            );
+
+        const meta =
+            document.getElementById(
+                "targetPhotoViewerMeta"
+            );
+
+        if (
+            !viewer ||
+            !image ||
+            !title ||
+            !meta ||
+            !record ||
+            !(record.blob instanceof Blob)
+        ) {
+            return;
+        }
+
+        if (currentPhotoViewerUrl) {
+            URL.revokeObjectURL(
+                currentPhotoViewerUrl
+            );
+
+            currentPhotoViewerUrl = null;
+        }
+
+        currentPhotoViewerUrl =
+            URL.createObjectURL(
+                record.blob
+            );
+
+        image.src =
+            currentPhotoViewerUrl;
+
+        title.textContent =
+            "🎯 " +
+            (
+                record.distance ||
+                "距離未設定"
+            );
+
+        meta.textContent =
+            (
+                status === "complete"
+                    ? "✅ 入力済み"
+                    : "● 未入力"
+            ) +
+            " ・ " +
+            formatDateTime(
+                record.createdAt
+            );
+
+        viewer.hidden = false;
+
+        document.body.style.overflow =
+            "hidden";
+    }
+
+    function closeTargetPhotoViewer() {
+        const viewer =
+            document.getElementById(
+                "targetPhotoViewer"
+            );
+
+        const image =
+            document.getElementById(
+                "targetPhotoViewerImage"
+            );
+
+        if (!viewer) {
+            return;
+        }
+
+        viewer.hidden = true;
+
+        if (image) {
+            image.removeAttribute(
+                "src"
+            );
+        }
+
+        if (currentPhotoViewerUrl) {
+            URL.revokeObjectURL(
+                currentPhotoViewerUrl
+            );
+
+            currentPhotoViewerUrl = null;
+        }
+
+        document.body.style.overflow =
+            "";
     }
 
     function openDatabase() {
@@ -378,41 +529,30 @@
                 (
                     record.distance ||
                     "距離未設定"
-                ) +
-                "・" +
+                );
+
+            const statusText =
+                document.createElement(
+                    "p"
+                );
+
+            statusText.className =
+                "capture-library-photo-status";
+
+            statusText.textContent =
                 (
                     status === "complete"
-                        ? "入力済み"
-                        : "未入力"
+                        ? "✅ 入力済み"
+                        : "● 未入力"
                 );
-
-            const image =
-                document.createElement(
-                    "img"
-                );
-
-            const url =
-                URL.createObjectURL(
-                    record.blob
-                );
-
-            objectUrls.push(
-                url
-            );
-
-            image.src =
-                url;
-
-            image.alt =
-                "撮影した的写真";
-
-            image.loading =
-                "lazy";
 
             const meta =
                 document.createElement(
                     "p"
                 );
+
+            meta.className =
+                "capture-library-photo-date";
 
             meta.textContent =
                 formatDateTime(
@@ -424,11 +564,54 @@
             );
 
             card.appendChild(
-                image
+                statusText
             );
 
             card.appendChild(
                 meta
+            );
+
+            card.setAttribute(
+                "role",
+                "button"
+            );
+
+            card.tabIndex = 0;
+
+            card.setAttribute(
+                "aria-label",
+                (
+                    record.distance ||
+                    "距離未設定"
+                ) +
+                "の的写真を開く"
+            );
+
+            card.addEventListener(
+                "click",
+                function () {
+                    openTargetPhotoViewer(
+                        record,
+                        status
+                    );
+                }
+            );
+
+            card.addEventListener(
+                "keydown",
+                function (event) {
+                    if (
+                        event.key === "Enter" ||
+                        event.key === " "
+                    ) {
+                        event.preventDefault();
+
+                        openTargetPhotoViewer(
+                            record,
+                            status
+                        );
+                    }
+                }
             );
 
             list.appendChild(
