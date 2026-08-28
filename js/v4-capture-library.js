@@ -126,6 +126,96 @@
         );
     }
 
+    function createTargetPhotoMetadataFile(
+        records,
+        photoFiles
+    ) {
+        const photos =
+            records.map(
+                function (
+                    record,
+                    index
+                ) {
+                    const photoFile =
+                        photoFiles[index];
+
+                    return {
+                        fileName:
+                            photoFile
+                                ? photoFile.name
+                                : String(
+                                    record.fileName ||
+                                    ""
+                                ),
+
+                        createdAt:
+                            record.createdAt ||
+                            "",
+
+                        practiceDate:
+                            record.practiceDate ||
+                            "",
+
+                        memberName:
+                            record.memberName ||
+                            "",
+
+                        distance:
+                            record.distance ||
+                            "",
+
+                        weather:
+                            record.weather ||
+                            "",
+
+                        windStrength:
+                            record.windStrength ||
+                            "",
+
+                        windDirection:
+                            record.windDirection ||
+                            "",
+
+                        endNumber:
+                            record.endNumber ??
+                            null,
+
+                        status:
+                            record.status ||
+                            "pending"
+                    };
+                }
+            );
+
+        const metadata = {
+            format:
+                "baika-archery-target-photo",
+
+            version: 1,
+
+            exportedAt:
+                new Date().toISOString(),
+
+            photos: photos
+        };
+
+        const json =
+            JSON.stringify(
+                metadata,
+                null,
+                2
+            );
+
+        return new File(
+            [json],
+            "baika-target-photo-info.json",
+            {
+                type:
+                    "application/json"
+            }
+        );
+    }
+
     function updateTargetPhotoSelectionUi() {
         const selectionBar =
             document.getElementById(
@@ -299,7 +389,7 @@
                             return;
                         }
 
-                        const files =
+                        const photoFiles =
                             selectedPhotos
                                 .map(
                                     function (
@@ -314,8 +404,19 @@
                                 )
                                 .filter(Boolean);
 
+                        const metadataFile =
+                            createTargetPhotoMetadataFile(
+                                selectedPhotos,
+                                photoFiles
+                            );
+
+                        const files = [
+                            ...photoFiles,
+                            metadataFile
+                        ];
+
                         if (
-                            files.length === 0
+                            photoFiles.length === 0
                         ) {
                             window.alert(
                                 "共有できる写真がありません。"
