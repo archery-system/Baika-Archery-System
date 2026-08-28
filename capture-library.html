@@ -49,9 +49,23 @@
 
         <section class="capture-library-section">
 
-            <h2>
-                🎯 的写真
-            </h2>
+            <div class="capture-library-photo-heading">
+
+                <h2>
+                    🎯 的写真
+                </h2>
+
+                <div class="capture-library-photo-import">
+
+                    <button type="button" id="targetPhotoImportButton" class="capture-library-photo-import__button">
+                        ＋ 写真を取り込む
+                    </button>
+
+                    <input type="file" id="targetPhotoImportInput" accept="image/*" multiple hidden>
+
+                </div>
+
+            </div>
 
             <div id="targetPhotoLibraryList" class="capture-library-list capture-library-photo-list">
                 読み込み中です…
@@ -80,6 +94,122 @@
     </main>
 
     <!-- 的写真 拡大表示 -->
+
+    <div id="targetPhotoImportViewer" class="capture-library-photo-viewer" hidden>
+        <div class="capture-library-photo-viewer__backdrop" data-photo-import-close></div>
+
+        <div class="capture-library-photo-viewer__panel" role="dialog" aria-modal="true"
+            aria-labelledby="targetPhotoImportTitle">
+            <div class="capture-library-photo-viewer__header">
+
+                <div>
+                    <h2 id="targetPhotoImportTitle">
+                        ＋ 写真を取り込む
+                    </h2>
+
+                    <p id="targetPhotoImportCount">
+                        選択した写真を確認しています。
+                    </p>
+                </div>
+
+                <button type="button" id="targetPhotoImportClose" class="capture-library-photo-viewer__close"
+                    aria-label="取り込み画面を閉じる">
+                    ✕
+                </button>
+
+            </div>
+
+            <div class="capture-library-photo-viewer__gallery">
+
+                <button type="button" id="targetPhotoImportPrev" class="capture-library-photo-viewer__nav"
+                    aria-label="前の取り込み写真を表示">
+                    ←
+                </button>
+
+                <div class="capture-library-photo-viewer__image-wrap">
+                    <img id="targetPhotoImportPreview" alt="取り込む的写真">
+                </div>
+
+                <button type="button" id="targetPhotoImportNext" class="capture-library-photo-viewer__nav"
+                    aria-label="次の取り込み写真を表示">
+                    →
+                </button>
+
+            </div>
+
+            <div class="capture-library-photo-import__conditions">
+
+                <p class="capture-library-photo-import__conditions-note">
+                    選択した写真すべてに共通の撮影情報を設定できます。
+                </p>
+
+                <label>
+                    距離
+
+                    <select id="targetPhotoImportDistance">
+                        <option value="">未入力</option>
+                        <option value="18m">18m</option>
+                        <option value="30m">30m</option>
+                        <option value="50m">50m</option>
+                        <option value="60m">60m</option>
+                        <option value="70m">70m</option>
+                    </select>
+                </label>
+
+                <label>
+                    天気
+
+                    <select id="targetPhotoImportWeather">
+                        <option value="">未入力</option>
+                        <option value="sunny">晴れ</option>
+                        <option value="cloudy">曇り</option>
+                        <option value="rainy">雨</option>
+                        <option value="snowy">雪</option>
+                        <option value="other">その他</option>
+                    </select>
+                </label>
+
+                <label>
+                    風の強さ
+
+                    <select id="targetPhotoImportWindStrength">
+                        <option value="">未入力</option>
+                        <option value="none">無風</option>
+                        <option value="weak">弱い</option>
+                        <option value="normal">普通</option>
+                        <option value="strong">強い</option>
+                    </select>
+                </label>
+
+                <label>
+                    風向
+
+                    <select id="targetPhotoImportWindDirection">
+                        <option value="">未入力</option>
+                        <option value="north-west">右手前 → 左奥</option>
+                        <option value="north">手前 → 奥</option>
+                        <option value="north-east">左手前 → 右奥</option>
+                        <option value="west">右 → 左</option>
+                        <option value="east">左 → 右</option>
+                        <option value="south-west">右奥 → 左手前</option>
+                        <option value="south">奥 → 手前</option>
+                        <option value="south-east">左奥 → 右手前</option>
+                    </select>
+                </label>
+
+            </div>
+
+            <div class="capture-library-photo-viewer__actions">
+
+                <button type="button" id="targetPhotoImportSave" class="capture-library-photo-import__save">
+                    📥 選択した写真をまとめて取り込む
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
     <div id="targetPhotoViewer" class="capture-library-photo-viewer" hidden>
         <div class="capture-library-photo-viewer__backdrop" data-photo-viewer-close></div>
 

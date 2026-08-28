@@ -40,9 +40,11 @@
     let objectUrls = [];
 
     let currentPhotoViewerUrl = null;
-
     let currentTargetPhotos = [];
     let currentPhotoViewerIndex = -1;
+    let currentImportFiles = [];
+    let currentImportIndex = -1;
+    let currentImportPreviewUrl = null;
 
     document.addEventListener(
         "DOMContentLoaded",
@@ -56,9 +58,391 @@
 
     function initializeCaptureLibrary() {
         bindTargetPhotoViewer();
+        bindTargetPhotoImport();
 
         loadTargetPhotos();
         loadFormVideos();
+    }
+
+    function bindTargetPhotoImport() {
+        const button =
+            document.getElementById(
+                "targetPhotoImportButton"
+            );
+
+        const input =
+            document.getElementById(
+                "targetPhotoImportInput"
+            );
+
+        if (
+            !button ||
+            !input
+        ) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            function () {
+                input.click();
+            }
+        );
+
+        input.addEventListener(
+            "change",
+            function () {
+                const files =
+                    input.files
+                        ? Array.from(
+                            input.files
+                        )
+                        : [];
+
+                if (files.length === 0) {
+                    return;
+                }
+
+                currentImportFiles =
+                    files.slice();
+
+                currentImportIndex =
+                    0;
+
+                const file =
+                    currentImportFiles[
+                    currentImportIndex
+                    ];
+
+                const countText =
+                    document.getElementById(
+                        "targetPhotoImportCount"
+                    );
+
+                if (countText) {
+                    countText.textContent =
+                        files.length === 1
+                            ? "1枚の写真を選択しました。"
+                            : files.length + "枚の写真を選択しました。";
+                }
+
+                if (
+                    !file.type ||
+                    !file.type.startsWith(
+                        "image/"
+                    )
+                ) {
+                    window.alert(
+                        "画像ファイルを選択してください。"
+                    );
+
+                    input.value = "";
+                    return;
+                }
+
+                const viewer =
+                    document.getElementById(
+                        "targetPhotoImportViewer"
+                    );
+
+                const preview =
+                    document.getElementById(
+                        "targetPhotoImportPreview"
+                    );
+
+                if (
+                    !viewer ||
+                    !preview
+                ) {
+                    return;
+                }
+
+                if (
+                    !viewer ||
+                    !preview
+                ) {
+                    return;
+                }
+
+                renderImportPreview();
+
+                viewer.hidden =
+                    false;
+
+                document.body.style.overflow =
+                    "hidden";
+            }
+        );
+
+        const prevButton =
+            document.getElementById(
+                "targetPhotoImportPrev"
+            );
+
+        const nextButton =
+            document.getElementById(
+                "targetPhotoImportNext"
+            );
+
+        const closeButton =
+            document.getElementById(
+                "targetPhotoImportClose"
+            );
+
+        const backdrop =
+            document.querySelector(
+                "[data-photo-import-close]"
+            );
+
+        const saveButton =
+            document.getElementById(
+                "targetPhotoImportSave"
+            );
+
+        const distanceSelect =
+            document.getElementById(
+                "targetPhotoImportDistance"
+            );
+
+        const weatherSelect =
+            document.getElementById(
+                "targetPhotoImportWeather"
+            );
+
+        const windStrengthSelect =
+            document.getElementById(
+                "targetPhotoImportWindStrength"
+            );
+
+        const windDirectionSelect =
+            document.getElementById(
+                "targetPhotoImportWindDirection"
+            );
+
+        if (saveButton) {
+            saveButton.addEventListener(
+                "click",
+                function () {
+                    if (
+                        currentImportFiles.length === 0
+                    ) {
+                        return;
+                    }
+
+                    const conditions = {
+                        distance:
+                            distanceSelect
+                                ? distanceSelect.value
+                                : "",
+                        weather:
+                            weatherSelect
+                                ? weatherSelect.value
+                                : "",
+                        windStrength:
+                            windStrengthSelect
+                                ? windStrengthSelect.value
+                                : "",
+                        windDirection:
+                            windDirectionSelect
+                                ? windDirectionSelect.value
+                                : ""
+                    };
+
+                    saveButton.disabled = true;
+                    saveButton.textContent =
+                        "取り込み中…";
+
+                    createImportedTargetPhotoRecords(
+                        currentImportFiles,
+                        conditions
+                    )
+                        .then(function (
+                            records
+                        ) {
+                            return addImportedTargetPhotos(
+                                records
+                            ).then(function () {
+                                return records;
+                            });
+                        })
+                        .then(function (
+                            records
+                        ) {
+                            closeImportViewer();
+
+                            return loadTargetPhotos()
+                                .then(function () {
+                                    window.alert(
+                                        records.length +
+                                        "枚の写真を取り込みました。"
+                                    );
+                                });
+                        })
+                        .catch(function (
+                            error
+                        ) {
+                            console.error(
+                                "Target photo import failed:",
+                                error
+                            );
+
+                            window.alert(
+                                "写真を取り込めませんでした。"
+                            );
+                        })
+                        .finally(function () {
+                            saveButton.disabled = false;
+                            saveButton.textContent =
+                                "📥 選択した写真をまとめて取り込む";
+                        });
+                }
+            );
+        }
+
+        function closeImportViewer() {
+            const viewer =
+                document.getElementById(
+                    "targetPhotoImportViewer"
+                );
+
+            const preview =
+                document.getElementById(
+                    "targetPhotoImportPreview"
+                );
+
+            if (currentImportPreviewUrl) {
+                URL.revokeObjectURL(
+                    currentImportPreviewUrl
+                );
+
+                currentImportPreviewUrl = null;
+            }
+
+            if (viewer) {
+                viewer.hidden = true;
+            }
+
+            if (preview) {
+                preview.removeAttribute(
+                    "src"
+                );
+            }
+
+            currentImportFiles = [];
+            currentImportIndex = -1;
+
+            input.value = "";
+
+            document.body.style.overflow =
+                "";
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener(
+                "click",
+                closeImportViewer
+            );
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener(
+                "click",
+                closeImportViewer
+            );
+        }
+
+        function renderImportPreview() {
+            const preview =
+                document.getElementById(
+                    "targetPhotoImportPreview"
+                );
+
+            const countText =
+                document.getElementById(
+                    "targetPhotoImportCount"
+                );
+
+            if (
+                !preview ||
+                currentImportIndex < 0 ||
+                currentImportIndex >= currentImportFiles.length
+            ) {
+                return;
+            }
+
+            if (currentImportPreviewUrl) {
+                URL.revokeObjectURL(
+                    currentImportPreviewUrl
+                );
+
+                currentImportPreviewUrl =
+                    null;
+            }
+
+            const file =
+                currentImportFiles[
+                currentImportIndex
+                ];
+
+            currentImportPreviewUrl =
+                URL.createObjectURL(
+                    file
+                );
+
+            preview.src =
+                currentImportPreviewUrl;
+
+            if (countText) {
+                countText.textContent =
+                    (currentImportIndex + 1) +
+                    " / " +
+                    currentImportFiles.length +
+                    "枚目";
+            }
+
+            if (prevButton) {
+                prevButton.disabled =
+                    currentImportIndex <= 0;
+            }
+
+            if (nextButton) {
+                nextButton.disabled =
+                    currentImportIndex >=
+                    currentImportFiles.length - 1;
+            }
+        }
+
+        if (prevButton) {
+            prevButton.addEventListener(
+                "click",
+                function () {
+                    if (currentImportIndex <= 0) {
+                        return;
+                    }
+
+                    currentImportIndex -= 1;
+                    renderImportPreview();
+                }
+            );
+        }
+
+        if (nextButton) {
+            nextButton.addEventListener(
+                "click",
+                function () {
+                    if (
+                        currentImportIndex >=
+                        currentImportFiles.length - 1
+                    ) {
+                        return;
+                    }
+
+                    currentImportIndex += 1;
+                    renderImportPreview();
+                }
+            );
+        }
+
     }
 
     function bindTargetPhotoViewer() {
@@ -569,6 +953,191 @@
             });
 
         return photoDatabasePromise;
+    }
+
+    function getImportedTargetPhotoDimensions(
+        file
+    ) {
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const objectUrl =
+                URL.createObjectURL(
+                    file
+                );
+
+            const image =
+                new Image();
+
+            image.onload =
+                function () {
+                    const dimensions = {
+                        width:
+                            image.naturalWidth,
+                        height:
+                            image.naturalHeight
+                    };
+
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
+
+                    resolve(
+                        dimensions
+                    );
+                };
+
+            image.onerror =
+                function () {
+                    URL.revokeObjectURL(
+                        objectUrl
+                    );
+
+                    reject(
+                        new Error(
+                            "画像サイズを取得できませんでした。"
+                        )
+                    );
+                };
+
+            image.src =
+                objectUrl;
+        });
+    }
+
+    function createImportedTargetPhotoRecord(
+        file,
+        conditions
+    ) {
+        const createdAt =
+            file.lastModified
+                ? new Date(
+                    file.lastModified
+                )
+                : new Date();
+
+        return {
+            blob: file,
+            sessionId: "",
+            endNumber: null,
+            fileName:
+                file.name ||
+                (
+                    "imported-target-" +
+                    createdAt.getTime() +
+                    ".jpg"
+                ),
+            createdAt:
+                createdAt.toISOString(),
+            memberName: "",
+            practiceDate:
+                createdAt
+                    .toISOString()
+                    .slice(0, 10),
+            distance:
+                conditions.distance || "",
+            weather:
+                conditions.weather || "",
+            windStrength:
+                conditions.windStrength || "",
+            windDirection:
+                conditions.windDirection || "",
+            status: "pending",
+            guide: null,
+            width: null,
+            height: null
+        };
+    }
+
+    async function createImportedTargetPhotoRecords(
+        files,
+        conditions
+    ) {
+        const records = [];
+
+        for (
+            const file
+            of files
+        ) {
+            const record =
+                createImportedTargetPhotoRecord(
+                    file,
+                    conditions
+                );
+
+            const dimensions =
+                await getImportedTargetPhotoDimensions(
+                    file
+                );
+
+            record.width =
+                dimensions.width;
+
+            record.height =
+                dimensions.height;
+
+            records.push(
+                record
+            );
+        }
+
+        return records;
+    }
+
+    async function addImportedTargetPhotos(
+        records
+    ) {
+        if (
+            !Array.isArray(records) ||
+            records.length === 0
+        ) {
+            return;
+        }
+
+        const db =
+            await openPhotoDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    PHOTO_STORE_NAME,
+                    "readwrite"
+                );
+
+            const store =
+                transaction.objectStore(
+                    PHOTO_STORE_NAME
+                );
+
+            records.forEach(function (
+                record
+            ) {
+                store.add(record);
+            });
+
+            transaction.oncomplete =
+                function () {
+                    resolve();
+                };
+
+            transaction.onerror =
+                function () {
+                    reject(
+                        transaction.error
+                    );
+                };
+
+            transaction.onabort =
+                function () {
+                    reject(
+                        transaction.error
+                    );
+                };
+        });
     }
 
     async function getAllTargetPhotos() {
