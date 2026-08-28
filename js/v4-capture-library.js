@@ -25,6 +25,12 @@
     const PHOTO_STORE_NAME =
         "targetPhotos";
 
+    const PHOTO_ANALYSIS_STORE_NAME =
+        "targetPhotoAnalysis";
+
+    const PHOTO_PINS_STORE_NAME =
+        "targetPhotoPins";
+
     const PHOTO_STATUS_STORAGE_KEY =
         "baikaPhotoStatusV1";
 
@@ -71,6 +77,11 @@
                 "targetPhotoViewerClose"
             );
 
+        const deleteButton =
+            document.getElementById(
+                "targetPhotoViewerDelete"
+            );
+
         const backdrop =
             document.querySelector(
                 "[data-photo-viewer-close]"
@@ -104,6 +115,84 @@
                 "click",
                 function () {
                     showNextTargetPhoto();
+                }
+            );
+        }
+
+        if (deleteButton) {
+            deleteButton.addEventListener(
+                "click",
+                function () {
+                    const confirmed =
+                        window.confirm(
+                            "この写真を削除しますか？\n" +
+                            "登録済みの得点・グルーピング記録は削除されません。"
+                        );
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    const record =
+                        currentTargetPhotos[
+                        currentPhotoViewerIndex
+                        ];
+
+                    if (
+                        !record ||
+                        record.id == null
+                    ) {
+                        return;
+                    }
+
+                    deleteTargetPhoto(
+                        record.id
+                    )
+                        .then(function () {
+                            currentTargetPhotos.splice(
+                                currentPhotoViewerIndex,
+                                1
+                            );
+
+                            const list =
+                                document.getElementById(
+                                    "targetPhotoLibraryList"
+                                );
+
+                            if (list) {
+                                renderTargetPhotos(
+                                    list,
+                                    currentTargetPhotos
+                                );
+                            }
+
+                            if (
+                                currentTargetPhotos.length === 0
+                            ) {
+                                closeTargetPhotoViewer();
+                                return;
+                            }
+
+                            if (
+                                currentPhotoViewerIndex >=
+                                currentTargetPhotos.length
+                            ) {
+                                currentPhotoViewerIndex =
+                                    currentTargetPhotos.length - 1;
+                            }
+
+                            renderCurrentTargetPhoto();
+                        })
+                        .catch(function (error) {
+                            console.error(
+                                "Target photo delete failed:",
+                                error
+                            );
+
+                            window.alert(
+                                "写真を削除できませんでした。"
+                            );
+                        });
                 }
             );
         }
@@ -398,6 +487,72 @@
                         PHOTO_DB_VERSION
                     );
 
+                request.onupgradeneeded =
+                    function () {
+                        const db =
+                            request.result;
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    PHOTO_STORE_NAME
+                                )
+                        ) {
+                            const store =
+                                db.createObjectStore(
+                                    PHOTO_STORE_NAME,
+                                    {
+                                        keyPath: "id",
+                                        autoIncrement: true
+                                    }
+                                );
+
+                            store.createIndex(
+                                "createdAt",
+                                "createdAt",
+                                {
+                                    unique: false
+                                }
+                            );
+
+                            store.createIndex(
+                                "status",
+                                "status",
+                                {
+                                    unique: false
+                                }
+                            );
+                        }
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    PHOTO_ANALYSIS_STORE_NAME
+                                )
+                        ) {
+                            db.createObjectStore(
+                                PHOTO_ANALYSIS_STORE_NAME,
+                                {
+                                    keyPath: "photoId"
+                                }
+                            );
+                        }
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    PHOTO_PINS_STORE_NAME
+                                )
+                        ) {
+                            db.createObjectStore(
+                                PHOTO_PINS_STORE_NAME,
+                                {
+                                    keyPath: "photoId"
+                                }
+                            );
+                        }
+                    };
+
                 request.onsuccess =
                     function () {
                         resolve(
@@ -452,6 +607,63 @@
                 function () {
                     reject(
                         request.error
+                    );
+                };
+        });
+    }
+
+    async function deleteTargetPhoto(id) {
+        const db =
+            await openPhotoDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    [
+                        PHOTO_STORE_NAME,
+                        PHOTO_ANALYSIS_STORE_NAME,
+                        PHOTO_PINS_STORE_NAME
+                    ],
+                    "readwrite"
+                );
+
+            transaction
+                .objectStore(
+                    PHOTO_STORE_NAME
+                )
+                .delete(id);
+
+            transaction
+                .objectStore(
+                    PHOTO_ANALYSIS_STORE_NAME
+                )
+                .delete(id);
+
+            transaction
+                .objectStore(
+                    PHOTO_PINS_STORE_NAME
+                )
+                .delete(id);
+
+            transaction.oncomplete =
+                function () {
+                    resolve();
+                };
+
+            transaction.onerror =
+                function () {
+                    reject(
+                        transaction.error
+                    );
+                };
+
+            transaction.onabort =
+                function () {
+                    reject(
+                        transaction.error
                     );
                 };
         });
