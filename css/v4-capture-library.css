@@ -175,6 +175,111 @@
         rgba(79, 38, 131, 0.035);
 }
 
+.capture-library-photo-list article.is-selected {
+    border-color: rgba(79, 38, 131, 0.65);
+
+    background:
+        rgba(79, 38, 131, 0.08);
+}
+
+.capture-library-photo-selected-label {
+    grid-column: 1 / -1;
+
+    display: inline-flex;
+    align-items: center;
+
+    width: fit-content;
+
+    margin-bottom: 2px;
+    padding: 3px 8px;
+
+    border-radius: 999px;
+
+    color: #4f2683;
+
+    background:
+        rgba(79, 38, 131, 0.12);
+
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.capture-library-photo-selection-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin: 12px 0;
+    padding: 12px 14px;
+
+    border: 1px solid rgba(79, 38, 131, 0.16);
+    border-radius: 14px;
+
+    background:
+        rgba(79, 38, 131, 0.045);
+}
+
+.capture-library-photo-selection-bar[hidden] {
+    display: none;
+}
+
+.capture-library-photo-selection-bar>span {
+    color: #351c57;
+    font-size: 0.95rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.capture-library-photo-selection-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.capture-library-photo-selection-button {
+    min-height: 42px;
+    padding: 8px 14px;
+
+    border: 1px solid rgba(79, 38, 131, 0.22);
+    border-radius: 10px;
+
+    color: #4f2683;
+    background: #ffffff;
+
+    font-size: 0.9rem;
+    font-weight: 800;
+
+    cursor: pointer;
+}
+
+.capture-library-photo-selection-button--primary {
+    color: #ffffff;
+    border-color: #4f2683;
+    background: #4f2683;
+}
+
+.capture-library-photo-selection-button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+@media (max-width: 640px) {
+    .capture-library-photo-selection-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .capture-library-photo-selection-actions {
+        justify-content: stretch;
+    }
+
+    .capture-library-photo-selection-button {
+        flex: 1;
+    }
+}
+
 /* ========================================
    的写真 拡大ビューアー
 ======================================== */

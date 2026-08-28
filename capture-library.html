@@ -57,6 +57,10 @@
 
                 <div class="capture-library-photo-import">
 
+                    <button type="button" id="targetPhotoSelectButton" class="capture-library-photo-import__button">
+                        ☑ 写真を選択
+                    </button>
+
                     <button type="button" id="targetPhotoImportButton" class="capture-library-photo-import__button">
                         ＋ 写真を取り込む
                     </button>
@@ -65,6 +69,27 @@
 
                 </div>
 
+            </div>
+
+            <div id="targetPhotoSelectionBar" class="capture-library-photo-selection-bar" hidden>
+                <span id="targetPhotoSelectionCount">
+                    0枚選択中
+                </span>
+
+                <div class="capture-library-photo-selection-actions">
+
+                    <button type="button" id="targetPhotoSelectAllButton"
+                        class="capture-library-photo-selection-button">
+                        すべて選択
+                    </button>
+
+                    <button type="button" id="targetPhotoShareButton"
+                        class="capture-library-photo-selection-button capture-library-photo-selection-button--primary"
+                        disabled>
+                        📤 選択した写真を共有
+                    </button>
+
+                </div>
             </div>
 
             <div id="targetPhotoLibraryList" class="capture-library-list capture-library-photo-list">

@@ -45,6 +45,10 @@
     let currentImportFiles = [];
     let currentImportIndex = -1;
     let currentImportPreviewUrl = null;
+    let isTargetPhotoSelectMode = false;
+
+    const selectedTargetPhotoIds =
+        new Set();
 
     document.addEventListener(
         "DOMContentLoaded",
@@ -59,9 +63,332 @@
     function initializeCaptureLibrary() {
         bindTargetPhotoViewer();
         bindTargetPhotoImport();
+        bindTargetPhotoSelectionMode();
 
         loadTargetPhotos();
         loadFormVideos();
+    }
+
+    function createTargetPhotoShareFile(
+        record,
+        index
+    ) {
+        if (
+            !record ||
+            !(record.blob instanceof Blob)
+        ) {
+            return null;
+        }
+
+        const type =
+            record.blob.type ||
+            "image/jpeg";
+
+        let extension = ".jpg";
+
+        if (type === "image/png") {
+            extension = ".png";
+        } else if (
+            type === "image/webp"
+        ) {
+            extension = ".webp";
+        }
+
+        let fileName =
+            String(
+                record.fileName || ""
+            ).trim();
+
+        if (!fileName) {
+            fileName =
+                "target-photo-" +
+                (index + 1) +
+                extension;
+        }
+
+        const createdTime =
+            new Date(
+                record.createdAt || ""
+            ).getTime();
+
+        const lastModified =
+            Number.isFinite(createdTime)
+                ? createdTime
+                : Date.now();
+
+        return new File(
+            [record.blob],
+            fileName,
+            {
+                type: type,
+                lastModified: lastModified
+            }
+        );
+    }
+
+    function updateTargetPhotoSelectionUi() {
+        const selectionBar =
+            document.getElementById(
+                "targetPhotoSelectionBar"
+            );
+
+        const count =
+            document.getElementById(
+                "targetPhotoSelectionCount"
+            );
+
+        const selectAllButton =
+            document.getElementById(
+                "targetPhotoSelectAllButton"
+            );
+
+        const shareButton =
+            document.getElementById(
+                "targetPhotoShareButton"
+            );
+
+        if (selectionBar) {
+            selectionBar.hidden =
+                !isTargetPhotoSelectMode;
+        }
+
+        if (count) {
+            count.textContent =
+                selectedTargetPhotoIds.size +
+                "枚選択中";
+        }
+
+        if (shareButton) {
+            shareButton.disabled =
+                selectedTargetPhotoIds.size === 0;
+        }
+
+        if (selectAllButton) {
+            const selectableCount =
+                currentTargetPhotos.filter(
+                    function (record) {
+                        return (
+                            record &&
+                            record.id != null &&
+                            record.blob instanceof Blob
+                        );
+                    }
+                ).length;
+
+            selectAllButton.textContent =
+                selectableCount > 0 &&
+                    selectedTargetPhotoIds.size ===
+                    selectableCount
+                    ? "すべて解除"
+                    : "すべて選択";
+        }
+    }
+
+    function bindTargetPhotoSelectionMode() {
+        const selectButton =
+            document.getElementById(
+                "targetPhotoSelectButton"
+            );
+
+        if (!selectButton) {
+            return;
+        }
+
+        selectButton.addEventListener(
+            "click",
+            function () {
+                isTargetPhotoSelectMode =
+                    !isTargetPhotoSelectMode;
+
+                if (
+                    !isTargetPhotoSelectMode
+                ) {
+                    selectedTargetPhotoIds.clear();
+                }
+
+                selectButton.textContent =
+                    isTargetPhotoSelectMode
+                        ? "✕ 選択を終了"
+                        : "☑ 写真を選択";
+
+                updateTargetPhotoSelectionUi();
+
+                renderTargetPhotos(
+                    document.getElementById(
+                        "targetPhotoLibraryList"
+                    ),
+                    currentTargetPhotos
+                );
+            }
+        );
+
+        const selectAllButton =
+            document.getElementById(
+                "targetPhotoSelectAllButton"
+            );
+
+        if (selectAllButton) {
+            selectAllButton.addEventListener(
+                "click",
+                function () {
+                    const selectablePhotos =
+                        currentTargetPhotos.filter(
+                            function (record) {
+                                return (
+                                    record &&
+                                    record.id != null &&
+                                    record.blob instanceof Blob
+                                );
+                            }
+                        );
+
+                    const allSelected =
+                        selectablePhotos.length > 0 &&
+                        selectedTargetPhotoIds.size ===
+                        selectablePhotos.length;
+
+                    selectedTargetPhotoIds.clear();
+
+                    if (!allSelected) {
+                        selectablePhotos.forEach(
+                            function (record) {
+                                selectedTargetPhotoIds.add(
+                                    record.id
+                                );
+                            }
+                        );
+                    }
+
+                    updateTargetPhotoSelectionUi();
+
+                    renderTargetPhotos(
+                        document.getElementById(
+                            "targetPhotoLibraryList"
+                        ),
+                        currentTargetPhotos
+                    );
+                }
+            );
+
+            const shareButton =
+                document.getElementById(
+                    "targetPhotoShareButton"
+                );
+
+            if (shareButton) {
+                shareButton.addEventListener(
+                    "click",
+                    function () {
+                        const selectedPhotos =
+                            currentTargetPhotos.filter(
+                                function (record) {
+                                    return (
+                                        record &&
+                                        record.id != null &&
+                                        record.blob instanceof Blob &&
+                                        selectedTargetPhotoIds.has(
+                                            record.id
+                                        )
+                                    );
+                                }
+                            );
+
+                        if (
+                            selectedPhotos.length === 0
+                        ) {
+                            return;
+                        }
+
+                        const files =
+                            selectedPhotos
+                                .map(
+                                    function (
+                                        record,
+                                        index
+                                    ) {
+                                        return createTargetPhotoShareFile(
+                                            record,
+                                            index
+                                        );
+                                    }
+                                )
+                                .filter(Boolean);
+
+                        if (
+                            files.length === 0
+                        ) {
+                            window.alert(
+                                "共有できる写真がありません。"
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            typeof navigator.share !==
+                            "function"
+                        ) {
+                            window.alert(
+                                "この端末では写真共有機能を利用できません。"
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            typeof navigator.canShare ===
+                            "function"
+                        ) {
+                            let canShareFiles = false;
+
+                            try {
+                                canShareFiles =
+                                    navigator.canShare({
+                                        files: files
+                                    });
+                            } catch (error) {
+                                canShareFiles = false;
+                            }
+
+                            if (!canShareFiles) {
+                                window.alert(
+                                    "この端末では複数写真を共有できません。"
+                                );
+
+                                return;
+                            }
+                        }
+
+                        navigator.share({
+                            title:
+                                "Baika Archery System 的写真",
+                            files: files
+                        }).catch(
+                            function (error) {
+                                if (
+                                    error &&
+                                    error.name ===
+                                    "AbortError"
+                                ) {
+                                    return;
+                                }
+
+                                console.error(
+                                    "Target photo share failed:",
+                                    error
+                                );
+
+                                window.alert(
+                                    "写真を共有できませんでした。"
+                                );
+                            }
+                        );
+                    }
+                );
+            }
+
+        }
+
     }
 
     function bindTargetPhotoImport() {
@@ -1417,6 +1744,32 @@
                     "article"
                 );
 
+            if (
+                isTargetPhotoSelectMode &&
+                selectedTargetPhotoIds.has(
+                    record.id
+                )
+            ) {
+                card.classList.add(
+                    "is-selected"
+                );
+
+                const selectedLabel =
+                    document.createElement(
+                        "span"
+                    );
+
+                selectedLabel.className =
+                    "capture-library-photo-selected-label";
+
+                selectedLabel.textContent =
+                    "✓ 選択中";
+
+                card.appendChild(
+                    selectedLabel
+                );
+            }
+
             const title =
                 document.createElement(
                     "h3"
@@ -1493,6 +1846,33 @@
             card.addEventListener(
                 "click",
                 function () {
+                    if (
+                        isTargetPhotoSelectMode
+                    ) {
+                        if (
+                            selectedTargetPhotoIds.has(
+                                record.id
+                            )
+                        ) {
+                            selectedTargetPhotoIds.delete(
+                                record.id
+                            );
+                        } else {
+                            selectedTargetPhotoIds.add(
+                                record.id
+                            );
+                        }
+
+                        updateTargetPhotoSelectionUi();
+
+                        renderTargetPhotos(
+                            list,
+                            photos
+                        );
+
+                        return;
+                    }
+
                     openTargetPhotoViewer(
                         record
                     );
@@ -1503,15 +1883,46 @@
                 "keydown",
                 function (event) {
                     if (
-                        event.key === "Enter" ||
-                        event.key === " "
+                        event.key !== "Enter" &&
+                        event.key !== " "
                     ) {
-                        event.preventDefault();
-
-                        openTargetPhotoViewer(
-                            record
-                        );
+                        return;
                     }
+
+                    event.preventDefault();
+
+                    if (
+                        isTargetPhotoSelectMode
+                    ) {
+                        if (
+                            selectedTargetPhotoIds.has(
+                                record.id
+                            )
+                        ) {
+                            selectedTargetPhotoIds.delete(
+                                record.id
+                            );
+                        } else {
+                            selectedTargetPhotoIds.add(
+                                record.id
+                            );
+                        }
+
+                        updateTargetPhotoSelectionUi();
+
+                        renderTargetPhotos(
+                            list,
+                            photos
+                        );
+
+                        return;
+
+                        return;
+                    }
+
+                    openTargetPhotoViewer(
+                        record
+                    );
                 }
             );
 
