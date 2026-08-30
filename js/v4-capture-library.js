@@ -43,6 +43,8 @@
     let currentTargetPhotos = [];
     let currentPhotoViewerIndex = -1;
     let currentImportFiles = [];
+    let currentImportMetadataFile = null;
+    let currentImportMetadata = null;
     let currentImportIndex = -1;
     let currentImportPreviewUrl = null;
     let isTargetPhotoSelectMode = false;
@@ -492,6 +494,36 @@
 
     }
 
+    async function readTargetPhotoMetadataFile(
+        file
+    ) {
+        if (!file) {
+            return null;
+        }
+
+        const text =
+            await file.text();
+
+        const metadata =
+            JSON.parse(text);
+
+        if (
+            !metadata ||
+            metadata.format !==
+            "baika-archery-target-photo" ||
+            metadata.version !== 1 ||
+            !Array.isArray(
+                metadata.photos
+            )
+        ) {
+            throw new Error(
+                "Baika Archery Systemの付加情報ファイルではありません。"
+            );
+        }
+
+        return metadata;
+    }
+
     function bindTargetPhotoImport() {
         const button =
             document.getElementById(
@@ -519,7 +551,7 @@
 
         input.addEventListener(
             "change",
-            function () {
+            async function () {
                 const files =
                     input.files
                         ? Array.from(
@@ -531,8 +563,79 @@
                     return;
                 }
 
+                currentImportMetadataFile =
+                    files.find(
+                        function (file) {
+                            return (
+                                file &&
+                                (
+                                    file.name ===
+                                    "baika-target-photo-info.json" ||
+                                    file.type ===
+                                    "application/json"
+                                )
+                            );
+                        }
+                    ) || null;
+
                 currentImportFiles =
-                    files.slice();
+                    files.filter(
+                        function (file) {
+                            return (
+                                file &&
+                                typeof file.type ===
+                                "string" &&
+                                file.type.startsWith(
+                                    "image/"
+                                )
+                            );
+                        }
+                    );
+
+                if (
+                    currentImportFiles.length === 0
+                ) {
+                    window.alert(
+                        "取り込む的写真を選択してください。"
+                    );
+
+                    currentImportMetadataFile =
+                        null;
+
+                    currentImportMetadata =
+                        null;
+
+                    input.value = "";
+
+                    return;
+                }
+
+                currentImportMetadata =
+                    null;
+
+                if (
+                    currentImportMetadataFile
+                ) {
+                    try {
+                        currentImportMetadata =
+                            await readTargetPhotoMetadataFile(
+                                currentImportMetadataFile
+                            );
+                    } catch (error) {
+                        console.warn(
+                            "Target photo metadata read failed:",
+                            error
+                        );
+
+                        currentImportMetadata =
+                            null;
+
+                        window.alert(
+                            "付加情報ファイルを読み込めませんでした。\n" +
+                            "写真は通常の取り込みとして続けます。"
+                        );
+                    }
+                }
 
                 currentImportIndex =
                     0;
@@ -549,9 +652,10 @@
 
                 if (countText) {
                     countText.textContent =
-                        files.length === 1
+                        currentImportFiles.length === 1
                             ? "1枚の写真を選択しました。"
-                            : files.length + "枚の写真を選択しました。";
+                            : currentImportFiles.length +
+                            "枚の写真を選択しました。";
                 }
 
                 if (
@@ -577,13 +681,6 @@
                     document.getElementById(
                         "targetPhotoImportPreview"
                     );
-
-                if (
-                    !viewer ||
-                    !preview
-                ) {
-                    return;
-                }
 
                 if (
                     !viewer ||
@@ -682,7 +779,8 @@
 
                     createImportedTargetPhotoRecords(
                         currentImportFiles,
-                        conditions
+                        conditions,
+                        currentImportMetadata
                     )
                         .then(function (
                             records
@@ -757,6 +855,13 @@
             }
 
             currentImportFiles = [];
+
+            currentImportMetadataFile =
+                null;
+
+            currentImportMetadata =
+                null;
+
             currentImportIndex = -1;
 
             input.value = "";
@@ -1436,19 +1541,49 @@
 
     function createImportedTargetPhotoRecord(
         file,
-        conditions
+        conditions,
+        metadata
     ) {
-        const createdAt =
+        const fallbackCreatedAt =
             file.lastModified
                 ? new Date(
                     file.lastModified
                 )
                 : new Date();
 
+        let createdAt =
+            fallbackCreatedAt;
+
+        if (
+            metadata &&
+            metadata.createdAt
+        ) {
+            const metadataCreatedAt =
+                new Date(
+                    metadata.createdAt
+                );
+
+            if (
+                !Number.isNaN(
+                    metadataCreatedAt.getTime()
+                )
+            ) {
+                createdAt =
+                    metadataCreatedAt;
+            }
+        }
+
         return {
             blob: file,
+
             sessionId: "",
-            endNumber: null,
+
+            endNumber:
+                metadata &&
+                    metadata.endNumber != null
+                    ? metadata.endNumber
+                    : null,
+
             fileName:
                 file.name ||
                 (
@@ -1456,42 +1591,93 @@
                     createdAt.getTime() +
                     ".jpg"
                 ),
+
             createdAt:
                 createdAt.toISOString(),
-            memberName: "",
+
+            memberName:
+                metadata &&
+                    metadata.memberName
+                    ? metadata.memberName
+                    : "",
+
             practiceDate:
-                createdAt
-                    .toISOString()
-                    .slice(0, 10),
+                metadata &&
+                    metadata.practiceDate
+                    ? metadata.practiceDate
+                    : createdAt
+                        .toISOString()
+                        .slice(0, 10),
+
             distance:
-                conditions.distance || "",
+                metadata &&
+                    metadata.distance
+                    ? metadata.distance
+                    : conditions.distance || "",
+
             weather:
-                conditions.weather || "",
+                metadata &&
+                    metadata.weather
+                    ? metadata.weather
+                    : conditions.weather || "",
+
             windStrength:
-                conditions.windStrength || "",
+                metadata &&
+                    metadata.windStrength
+                    ? metadata.windStrength
+                    : conditions.windStrength || "",
+
             windDirection:
-                conditions.windDirection || "",
+                metadata &&
+                    metadata.windDirection
+                    ? metadata.windDirection
+                    : conditions.windDirection || "",
+
             status: "pending",
+
             guide: null,
+
             width: null,
+
             height: null
         };
     }
 
     async function createImportedTargetPhotoRecords(
         files,
-        conditions
+        conditions,
+        metadata
     ) {
         const records = [];
+
+        const metadataPhotos =
+            metadata &&
+                Array.isArray(
+                    metadata.photos
+                )
+                ? metadata.photos
+                : [];
 
         for (
             const file
             of files
         ) {
+            const photoMetadata =
+                metadataPhotos.find(
+                    function (item) {
+                        return (
+                            item &&
+                            item.fileName ===
+                            file.name
+                        );
+                    }
+                ) || null;
+
             const record =
                 createImportedTargetPhotoRecord(
                     file,
-                    conditions
+                    conditions,
+                    photoMetadata
                 );
 
             const dimensions =
