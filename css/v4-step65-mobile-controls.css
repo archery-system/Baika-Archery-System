@@ -136,8 +136,8 @@ body.v4-photo-focus-mode #v4TargetPhotoClear {
     display: none !important;
 }
 
-/* スマホ横向き専用 */
-@media (orientation: landscape) and (min-width: 568px) and (max-height: 900px) {
+/* スマホ・タブレット横向き専用 */
+@media (orientation: landscape) and (min-width: 568px) {
     html.v4-is-landscape-layout {
         --v4-step66-sticky-top: calc(64px + env(safe-area-inset-top));
         --v4-step66-target-size: clamp(210px, calc(100svh - 142px), 320px);
