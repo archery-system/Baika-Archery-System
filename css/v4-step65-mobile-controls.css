@@ -375,7 +375,7 @@ body.v4-photo-focus-mode #v4TargetPhotoClear {
 
 
 /* Step66.2: 横向きヘッダーを薄くし、固定3列の外枠を直下で止める */
-@media (orientation: landscape) and (min-width: 568px) and (max-height: 900px) {
+@media (orientation: landscape) and (min-width: 568px) {
     html.v4-is-landscape-layout {
         --v4-step66-header-height: 48px;
         --v4-step66-sticky-gap: 2px;
