@@ -175,16 +175,20 @@ body.v4-photo-focus-mode #v4TargetPhotoClear {
     }
 
     html.v4-is-landscape-layout .v4-landscape-sticky-stage>.v4-target-panel {
-        position: relative !important;
-        top: auto !important;
-        align-self: start !important;
-        width: 100% !important;
-        min-width: 0 !important;
-        margin: 0 !important;
-        padding: 5px !important;
-        box-sizing: border-box !important;
-        overflow: hidden !important;
-    }
+    position: relative !important;
+    top: auto !important;
+    align-self: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 5px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+
+    grid-column: auto !important;
+    grid-row: auto !important;
+    grid-area: auto !important;
+}
 
     /* 両方のタイトルを同じ高さにする */
     html.v4-is-landscape-layout .v4-landscape-sticky-stage .v4-target-panel-title {
