@@ -1147,12 +1147,45 @@
                         "v4-is-landscape-layout"
                     );
 
+                const stage =
+                    document.querySelector(
+                        ".v4-landscape-sticky-stage"
+                    );
+
+                let stageInfo = "";
+
+                if (stage) {
+                    const stageRect =
+                        stage.getBoundingClientRect();
+
+                    const children =
+                        [...stage.children]
+                            .map(function (child) {
+                                const rect =
+                                    child.getBoundingClientRect();
+
+                                return (
+                                    Math.round(rect.left) +
+                                    "," +
+                                    Math.round(rect.top)
+                                );
+                            })
+                            .join(" / ");
+
+                    stageInfo =
+                        " / stage=" +
+                        Math.round(stageRect.width) +
+                        " / " +
+                        children;
+                }
+
                 debug.textContent =
                     width +
                     " × " +
                     height +
                     " / landscape=" +
-                    isLandscape;
+                    isLandscape +
+                    stageInfo;
             }
 
             window.addEventListener("resize", updateDebugInfo);
