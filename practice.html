@@ -1103,6 +1103,70 @@
     <script src="js/v4-arrow-detector.js?v=354a"></script>
     <script src="js/v4-photo-ui.js?v=630"></script>
     <script src="js/v4-camera.js?v=55"></script>
+
+    <script>
+        (function () {
+            function updateDebugInfo() {
+                let debug = document.getElementById("v4ViewportDebug");
+
+                if (!debug) {
+                    debug = document.createElement("div");
+                    debug.id = "v4ViewportDebug";
+
+                    Object.assign(debug.style, {
+                        position: "fixed",
+                        right: "4px",
+                        bottom: "4px",
+                        zIndex: "99999",
+                        padding: "4px 6px",
+                        borderRadius: "6px",
+                        background: "rgba(0, 0, 0, 0.75)",
+                        color: "#fff",
+                        fontSize: "11px",
+                        lineHeight: "1.3",
+                        pointerEvents: "none"
+                    });
+
+                    document.body.appendChild(debug);
+                }
+
+                const viewport = window.visualViewport;
+
+                const width =
+                    viewport
+                        ? Math.round(viewport.width)
+                        : window.innerWidth;
+
+                const height =
+                    viewport
+                        ? Math.round(viewport.height)
+                        : window.innerHeight;
+
+                const isLandscape =
+                    document.documentElement.classList.contains(
+                        "v4-is-landscape-layout"
+                    );
+
+                debug.textContent =
+                    width +
+                    " × " +
+                    height +
+                    " / landscape=" +
+                    isLandscape;
+            }
+
+            window.addEventListener("resize", updateDebugInfo);
+            window.addEventListener("orientationchange", function () {
+                window.setTimeout(updateDebugInfo, 300);
+            });
+
+            document.addEventListener(
+                "DOMContentLoaded",
+                updateDebugInfo
+            );
+        })();
+    </script>
+
 </body>
 
 </html>
