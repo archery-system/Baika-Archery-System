@@ -282,10 +282,13 @@
     async function openCamera() {
         const el = getElements();
 
-        if (!currentCameraCondition) {
+        if (
+            !currentCameraCondition ||
+            !currentCameraCondition.distance
+        ) {
             window.alert(
-                "⚠️ 撮影条件が未設定です。\n\n" +
-                "撮影前に距離・天気・風の条件を設定してください。"
+                "⚠️ 撮影距離が未設定です。\n\n" +
+                "撮影前に距離を設定してください。"
             );
         }
 
