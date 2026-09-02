@@ -92,12 +92,19 @@
             description:
                 "大会結果とラウンド記録を管理します。",
             body:
-                "大会別の得点、順位、振り返りを保存できるようにします。",
+                "大会別の得点、大会結果、振り返りを保存・確認します。",
             status: {
-                label: "準備中",
-                type: "planned"
+                label: "利用可能",
+                type: "ready"
             },
-            interactive: true
+            interactive: true,
+            actions: [
+                {
+                    label: "大会記録を開く",
+                    href: "project-zero-match-records.html",
+                    className: "bas-button--secondary"
+                }
+            ]
         },
         {
             icon: "⚙️",
