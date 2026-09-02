@@ -516,3 +516,35 @@ body.v4-photo-focus-mode #v4TargetPhotoClear {
         font-size: 8px;
     }
 }
+
+/* 「写真を選ぶ」「得点を入力的へ反映」のデザインを統一 */
+#v4OpenPhotoListButton,
+#v4ApplyPhotoScoresButton {
+    justify-self: center !important;
+
+    width: min(100%, 280px) !important;
+    min-height: 44px !important;
+
+    padding: 9px 18px !important;
+    border-radius: 999px !important;
+
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+}
+
+/* 写真的下の「写真を選ぶ」は2列分を使って中央配置 */
+#v4OpenPhotoListButton {
+    grid-column: 1 / -1 !important;
+}
+
+/* 横向き時：写真的と入力的の外枠の高さを揃える */
+@media (orientation: landscape) and (min-width: 568px) {
+    html.v4-is-landscape-layout
+    .v4-landscape-sticky-stage > .v4-photo-panel,
+
+    html.v4-is-landscape-layout
+    .v4-landscape-sticky-stage > .v4-input-target-panel {
+        align-self: stretch !important;
+    }
+}
