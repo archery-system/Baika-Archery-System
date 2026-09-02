@@ -99,7 +99,16 @@
         if (el.open) {
             el.open.addEventListener(
                 "click",
-                openCamera
+                function () {
+                    if (!currentCameraCondition) {
+                        window.alert(
+                            "⚠️ 撮影条件が未設定です。\n\n" +
+                            "撮影前に距離・天気・風の条件を設定してください。"
+                        );
+                    }
+
+                    openCamera();
+                }
             );
         }
         el.close.addEventListener("click", closeCamera);
