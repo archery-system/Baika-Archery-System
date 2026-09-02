@@ -99,16 +99,7 @@
         if (el.open) {
             el.open.addEventListener(
                 "click",
-                function () {
-                    if (!currentCameraCondition) {
-                        window.alert(
-                            "⚠️ 撮影条件が未設定です。\n\n" +
-                            "撮影前に距離・天気・風の条件を設定してください。"
-                        );
-                    }
-
-                    openCamera();
-                }
+                openCamera
             );
         }
         el.close.addEventListener("click", closeCamera);
@@ -290,6 +281,13 @@
 
     async function openCamera() {
         const el = getElements();
+
+        if (!currentCameraCondition) {
+            window.alert(
+                "⚠️ 撮影条件が未設定です。\n\n" +
+                "撮影前に距離・天気・風の条件を設定してください。"
+            );
+        }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             window.alert("このブラウザではアプリ内カメラを利用できません。GitHub PagesのHTTPS画面をSafariまたはChromeで開いてください。");
