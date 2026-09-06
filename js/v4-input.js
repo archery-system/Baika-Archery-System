@@ -220,6 +220,77 @@ const V4_GAS_API_URL =
     "https://script.google.com/macros/s/AKfycbwGlg88mq5G4fR0_H9BlQ8VmdloL8oBPOBeIBQKWrK_XunDTPalvpo1tLu4I0qA2f16/exec";
 
 /**
+ * ログイン中の部員について、
+ * 最新の弓具・チューニング設定履歴IDを取得する。
+ *
+ * 弓具設定がまだ保存されていない場合は空文字を返す。
+ *
+ * @returns {Promise<string>}
+ */
+async function getLatestEquipmentHistoryId() {
+    const memberId =
+        window.V4Session &&
+            typeof window.V4Session.getLoggedInMemberId ===
+            "function"
+            ? window.V4Session.getLoggedInMemberId()
+            : "";
+
+    if (!memberId) {
+        return "";
+    }
+
+    try {
+        const url =
+            V4_GAS_API_URL +
+            "?action=getEquipmentHistory" +
+            "&memberId=" +
+            encodeURIComponent(memberId);
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+            return "";
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            !result ||
+            result.success !== true ||
+            !Array.isArray(result.history) ||
+            result.history.length === 0
+        ) {
+            return "";
+        }
+
+        const latestRecord =
+            result.history[0];
+
+        return String(
+            latestRecord &&
+                latestRecord.historyId
+                ? latestRecord.historyId
+                : ""
+        ).trim();
+    } catch (error) {
+        console.warn(
+            "[練習保存] 最新の弓具設定履歴IDを取得できませんでした。",
+            error
+        );
+
+        return "";
+    }
+}
+
+/**
  * 現在入力中の着弾をProject ZeroのStateへ同期する
  */
 
@@ -2264,11 +2335,15 @@ async function registerPhotoPracticeEnd(photoPins) {
             ? window.V4Session.getLoggedInMemberId()
             : "";
 
+    const equipmentHistoryId =
+        await getLatestEquipmentHistoryId();
+
     const record = {
         date: practiceDate,
         memberId: memberId,
         memberName: memberName,
         distance: distance,
+        equipmentHistoryId: equipmentHistoryId,
         a1: arrows[0] ? arrows[0].val : "",
         a2: arrows[1] ? arrows[1].val : "",
         a3: arrows[2] ? arrows[2].val : "",
