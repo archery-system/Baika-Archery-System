@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        弓具・チューニング | Baika Archery System
+    </title>
+
+    <meta name="theme-color" content="#9b2457">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+
+    <link rel="manifest" href="manifest.webmanifest">
+
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+
+    <link rel="stylesheet" href="css/foundation/base.css">
+
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
+
+    <link rel="stylesheet" href="css/components/header.css">
+
+    <link rel="stylesheet" href="css/components/page-header.css">
+
+    <link rel="stylesheet" href="css/components/card.css">
+
+    <link rel="stylesheet" href="css/components/button.css">
+
+    <link rel="stylesheet" href="css/pages/equipment.css">
+</head>
+
+<body>
+    <div class="bas-app">
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+            <div id="page-header"></div>
+
+            <div class="bas-equipment">
+                <section class="bas-card bas-equipment__section">
+                    <div class="bas-equipment__section-header">
+                        <h2>
+                            🏹 現在の弓具設定
+                        </h2>
+
+                        <p>
+                            使用中の弓具やチューニング設定を
+                            記録・確認します。
+                        </p>
+                    </div>
+
+                    <div class="bas-equipment__group">
+                        <h3>
+                            弓本体
+                        </h3>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentRiser">
+                                ハンドル
+                            </label>
+
+                            <input id="equipmentRiser" name="riser" type="text" value="" placeholder="例：HOYT Xceed">
+                        </div>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentLimb">
+                                リム
+                            </label>
+
+                            <input id="equipmentLimb" name="limb" type="text" value="" placeholder="例：WIN&WIN MXT-XP">
+                        </div>
+
+                        <div class="bas-equipment__poundage-row">
+                            <div class="bas-equipment__field">
+                                <label for="equipmentDisplayPoundage">
+                                    表示ポンド数
+                                </label>
+
+                                <input id="equipmentDisplayPoundage" name="displayPoundage" type="number" step="0.1"
+                                    min="0" value="" placeholder="例：36">
+                            </div>
+
+                            <div class="bas-equipment__field">
+                                <label for="equipmentPoundage">
+                                    実質ポンド数
+                                </label>
+
+                                <input id="equipmentPoundage" name="poundage" type="number" step="0.1" min="0" value=""
+                                    placeholder="例：34">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bas-equipment__group">
+                        <h3>
+                            矢
+                        </h3>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentArrowShaft">
+                                シャフト
+                            </label>
+
+                            <input id="equipmentArrowShaft" name="arrowShaft" type="text" value=""
+                                placeholder="例：EASTON X10">
+                        </div>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentArrowSpine">
+                                スパイン
+                            </label>
+
+                            <input id="equipmentArrowSpine" name="arrowSpine" type="text" value="" placeholder="例：500">
+                        </div>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentPointWeight">
+                                ポイント重量
+                            </label>
+
+                            <input id="equipmentPointWeight" name="pointWeight" type="number" step="1" min="0" value=""
+                                placeholder="例：120">
+                        </div>
+                    </div>
+
+                    <div class="bas-equipment__group">
+                        <h3>
+                            🔧 チューニング設定
+                        </h3>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentStringHeight">
+                                ストリングハイト
+                            </label>
+
+                            <input id="equipmentStringHeight" name="stringHeight" type="number" step="0.1" min="0"
+                                value="" placeholder="例：22.5">
+                        </div>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentTiller">
+                                ティラーハイト
+                            </label>
+
+                            <input id="equipmentTiller" name="tiller" type="number" step="0.1" value=""
+                                placeholder="例：3">
+                        </div>
+
+                        <div class="bas-equipment__field">
+                            <label for="equipmentPlunger">
+                                プランジャー
+                            </label>
+
+                            <input id="equipmentPlunger" name="plunger" type="text" value="" placeholder="例：中程度">
+                        </div>
+                    </div>
+
+                    <div class="bas-equipment__actions">
+                        <button id="equipmentSaveButton" type="button" class="bas-button bas-button--primary">
+                            弓具設定を保存
+                        </button>
+                    </div>
+
+                    <p id="equipmentSaveMessage" class="bas-equipment__message">
+                        使用中の弓具設定を保存できます。
+                    </p>
+
+                </section>
+            </div>
+
+            <section class="bas-card">
+                <a href="project-zero-home.html" class="bas-button bas-button--secondary">
+                    ホームへ戻る
+                </a>
+            </section>
+        </main>
+    </div>
+
+    <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+    <script src="js/pages/equipment.js"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    !window.V4Session ||
+                    typeof window.V4Session.requireLogin !==
+                    "function" ||
+                    !window.V4Session.requireLogin()
+                ) {
+                    return;
+                }
+
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER.render ===
+                    "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        currentRoute: "equipment"
+                    });
+                }
+
+                if (
+                    window.BAS_PAGE_HEADER &&
+                    typeof window.BAS_PAGE_HEADER.render ===
+                    "function"
+                ) {
+                    window.BAS_PAGE_HEADER.render({
+                        eyebrow: "EQUIPMENT",
+                        title: "弓具・チューニング",
+                        description:
+                            "使用弓具とチューニング設定を記録・確認します。"
+                    });
+                }
+            }
+        );
+    </script>
+</body>
+
+</html>

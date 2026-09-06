@@ -8,6 +8,8 @@ const SHEET_NAMES = {
   PRACTICE: "practice",
   GROUPING: "grouping",
   MATCH: "match",
+  EQUIPMENT: "equipment",
+  EQUIPMENT_HISTORY: "equipmentHistory",
   METADATA: "metadata",
   MEMBERS: "members",
   PRACTICE_SESSIONS: "practiceSessions"

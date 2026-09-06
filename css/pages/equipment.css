@@ -1,0 +1,106 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * Equipment & Tuning Page
+ */
+
+.bas-equipment {
+    display: grid;
+    gap: var(--bas-space-5);
+}
+
+.bas-equipment__section {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-equipment__section-header {
+    display: grid;
+    gap: var(--bas-space-2);
+}
+
+.bas-equipment__section-header h2,
+.bas-equipment__section-header p {
+    margin: 0;
+}
+
+.bas-equipment__group {
+    display: grid;
+    gap: var(--bas-space-4);
+}
+
+.bas-equipment__group h3 {
+    margin: 0;
+}
+
+.bas-equipment__field {
+    display: grid;
+    gap: var(--bas-space-2);
+}
+
+.bas-equipment__field label {
+    font-weight: var(--bas-font-weight-bold);
+}
+
+.bas-equipment__field input {
+    width: 100%;
+    min-height: 46px;
+    padding:
+        var(--bas-space-3) var(--bas-space-4);
+    border: 1px solid var(--bas-color-border);
+    border-radius: var(--bas-radius-md);
+    color: var(--bas-color-text);
+    background: var(--bas-color-surface);
+    box-sizing: border-box;
+}
+
+.bas-equipment__field input:focus {
+    outline: 2px solid var(--bas-color-focus);
+    outline-offset: 2px;
+    border-color: var(--bas-color-primary-500);
+}
+
+.bas-equipment__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bas-space-3);
+}
+
+.bas-equipment__message {
+    margin: 0;
+    padding: var(--bas-space-3);
+    border-radius: var(--bas-radius-md);
+    background: var(--bas-color-surface-soft);
+}
+
+.bas-equipment__message[data-message-type="success"] {
+    border: 1px solid var(--bas-color-success);
+}
+
+.bas-equipment__message[data-message-type="error"] {
+    border: 1px solid var(--bas-color-danger);
+}
+
+.bas-equipment__poundage-row {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: var(--bas-space-4);
+}
+
+@media (max-width: 640px) {
+    .bas-equipment__actions {
+        display: grid;
+    }
+
+    .bas-equipment__actions .bas-button {
+        width: 100%;
+    }
+
+    .bas-equipment__poundage-row {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: var(--bas-space-3);
+    }
+
+}

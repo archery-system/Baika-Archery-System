@@ -51,6 +51,45 @@ if (action === "getMatchRecords") {
 }
 
 /*
+ * 本人の現在の弓具設定を返す。
+ */
+if (action === "getEquipmentSettings") {
+  const memberId =
+    e && e.parameter
+      ? String(
+          e.parameter.memberId || ""
+        ).trim()
+      : "";
+
+  if (!memberId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "部員IDが指定されていません。"
+    });
+  }
+
+  const equipmentRecords =
+    readSheetData(
+      SHEET_NAMES.EQUIPMENT
+    );
+
+  const equipment =
+    equipmentRecords.find(
+      function(record) {
+        return String(
+          record.memberId || ""
+        ).trim() === memberId;
+      }
+    ) || null;
+
+  return createJsonResponse({
+    success: true,
+    equipment: equipment
+  });
+}
+
+/*
  * 部員管理画面用。
  *
  * getMemberMaster()を通すことで、
@@ -444,6 +483,57 @@ if (action === "appendGroupingRecord") {
     rowNumber:
       result.rowNumber
   });
+}
+
+/*
+ * 弓具設定を保存する。
+ *
+ * memberIdごとに現在の弓具設定を
+ * 1件だけ保持する。
+ */
+if (action === "saveEquipmentSettings") {
+  const record =
+    payload &&
+    payload.record &&
+    typeof payload.record === "object"
+      ? payload.record
+      : null;
+
+  if (!record) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "保存する弓具設定が指定されていません。"
+    });
+  }
+
+  const result =
+  saveEquipmentSettings(
+    record
+  );
+
+const historyResult =
+  appendEquipmentHistory(
+    record
+  );
+
+return createJsonResponse({
+  success: true,
+  message:
+    result.operation === "updated"
+      ? "弓具設定を更新し、履歴を保存しました。"
+      : "弓具設定を保存し、履歴を保存しました。",
+  recordId:
+    result.recordId,
+  operation:
+    result.operation,
+  rowNumber:
+    result.rowNumber,
+  historyId:
+    historyResult.historyId,
+  historyRowNumber:
+    historyResult.rowNumber
+});
 }
 
 /*

@@ -404,6 +404,333 @@ function upsertMatchRecord(record) {
 }
 
 /**
+ * 弓具設定をequipmentシートへ保存する。
+ *
+ * memberIdごとに現在の設定を1件だけ保持し、
+ * 既存行があれば更新、なければ追加する。
+ *
+ * @param {Object} record
+ * @returns {Object}
+ */
+function saveEquipmentSettings(record) {
+  if (
+    !record ||
+    typeof record !== "object"
+  ) {
+    throw new Error(
+      "保存する弓具設定が指定されていません。"
+    );
+  }
+
+  const memberId =
+    String(
+      record.memberId || ""
+    ).trim();
+
+  if (!memberId) {
+    throw new Error(
+      "部員IDが指定されていません。"
+    );
+  }
+
+  const recordId =
+    "equipment_" + memberId;
+
+  record.recordId =
+    recordId;
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.EQUIPMENT
+      );
+
+    const headers = [
+      "recordId",
+      "memberId",
+      "updatedAt",
+      "riser",
+      "limb",
+      "displayPoundage",
+      "poundage",
+      "arrowShaft",
+      "arrowSpine",
+      "pointWeight",
+      "stringHeight",
+      "tiller",
+      "plunger"
+    ];
+
+    const existingHeaders =
+  sheet.getLastColumn() > 0
+    ? sheet
+        .getRange(
+          1,
+          1,
+          1,
+          sheet.getLastColumn()
+        )
+        .getValues()[0]
+        .map(function(header) {
+          return String(
+            header || ""
+          ).trim();
+        })
+    : [];
+
+if (
+  sheet.getLastRow() === 0 ||
+  existingHeaders.length === 0
+) {
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      headers.length
+    )
+    .setValues([
+      headers
+    ]);
+} else if (
+  !existingHeaders.includes(
+    "displayPoundage"
+  )
+) {
+  const poundageColumn =
+    existingHeaders.indexOf(
+      "poundage"
+    ) + 1;
+
+  if (poundageColumn > 0) {
+    sheet.insertColumnBefore(
+      poundageColumn
+    );
+
+    sheet
+      .getRange(
+        1,
+        poundageColumn
+      )
+      .setValue(
+        "displayPoundage"
+      );
+  }
+}
+
+    const recordIdColumn =
+      headers.indexOf(
+        "recordId"
+      ) + 1;
+
+    const lastRow =
+      sheet.getLastRow();
+
+    let targetRow = 0;
+
+    if (lastRow >= 2) {
+      const recordIds =
+        sheet
+          .getRange(
+            2,
+            recordIdColumn,
+            lastRow - 1,
+            1
+          )
+          .getValues();
+
+      for (
+        let index = 0;
+        index < recordIds.length;
+        index += 1
+      ) {
+        if (
+          String(
+            recordIds[index][0] || ""
+          ).trim() === recordId
+        ) {
+          targetRow =
+            index + 2;
+          break;
+        }
+      }
+    }
+
+    const rowValues =
+      headers.map(function(header) {
+        return Object.prototype
+          .hasOwnProperty.call(
+            record,
+            header
+          )
+          ? record[header]
+          : "";
+      });
+
+    const isUpdate =
+      targetRow > 0;
+
+    if (!isUpdate) {
+      targetRow =
+        Math.max(
+          sheet.getLastRow() + 1,
+          2
+        );
+    }
+
+    sheet
+      .getRange(
+        targetRow,
+        1,
+        1,
+        headers.length
+      )
+      .setValues([
+        rowValues
+      ]);
+
+    return {
+      recordId: recordId,
+      rowNumber: targetRow,
+      operation:
+        isUpdate
+          ? "updated"
+          : "inserted"
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * 弓具設定の履歴をequipmentHistoryシートへ1件追加する。
+ *
+ * 現在設定とは別に、
+ * 保存時点の内容を履歴として末尾へ追加する。
+ *
+ * @param {Object} record
+ * @returns {Object}
+ */
+function appendEquipmentHistory(record) {
+  if (
+    !record ||
+    typeof record !== "object"
+  ) {
+    throw new Error(
+      "保存する弓具履歴が指定されていません。"
+    );
+  }
+
+  const memberId =
+    String(
+      record.memberId || ""
+    ).trim();
+
+  if (!memberId) {
+    throw new Error(
+      "部員IDが指定されていません。"
+    );
+  }
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.EQUIPMENT_HISTORY
+      );
+
+    const headers = [
+      "historyId",
+      "savedAt",
+      "memberId",
+      "riser",
+      "limb",
+      "displayPoundage",
+      "poundage",
+      "arrowShaft",
+      "arrowSpine",
+      "pointWeight",
+      "stringHeight",
+      "tiller",
+      "plunger"
+    ];
+
+    if (sheet.getLastRow() === 0) {
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          headers.length
+        )
+        .setValues([
+          headers
+        ]);
+    }
+
+    const historyId =
+      "equipment_history_" +
+      memberId +
+      "_" +
+      new Date().getTime();
+
+    const historyRecord =
+      Object.assign(
+        {},
+        record,
+        {
+          historyId: historyId,
+          savedAt:
+            record.updatedAt ||
+            new Date().toISOString()
+        }
+      );
+
+    const row =
+      headers.map(function(header) {
+        return Object.prototype
+          .hasOwnProperty.call(
+            historyRecord,
+            header
+          )
+          ? historyRecord[header]
+          : "";
+      });
+
+    const rowNumber =
+      sheet.getLastRow() + 1;
+
+    sheet
+      .getRange(
+        rowNumber,
+        1,
+        1,
+        row.length
+      )
+      .setValues([
+        row
+      ]);
+
+    return {
+      historyId: historyId,
+      operation: "append",
+      rowNumber: rowNumber
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * グルーピング記録をgroupingシートへ1件追加する。
  *
  * 全件上書きせず、
