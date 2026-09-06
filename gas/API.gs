@@ -68,7 +68,7 @@ if (action === "getEquipmentSettings") {
         "部員IDが指定されていません。"
     });
   }
-
+  
   const equipmentRecords =
     readSheetData(
       SHEET_NAMES.EQUIPMENT
@@ -86,6 +86,54 @@ if (action === "getEquipmentSettings") {
   return createJsonResponse({
     success: true,
     equipment: equipment
+  });
+}
+
+/*
+ * 本人の弓具・チューニング設定履歴を返す。
+ */
+if (action === "getEquipmentHistory") {
+  const memberId =
+    e && e.parameter
+      ? String(
+          e.parameter.memberId || ""
+        ).trim()
+      : "";
+
+  if (!memberId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "部員IDが指定されていません。"
+    });
+  }
+
+  const equipmentHistory =
+    readSheetData(
+      SHEET_NAMES.EQUIPMENT_HISTORY
+    )
+      .filter(function(record) {
+        return String(
+          record.memberId || ""
+        ).trim() === memberId;
+      })
+      .sort(function(a, b) {
+        const aTime =
+          new Date(
+            a.savedAt || 0
+          ).getTime();
+
+        const bTime =
+          new Date(
+            b.savedAt || 0
+          ).getTime();
+
+        return bTime - aTime;
+      });
+
+  return createJsonResponse({
+    success: true,
+    history: equipmentHistory
   });
 }
 
