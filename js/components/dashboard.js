@@ -106,6 +106,28 @@
                 }
             ]
         },
+
+        {
+            icon: "🏹",
+            title: "弓具・チューニング",
+            description:
+                "使用中の弓具とチューニング設定を管理します。",
+            body:
+                "現在の弓具設定を保存し、過去の変更履歴も確認できます。",
+            status: {
+                label: "利用可能",
+                type: "ready"
+            },
+            interactive: true,
+            actions: [
+                {
+                    label: "弓具設定を開く",
+                    href: "project-zero-equipment.html",
+                    className: "bas-button--secondary"
+                }
+            ]
+        },
+
         {
             icon: "⚙️",
             title: "設定",
