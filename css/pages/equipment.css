@@ -126,6 +126,19 @@
     margin: 0;
 }
 
+.bas-equipment__history-toggle {
+    justify-self: start;
+}
+
+.bas-equipment__history-details--extra {
+    padding-top: var(--bas-space-3);
+    border-top: 1px solid var(--bas-color-border);
+}
+
+.bas-equipment__history-details--extra[hidden] {
+    display: none;
+}
+
 @media (max-width: 640px) {
     .bas-equipment__actions {
         display: grid;

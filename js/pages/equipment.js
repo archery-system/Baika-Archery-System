@@ -279,8 +279,8 @@
             details.className =
                 "bas-equipment__history-details";
 
-            const values = [
-                ["ライザー", record.riser],
+            const summaryValues = [
+                ["ハンドル", record.riser],
                 ["リム", record.limb],
                 [
                     "表示ポンド数",
@@ -289,7 +289,10 @@
                 [
                     "実質ポンド数",
                     record.poundage
-                ],
+                ]
+            ];
+
+            const detailValues = [
                 [
                     "シャフト",
                     record.arrowShaft
@@ -307,7 +310,7 @@
                     record.stringHeight
                 ],
                 [
-                    "ティラー",
+                    "ティラーハイト",
                     record.tiller
                 ],
                 [
@@ -316,7 +319,7 @@
                 ]
             ];
 
-            values.forEach(function (entry) {
+            summaryValues.forEach(function (entry) {
                 const detail =
                     document.createElement("p");
 
@@ -337,8 +340,66 @@
                 details.appendChild(detail);
             });
 
+            const extraDetails =
+                document.createElement("div");
+
+            extraDetails.className =
+                "bas-equipment__history-details bas-equipment__history-details--extra";
+
+            extraDetails.hidden = true;
+
+            detailValues.forEach(function (entry) {
+                const detail =
+                    document.createElement("p");
+
+                detail.className =
+                    "bas-equipment__history-detail";
+
+                detail.textContent =
+                    entry[0] +
+                    "：" +
+                    (
+                        entry[1] === null ||
+                            entry[1] === undefined ||
+                            entry[1] === ""
+                            ? "未設定"
+                            : entry[1]
+                    );
+
+                extraDetails.appendChild(detail);
+            });
+
+            const toggleButton =
+                document.createElement("button");
+
+            toggleButton.type = "button";
+
+            toggleButton.className =
+                "bas-button bas-button--secondary bas-equipment__history-toggle";
+
+            toggleButton.textContent =
+                "詳細を見る";
+
+            toggleButton.addEventListener(
+                "click",
+                function () {
+                    const isHidden =
+                        extraDetails.hidden;
+
+                    extraDetails.hidden =
+                        !isHidden;
+
+                    toggleButton.textContent =
+                        isHidden
+                            ? "詳細を閉じる"
+                            : "詳細を見る";
+                }
+            );
+
             item.appendChild(date);
             item.appendChild(details);
+            item.appendChild(toggleButton);
+            item.appendChild(extraDetails);
 
             list.appendChild(item);
         });
