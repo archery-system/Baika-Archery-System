@@ -66,6 +66,7 @@
         bindTargetPhotoViewer();
         bindTargetPhotoImport();
         bindTargetPhotoSelectionMode();
+        bindFormVideoImport();
 
         loadTargetPhotos();
         loadFormVideos();
@@ -1907,6 +1908,177 @@
         );
     }
 
+    function bindFormVideoImport() {
+        const button =
+            document.getElementById(
+                "formVideoImportButton"
+            );
+
+        const input =
+            document.getElementById(
+                "formVideoImportInput"
+            );
+
+        if (
+            !button ||
+            !input
+        ) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            function () {
+                input.click();
+            }
+        );
+
+        input.addEventListener(
+            "change",
+            async function () {
+                const file =
+                    input.files &&
+                        input.files[0]
+                        ? input.files[0]
+                        : null;
+
+                input.value =
+                    "";
+
+                if (!file) {
+                    return;
+                }
+
+                if (
+                    !String(
+                        file.type || ""
+                    ).startsWith(
+                        "video/"
+                    )
+                ) {
+                    window.alert(
+                        "動画ファイルを選択してください。"
+                    );
+
+                    return;
+                }
+
+                button.disabled =
+                    true;
+
+                button.textContent =
+                    "読み込み中…";
+
+                try {
+                    await addImportedFormVideo(
+                        file
+                    );
+
+                    await loadFormVideos();
+
+                    window.alert(
+                        "フォーム動画を読み込みました。"
+                    );
+
+                } catch (error) {
+                    console.error(
+                        "Form video import failed:",
+                        error
+                    );
+
+                    window.alert(
+                        "フォーム動画を読み込めませんでした。"
+                    );
+
+                } finally {
+                    button.disabled =
+                        false;
+
+                    button.textContent =
+                        "📥 動画を読み込む";
+                }
+            }
+        );
+    }
+
+    async function addImportedFormVideo(
+        file
+    ) {
+        if (
+            !file ||
+            !(file instanceof Blob)
+        ) {
+            throw new Error(
+                "Video file is invalid."
+            );
+        }
+
+        const db =
+            await openDatabase();
+
+        const createdAt =
+            new Date(
+                Number(
+                    file.lastModified
+                ) ||
+                Date.now()
+            ).toISOString();
+
+        const record = {
+            createdAt:
+                createdAt,
+
+            mimeType:
+                String(
+                    file.type ||
+                    "video/webm"
+                ),
+
+            size:
+                Number(
+                    file.size || 0
+                ),
+
+            blob:
+                file
+        };
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    VIDEO_STORE_NAME,
+                    "readwrite"
+                );
+
+            const store =
+                transaction.objectStore(
+                    VIDEO_STORE_NAME
+                );
+
+            const request =
+                store.add(
+                    record
+                );
+
+            request.onsuccess =
+                function () {
+                    resolve(
+                        request.result
+                    );
+                };
+
+            request.onerror =
+                function () {
+                    reject(
+                        request.error
+                    );
+                };
+        });
+    }
+
     async function getAllFormVideos() {
         const db =
             await openDatabase();
@@ -2398,6 +2570,170 @@
                     record.size
                 );
 
+            const exportButton =
+                document.createElement(
+                    "button"
+                );
+
+            exportButton.type =
+                "button";
+
+            exportButton.className =
+                "capture-library-delete-button";
+
+            exportButton.textContent =
+                "📤 書き出し";
+
+            exportButton.addEventListener(
+                "click",
+                async function () {
+                    const mimeType =
+                        String(
+                            record.mimeType ||
+                            record.blob.type ||
+                            "video/webm"
+                        );
+
+                    let extension =
+                        ".webm";
+
+                    if (
+                        mimeType.includes(
+                            "mp4"
+                        )
+                    ) {
+                        extension =
+                            ".mp4";
+                    } else if (
+                        mimeType.includes(
+                            "quicktime"
+                        )
+                    ) {
+                        extension =
+                            ".mov";
+                    }
+
+                    const createdAt =
+                        new Date(
+                            record.createdAt ||
+                            Date.now()
+                        );
+
+                    const fileName =
+                        "baika-form-video-" +
+                        createdAt
+                            .toISOString()
+                            .replace(
+                                /[:.]/g,
+                                "-"
+                            ) +
+                        extension;
+
+                    try {
+                        const file =
+                            new File(
+                                [
+                                    record.blob
+                                ],
+                                fileName,
+                                {
+                                    type:
+                                        mimeType
+                                }
+                            );
+
+                        if (
+                            navigator.share &&
+                            navigator.canShare &&
+                            navigator.canShare({
+                                files: [
+                                    file
+                                ]
+                            })
+                        ) {
+                            try {
+                                await navigator.share({
+                                    files: [
+                                        file
+                                    ],
+                                    title:
+                                        "フォーム動画"
+                                });
+
+                                return;
+
+                            } catch (
+                            shareError
+                            ) {
+                                if (
+                                    shareError &&
+                                    shareError.name ===
+                                    "AbortError"
+                                ) {
+                                    return;
+                                }
+
+                                console.warn(
+                                    "Form video share failed. Falling back to download:",
+                                    shareError
+                                );
+                            }
+                        }
+
+                        const downloadUrl =
+                            URL.createObjectURL(
+                                record.blob
+                            );
+
+                        const anchor =
+                            document.createElement(
+                                "a"
+                            );
+
+                        anchor.href =
+                            downloadUrl;
+
+                        anchor.download =
+                            fileName;
+
+                        document.body.appendChild(
+                            anchor
+                        );
+
+                        anchor.click();
+
+                        anchor.remove();
+
+                        setTimeout(
+                            function () {
+                                URL.revokeObjectURL(
+                                    downloadUrl
+                                );
+                            },
+                            1000
+                        );
+
+                    } catch (error) {
+                        if (
+                            error &&
+                            error.name ===
+                            "AbortError"
+                        ) {
+                            return;
+                        }
+
+                        console.error(
+                            "Form video export failed:",
+                            error
+                        );
+
+                        window.alert(
+                            "フォーム動画を書き出せませんでした。"
+                        );
+                    }
+                }
+            );
+
             const deleteButton =
                 document.createElement(
                     "button"
@@ -2466,6 +2802,10 @@
 
             card.appendChild(
                 meta
+            );
+
+            card.appendChild(
+                exportButton
             );
 
             card.appendChild(
