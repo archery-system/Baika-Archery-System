@@ -534,6 +534,140 @@
     }
 
     /**
+     * このエンドで弓具設定表示が必要か判定する
+     *
+     * 最初のエンド、または直前のエンドから
+     * 弓具設定履歴IDが変わった場合に true を返す。
+     *
+     * @param {Object} record
+     * @param {Object|null} previousRecord
+     * @returns {boolean}
+     */
+    function shouldShowEquipmentChange(
+        record,
+        previousRecord
+    ) {
+        const currentEquipmentHistoryId =
+            String(
+                record &&
+                    record.equipmentHistoryId
+                    ? record.equipmentHistoryId
+                    : ""
+            ).trim();
+
+        if (!currentEquipmentHistoryId) {
+            return false;
+        }
+
+        if (!previousRecord) {
+            return true;
+        }
+
+        const previousEquipmentHistoryId =
+            String(
+                previousRecord &&
+                    previousRecord.equipmentHistoryId
+                    ? previousRecord.equipmentHistoryId
+                    : ""
+            ).trim();
+
+        return (
+            currentEquipmentHistoryId !==
+            previousEquipmentHistoryId
+        );
+    }
+
+    /**
+ * 直前の弓具設定から変更された項目を取得する
+ *
+ * @param {Object|null} currentEquipment
+ * @param {Object|null} previousEquipment
+ * @returns {Object[]}
+ */
+    function getEquipmentChanges(
+        currentEquipment,
+        previousEquipment
+    ) {
+        if (
+            !currentEquipment ||
+            !previousEquipment
+        ) {
+            return [];
+        }
+
+        const fields = [
+            {
+                key: "riser",
+                label: "ハンドル"
+            },
+            {
+                key: "limb",
+                label: "リム"
+            },
+            {
+                key: "displayPoundage",
+                label: "表示ポンド数"
+            },
+            {
+                key: "poundage",
+                label: "実質ポンド数"
+            },
+            {
+                key: "arrowShaft",
+                label: "シャフト"
+            },
+            {
+                key: "arrowSpine",
+                label: "スパイン"
+            },
+            {
+                key: "pointWeight",
+                label: "ポイント重量"
+            },
+            {
+                key: "stringHeight",
+                label: "ストリングハイト"
+            },
+            {
+                key: "tiller",
+                label: "ティラーハイト"
+            },
+            {
+                key: "plunger",
+                label: "プランジャー"
+            }
+        ];
+
+        return fields
+            .map(function (field) {
+                const previousValue =
+                    String(
+                        previousEquipment[field.key] ??
+                        ""
+                    ).trim();
+
+                const currentValue =
+                    String(
+                        currentEquipment[field.key] ??
+                        ""
+                    ).trim();
+
+                return {
+                    key: field.key,
+                    label: field.label,
+                    previousValue: previousValue,
+                    currentValue: currentValue
+                };
+            })
+            .filter(function (change) {
+                return (
+                    change.previousValue !==
+                    change.currentValue
+                );
+            });
+    }
+
+    /**
      * 記録閲覧用の部員選択欄を更新する
      *
      * ログイン画面と同じルールで、
@@ -1544,11 +1678,17 @@
             record,
             endIndex
         ) {
+            const previousRecord =
+                endIndex > 0
+                    ? session.ends[endIndex - 1]
+                    : null;
+
             const endCard =
                 createRecordCard(
                     record,
                     endIndex,
-                    memberData
+                    memberData,
+                    previousRecord
                 );
 
             detail.appendChild(endCard);
@@ -1674,7 +1814,8 @@
     function createRecordCard(
         record,
         index,
-        memberData
+        memberData,
+        previousRecord
     ) {
         const article =
             document.createElement("article");
@@ -1901,7 +2042,29 @@
         const equipmentHistory =
             findEquipmentHistoryForRecord(record);
 
-        if (equipmentHistory) {
+        const previousEquipmentHistory =
+            previousRecord
+                ? findEquipmentHistoryForRecord(
+                    previousRecord
+                )
+                : null;
+
+        const showEquipmentChange =
+            shouldShowEquipmentChange(
+                record,
+                previousRecord
+            );
+
+        const equipmentChanges =
+            getEquipmentChanges(
+                equipmentHistory,
+                previousEquipmentHistory
+            );
+
+        if (
+            showEquipmentChange &&
+            equipmentHistory
+        ) {
             const equipmentSummary =
                 document.createElement("div");
 
@@ -1912,16 +2075,65 @@
                 document.createElement("strong");
 
             equipmentLabel.textContent =
-                "🏹 使用弓具";
+                previousRecord
+                    ? "🔧 弓具・チューニング変更"
+                    : "🏹 開始時の弓具設定";
 
             const equipmentValue =
-                document.createElement("span");
+                document.createElement("div");
 
-            equipmentValue.textContent =
-                String(
-                    equipmentHistory.riser ||
-                    "ハンドル未登録"
+            equipmentValue.className =
+                "bas-records__equipment-values";
+
+            if (
+                previousRecord &&
+                equipmentChanges.length > 0
+            ) {
+                equipmentChanges.forEach(function (
+                    change
+                ) {
+                    const changeLine =
+                        document.createElement("p");
+
+                    changeLine.className =
+                        "bas-records__equipment-change";
+
+                    const before =
+                        change.previousValue ||
+                        "未登録";
+
+                    const after =
+                        change.currentValue ||
+                        "未登録";
+
+                    changeLine.textContent =
+                        change.label +
+                        "：" +
+                        before +
+                        " → " +
+                        after;
+
+                    equipmentValue.appendChild(
+                        changeLine
+                    );
+                });
+            } else {
+                const currentValue =
+                    document.createElement("p");
+
+                currentValue.className =
+                    "bas-records__equipment-change";
+
+                currentValue.textContent =
+                    String(
+                        equipmentHistory.riser ||
+                        "ハンドル未登録"
+                    );
+
+                equipmentValue.appendChild(
+                    currentValue
                 );
+            }
 
             equipmentSummary.appendChild(
                 equipmentLabel

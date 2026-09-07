@@ -225,6 +225,39 @@
 }
 
 /* ========================================
+   Equipment Summary
+======================================== */
+
+.bas-records__equipment-summary {
+    display: grid;
+    gap: var(--bas-space-2);
+    padding: var(--bas-space-3) var(--bas-space-4);
+    border: 1px solid var(--bas-color-border);
+    border-radius: var(--bas-radius-md);
+    background: var(--bas-color-background);
+}
+
+.bas-records__equipment-summary strong {
+    color: var(--bas-color-text);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 800;
+}
+
+.bas-records__equipment-values {
+    display: grid;
+    gap: var(--bas-space-1);
+}
+
+.bas-records__equipment-change {
+    margin: 0;
+    color: var(--bas-color-text-muted);
+    font-size: var(--bas-font-size-sm);
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+/* ========================================
    Empty State
 ======================================== */
 
