@@ -14,6 +14,13 @@
         5 * 60 * 1000;
 
     /**
+     * 表示中の部員の弓具・チューニング設定履歴
+     *
+     * @type {Object[]}
+     */
+    let equipmentHistoryRecords = [];
+
+    /**
  * 比較対象として選択されたグルーピング記録
  *
  * @type {Object[]}
@@ -425,6 +432,108 @@
     }
 
     /**
+     * GASから表示中の部員の弓具・チューニング設定履歴を取得する
+     *
+     * @param {string} memberId
+     * @returns {Promise<Array>}
+     */
+    async function loadEquipmentHistory(memberId) {
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const normalizedMemberId =
+            String(memberId || "").trim();
+
+        if (!normalizedMemberId) {
+            return [];
+        }
+
+        const separator =
+            V4_GAS_API_URL.includes("?")
+                ? "&"
+                : "?";
+
+        const requestUrl =
+            `${V4_GAS_API_URL}${separator}` +
+            "action=getEquipmentHistory" +
+            `&memberId=${encodeURIComponent(normalizedMemberId)}`;
+
+        const response =
+            await fetch(
+                requestUrl,
+                {
+                    method: "GET",
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "弓具設定履歴の取得に失敗しました。"
+            );
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            !result ||
+            result.success !== true ||
+            !Array.isArray(result.history)
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "弓具設定履歴の応答形式が正しくありません。"
+            );
+        }
+
+        return result.history;
+    }
+
+    /**
+ * 練習記録に紐付いた弓具設定履歴を取得する
+ *
+ * @param {Object} record
+ * @returns {Object|null}
+ */
+    function findEquipmentHistoryForRecord(record) {
+        const equipmentHistoryId =
+            String(
+                record &&
+                    record.equipmentHistoryId
+                    ? record.equipmentHistoryId
+                    : ""
+            ).trim();
+
+        if (!equipmentHistoryId) {
+            return null;
+        }
+
+        return (
+            equipmentHistoryRecords.find(
+                function (historyRecord) {
+                    return (
+                        String(
+                            historyRecord &&
+                                historyRecord.historyId
+                                ? historyRecord.historyId
+                                : ""
+                        ).trim() ===
+                        equipmentHistoryId
+                    );
+                }
+            ) || null
+        );
+    }
+
+    /**
      * 記録閲覧用の部員選択欄を更新する
      *
      * ログイン画面と同じルールで、
@@ -640,6 +749,20 @@
                 sortRecordsByDate(
                     memberRecords
                 );
+
+            try {
+                equipmentHistoryRecords =
+                    await loadEquipmentHistory(
+                        memberData.memberId
+                    );
+            } catch (equipmentError) {
+                equipmentHistoryRecords = [];
+
+                console.warn(
+                    "[練習記録] 弓具設定履歴を取得できませんでした。",
+                    equipmentError
+                );
+            }
 
             renderRecords(
                 sortedRecords,
@@ -1774,6 +1897,45 @@
         article.appendChild(header);
         article.appendChild(arrows);
         article.appendChild(total);
+
+        const equipmentHistory =
+            findEquipmentHistoryForRecord(record);
+
+        if (equipmentHistory) {
+            const equipmentSummary =
+                document.createElement("div");
+
+            equipmentSummary.className =
+                "bas-records__equipment-summary";
+
+            const equipmentLabel =
+                document.createElement("strong");
+
+            equipmentLabel.textContent =
+                "🏹 使用弓具";
+
+            const equipmentValue =
+                document.createElement("span");
+
+            equipmentValue.textContent =
+                String(
+                    equipmentHistory.riser ||
+                    "ハンドル未登録"
+                );
+
+            equipmentSummary.appendChild(
+                equipmentLabel
+            );
+
+            equipmentSummary.appendChild(
+                equipmentValue
+            );
+
+            article.appendChild(
+                equipmentSummary
+            );
+        }
+
         article.appendChild(deleteEndActions);
 
         return article;
