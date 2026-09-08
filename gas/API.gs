@@ -404,6 +404,259 @@ function handlePost(e) {
 }
 
 /**
+ * フォーム動画から抽出した静止画を受け取り、
+ * OpenAIへ送信してAI評価結果を返す。
+ */
+function handleAnalyzeFormVideoAction_(
+  payload
+) {
+  const frames =
+    payload &&
+    Array.isArray(payload.frames)
+      ? payload.frames
+      : [];
+
+  if (frames.length === 0) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "AI評価するフォーム画像が指定されていません。"
+    });
+  }
+
+  try {
+    const analysisText =
+      requestFormVideoAnalysis_(
+        frames
+      );
+
+    return createJsonResponse({
+      success: true,
+      message:
+        "フォーム画像をAIへ送信しました。",
+      frameCount:
+        frames.length,
+      analysis:
+        analysisText
+    });
+
+  } catch (error) {
+    console.error(
+      "フォーム動画AI評価エラー:",
+      error
+    );
+
+    return createJsonResponse({
+      success: false,
+      message:
+        error &&
+        error.message
+          ? error.message
+          : "フォーム動画のAI評価に失敗しました。"
+    });
+  }
+}
+
+/**
+ * Script Propertiesから
+ * OpenAI APIキーを取得する。
+ */
+function getOpenAiApiKey_() {
+  return String(
+    PropertiesService
+      .getScriptProperties()
+      .getProperty(
+        "OPENAI_API_KEY"
+      ) || ""
+  ).trim();
+}
+
+/**
+ * フォーム動画から抽出した静止画を
+ * OpenAI Responses APIへ送信する。
+ */
+function requestFormVideoAnalysis_(
+  frames
+) {
+  if (
+    !Array.isArray(frames) ||
+    frames.length === 0
+  ) {
+    throw new Error(
+      "AI評価する画像がありません。"
+    );
+  }
+
+  const apiKey =
+    getOpenAiApiKey_();
+
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY が設定されていません。"
+    );
+  }
+
+  const content = [
+    {
+      type:
+        "input_text",
+
+      text:
+        "これらはアーチェリーのフォーム動画から抽出した連続静止画です。" +
+        "現段階では詳細評価はせず、画像を正常に確認できた場合は" +
+        "「フォーム画像を確認しました」とだけ日本語で返してください。"
+    }
+  ];
+
+  frames.forEach(function (
+    frame
+  ) {
+    if (
+      typeof frame !== "string" ||
+      !frame.startsWith(
+        "data:image/"
+      )
+    ) {
+      return;
+    }
+
+    content.push({
+      type:
+        "input_image",
+
+      image_url:
+        frame,
+
+      detail:
+        "low"
+    });
+  });
+
+  if (content.length === 1) {
+    throw new Error(
+      "有効なAI評価用画像がありません。"
+    );
+  }
+
+  const requestBody = {
+    model:
+      "gpt-5.6-luna",
+
+    input: [
+      {
+        role:
+          "user",
+
+        content:
+          content
+      }
+    ]
+  };
+
+  const response =
+    UrlFetchApp.fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method:
+          "post",
+
+        contentType:
+          "application/json",
+
+        headers: {
+          Authorization:
+            "Bearer " +
+            apiKey
+        },
+
+        payload:
+          JSON.stringify(
+            requestBody
+          ),
+
+        muteHttpExceptions:
+          true
+      }
+    );
+
+  const statusCode =
+    response.getResponseCode();
+
+  const responseText =
+    response.getContentText();
+
+  if (
+    statusCode < 200 ||
+    statusCode >= 300
+  ) {
+    console.error(
+      "OpenAI form analysis error:",
+      statusCode,
+      responseText
+    );
+
+    throw new Error(
+      "OpenAIによるフォーム画像確認に失敗しました。"
+    );
+  }
+
+  const data =
+    JSON.parse(
+      responseText
+    );
+
+  return extractOpenAiOutputText_(
+    data
+  );
+}
+
+/**
+ * OpenAI Responses APIのレスポンスから
+ * 出力テキストを取り出す。
+ */
+function extractOpenAiOutputText_(
+  data
+) {
+  let outputText =
+    "";
+
+  if (
+    data &&
+    Array.isArray(data.output)
+  ) {
+    data.output.forEach(function (
+      item
+    ) {
+      if (
+        !item ||
+        !Array.isArray(
+          item.content
+        )
+      ) {
+        return;
+      }
+
+      item.content.forEach(function (
+        content
+      ) {
+        if (
+          content &&
+          content.type ===
+            "output_text" &&
+          typeof content.text ===
+            "string"
+        ) {
+          outputText +=
+            content.text;
+        }
+      });
+    });
+  }
+
+  return outputText.trim();
+}
+
+/**
  * 大会記録1件の追加・更新要求を処理する。
  */
 function handleSaveMatchRecordAction_(
@@ -482,6 +735,15 @@ if (action === "updateMyProfile") {
  */
 if (action === "changeMyPassword") {
   return handleChangeMyPasswordAction_(
+    payload
+  );
+}
+
+/*
+ * フォーム動画のAI評価要求を処理する。
+ */
+if (action === "analyzeFormVideo") {
+  return handleAnalyzeFormVideoAction_(
     payload
   );
 }
@@ -1666,5 +1928,156 @@ function testGetMemberDetailsApi() {
 
   console.log(
     response.getContent()
+  );
+}
+
+/**
+ * OpenAI APIキー設定確認用テスト。
+ *
+ * APIキーそのものはログへ出さず、
+ * 設定有無だけを確認する。
+ */
+function testOpenAiApiKeySetting() {
+  const apiKey =
+    String(
+      PropertiesService
+        .getScriptProperties()
+        .getProperty(
+          "OPENAI_API_KEY"
+        ) || ""
+    ).trim();
+
+  console.log({
+    configured:
+      Boolean(apiKey),
+    length:
+      apiKey.length
+  });
+}
+
+/**
+ * OpenAI Responses API 接続確認用テスト。
+ *
+ * 画像は送信せず、
+ * GASからOpenAIへ通信できることだけ確認する。
+ */
+function testOpenAiConnection() {
+  const apiKey =
+    String(
+      PropertiesService
+        .getScriptProperties()
+        .getProperty(
+          "OPENAI_API_KEY"
+        ) || ""
+    ).trim();
+
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY が設定されていません。"
+    );
+  }
+
+  const requestBody = {
+    model:
+      "gpt-5.6-luna",
+
+    input:
+      "「接続成功」とだけ日本語で返してください。"
+  };
+
+  const response =
+    UrlFetchApp.fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method:
+          "post",
+
+        contentType:
+          "application/json",
+
+        headers: {
+          Authorization:
+            "Bearer " +
+            apiKey
+        },
+
+        payload:
+          JSON.stringify(
+            requestBody
+          ),
+
+        muteHttpExceptions:
+          true
+      }
+    );
+
+  const statusCode =
+    response.getResponseCode();
+
+  const responseText =
+    response.getContentText();
+
+  console.log(
+    "OpenAI status:",
+    statusCode
+  );
+
+  if (
+    statusCode < 200 ||
+    statusCode >= 300
+  ) {
+    console.log(
+      "OpenAI error response:",
+      responseText
+    );
+
+    throw new Error(
+      "OpenAI APIへの接続に失敗しました。"
+    );
+  }
+
+    const data =
+    JSON.parse(
+      responseText
+    );
+
+  let outputText =
+    "";
+
+  if (
+    Array.isArray(data.output)
+  ) {
+    data.output.forEach(function (
+      item
+    ) {
+      if (
+        !item ||
+        !Array.isArray(
+          item.content
+        )
+      ) {
+        return;
+      }
+
+      item.content.forEach(function (
+        content
+      ) {
+        if (
+          content &&
+          content.type ===
+            "output_text" &&
+          typeof content.text ===
+            "string"
+        ) {
+          outputText +=
+            content.text;
+        }
+      });
+    });
+  }
+
+  console.log(
+    "OpenAI response:",
+    outputText
   );
 }
