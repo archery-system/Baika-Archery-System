@@ -406,23 +406,62 @@
                 );
             }
 
-            const ratios =
-                [
-                    0.15,
-                    0.35,
-                    0.55,
-                    0.75,
-                    0.90
-                ];
+            /*
+ * フォーム動画を時系列で確認できるよう、
+ * 約1秒間隔で静止画を抽出する。
+ *
+ * 長い動画では送信量が大きくなりすぎないよう、
+ * 最大20枚に制限する。
+ */
+            const maximumFrameCount =
+                20;
+
+            const frameInterval =
+                duration <=
+                    maximumFrameCount
+                    ? 1
+                    : duration /
+                    maximumFrameCount;
+
+            const targetTimes =
+                [];
+
+            for (
+                let targetTime =
+                    Math.min(
+                        0.5,
+                        duration / 2
+                    );
+                targetTime <
+                duration;
+                targetTime +=
+                frameInterval
+            ) {
+                targetTimes.push(
+                    Math.min(
+                        targetTime,
+                        Math.max(
+                            0,
+                            duration - 0.05
+                        )
+                    )
+                );
+
+                if (
+                    targetTimes.length >=
+                    maximumFrameCount
+                ) {
+                    break;
+                }
+            }
 
             const frames =
                 [];
 
             for (
-                const ratio of ratios
+                const targetTime of
+                targetTimes
             ) {
-                const targetTime =
-                    duration * ratio;
 
                 await seekVideo(
                     video,
@@ -468,15 +507,54 @@
                         0.85
                     );
 
-                frames.push(
-                    frameDataUrl
-                );
+                frames.push({
+                    time:
+                        Number(
+                            targetTime.toFixed(
+                                1
+                            )
+                        ),
+
+                    image:
+                        frameDataUrl
+                });
+
+                const frameContainer =
+                    document.createElement(
+                        "div"
+                    );
+
+                frameContainer.style.marginBottom =
+                    "16px";
+
+                const timeLabel =
+                    document.createElement(
+                        "div"
+                    );
+
+                timeLabel.textContent =
+                    targetTime.toFixed(
+                        1
+                    ) +
+                    " 秒";
+
+                timeLabel.style.marginBottom =
+                    "6px";
+
+                timeLabel.style.fontWeight =
+                    "700";
+
+                timeLabel.style.color =
+                    "#351c57";
 
                 image.src =
                     frameDataUrl;
 
                 image.alt =
-                    "AI分析用フォーム画像";
+                    targetTime.toFixed(
+                        1
+                    ) +
+                    "秒のAI分析用フォーム画像";
 
                 image.style.width =
                     "100%";
@@ -484,8 +562,16 @@
                 image.style.borderRadius =
                     "12px";
 
-                preview.appendChild(
+                frameContainer.appendChild(
+                    timeLabel
+                );
+
+                frameContainer.appendChild(
                     image
+                );
+
+                preview.appendChild(
+                    frameContainer
                 );
             }
 
