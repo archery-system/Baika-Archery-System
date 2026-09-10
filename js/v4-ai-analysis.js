@@ -583,6 +583,11 @@
                     frames
                 );
 
+            console.log(
+                "AI analysis response:",
+                analysisResponse
+            );
+
             if (
                 !analysisResponse ||
                 analysisResponse.success !==
@@ -596,9 +601,98 @@
                 );
             }
 
-            result.textContent =
+            console.log(
+                "AI detail range:",
+                {
+                    detailStartTime:
+                        analysisResponse.detailStartTime,
+
+                    detailEndTime:
+                        analysisResponse.detailEndTime
+                }
+            );
+
+            const detailStartTime =
+                Number(
+                    analysisResponse.detailStartTime
+                );
+
+            const detailEndTime =
+                Number(
+                    analysisResponse.detailEndTime
+                );
+
+            let detailAnalysisText =
+                "";
+
+            if (
+                Number.isFinite(
+                    detailStartTime
+                ) &&
+                Number.isFinite(
+                    detailEndTime
+                ) &&
+                detailEndTime >
+                detailStartTime
+            ) {
+                const detailFrames =
+                    await extractFormVideoDetailFramesForAi(
+                        record,
+                        detailStartTime,
+                        detailEndTime
+                    );
+
+                console.log(
+                    "AI detail frames:",
+                    detailFrames.map(
+                        function (
+                            frame
+                        ) {
+                            return frame.time;
+                        }
+                    )
+                );
+
+                const detailAnalysisResponse =
+                    await sendFormVideoDetailFramesToAi(
+                        detailFrames
+                    );
+
+                console.log(
+                    "AI detail analysis response:",
+                    detailAnalysisResponse
+                );
+
+                if (
+                    !detailAnalysisResponse ||
+                    detailAnalysisResponse.success !== true
+                ) {
+                    throw new Error(
+                        detailAnalysisResponse &&
+                            detailAnalysisResponse.message
+                            ? detailAnalysisResponse.message
+                            : "詳細AI評価に失敗しました。"
+                    );
+                }
+
+                detailAnalysisText =
+                    detailAnalysisResponse.analysis ||
+                    "";
+            }
+
+            const overallAnalysisText =
                 analysisResponse.analysis ||
                 "フォーム画像を確認しました。";
+
+            result.textContent =
+                detailAnalysisText
+                    ? "【射全体のAI評価】\n\n" +
+                    overallAnalysisText +
+                    "\n\n" +
+                    "【リリース前後の詳細評価】\n\n" +
+                    detailAnalysisText
+                    : "【射全体のAI評価】\n\n" +
+                    overallAnalysisText;
 
             analysisArea.scrollIntoView({
                 behavior:
@@ -620,6 +714,223 @@
                     : "フォーム動画のAI評価に失敗しました。";
 
         } finally {
+            URL.revokeObjectURL(
+                videoUrl
+            );
+        }
+    }
+
+    /**
+     * 指定された時間帯だけを、
+     * 約0.2秒間隔で詳細解析用に抽出する。
+     */
+    async function extractFormVideoDetailFramesForAi(
+        record,
+        startTime,
+        endTime
+    ) {
+        if (
+            !record ||
+            !record.blob
+        ) {
+            throw new Error(
+                "詳細解析するフォーム動画がありません。"
+            );
+        }
+
+        const normalizedStartTime =
+            Number(
+                startTime
+            );
+
+        const normalizedEndTime =
+            Number(
+                endTime
+            );
+
+        if (
+            !Number.isFinite(
+                normalizedStartTime
+            ) ||
+            !Number.isFinite(
+                normalizedEndTime
+            ) ||
+            normalizedStartTime < 0 ||
+            normalizedEndTime <=
+            normalizedStartTime
+        ) {
+            throw new Error(
+                "詳細解析する時間帯が正しくありません。"
+            );
+        }
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+        const videoUrl =
+            URL.createObjectURL(
+                record.blob
+            );
+
+        video.src =
+            videoUrl;
+
+        video.preload =
+            "metadata";
+
+        video.muted =
+            true;
+
+        video.playsInline =
+            true;
+
+        try {
+            await waitForVideoMetadata(
+                video
+            );
+
+            const duration =
+                Number(
+                    video.duration || 0
+                );
+
+            if (
+                !Number.isFinite(
+                    duration
+                ) ||
+                duration <= 0
+            ) {
+                throw new Error(
+                    "Video duration is invalid."
+                );
+            }
+
+            const detailStartTime =
+                Math.max(
+                    0,
+                    normalizedStartTime
+                );
+
+            const detailEndTime =
+                Math.min(
+                    duration,
+                    normalizedEndTime
+                );
+
+            if (
+                detailEndTime <=
+                detailStartTime
+            ) {
+                throw new Error(
+                    "詳細解析できる時間帯がありません。"
+                );
+            }
+
+            const detailFrameInterval =
+                0.2;
+
+            const maximumDetailFrameCount =
+                20;
+
+            const detailTargetTimes =
+                [];
+
+            for (
+                let targetTime =
+                    detailStartTime;
+                targetTime <=
+                detailEndTime;
+                targetTime +=
+                detailFrameInterval
+            ) {
+                detailTargetTimes.push(
+                    Math.min(
+                        targetTime,
+                        Math.max(
+                            0,
+                            duration - 0.05
+                        )
+                    )
+                );
+
+                if (
+                    detailTargetTimes.length >=
+                    maximumDetailFrameCount
+                ) {
+                    break;
+                }
+            }
+
+            const detailFrames =
+                [];
+
+            for (
+                const targetTime of
+                detailTargetTimes
+            ) {
+                await seekVideo(
+                    video,
+                    targetTime
+                );
+
+                const canvas =
+                    document.createElement(
+                        "canvas"
+                    );
+
+                canvas.width =
+                    video.videoWidth;
+
+                canvas.height =
+                    video.videoHeight;
+
+                const context =
+                    canvas.getContext(
+                        "2d"
+                    );
+
+                if (!context) {
+                    continue;
+                }
+
+                context.drawImage(
+                    video,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+                const frameDataUrl =
+                    canvas.toDataURL(
+                        "image/jpeg",
+                        0.85
+                    );
+
+                detailFrames.push({
+                    time:
+                        Number(
+                            targetTime.toFixed(
+                                1
+                            )
+                        ),
+
+                    image:
+                        frameDataUrl
+                });
+            }
+
+            return detailFrames;
+
+        } finally {
+            video.removeAttribute(
+                "src"
+            );
+
+            video.load();
+
             URL.revokeObjectURL(
                 videoUrl
             );
@@ -663,6 +974,59 @@
                         JSON.stringify({
                             action:
                                 "analyzeFormVideo",
+
+                            frames:
+                                frames
+                        }),
+
+                    cache:
+                        "no-store"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        return data;
+    }
+
+    /**
+     * リリース前後の詳細フォーム画像を
+     * GASへ送信する。
+     */
+    async function sendFormVideoDetailFramesToAi(
+        frames
+    ) {
+        if (
+            !Array.isArray(frames) ||
+            frames.length === 0
+        ) {
+            throw new Error(
+                "送信する詳細フォーム画像がありません。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL ===
+            "undefined" ||
+            !V4_GAS_API_URL
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response =
+            await fetch(
+                V4_GAS_API_URL,
+                {
+                    method:
+                        "POST",
+
+                    body:
+                        JSON.stringify({
+                            action:
+                                "analyzeFormVideoDetail",
 
                             frames:
                                 frames

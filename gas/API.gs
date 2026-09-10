@@ -430,6 +430,16 @@ function handleAnalyzeFormVideoAction_(
         frames
       );
 
+    const detailRangeText =
+      requestFormVideoDetailRange_(
+        analysisText
+      );
+
+    const detailRange =
+      parseFormVideoDetailRange_(
+        detailRangeText
+      );
+
     return createJsonResponse({
       success: true,
       message:
@@ -437,7 +447,11 @@ function handleAnalyzeFormVideoAction_(
       frameCount:
         frames.length,
       analysis:
-        analysisText
+        analysisText,
+      detailStartTime:
+        detailRange.startTime,
+      detailEndTime:
+        detailRange.endTime
     });
 
   } catch (error) {
@@ -453,6 +467,59 @@ function handleAnalyzeFormVideoAction_(
         error.message
           ? error.message
           : "フォーム動画のAI評価に失敗しました。"
+    });
+  }
+}
+
+/**
+ * フォーム動画の詳細AI評価要求を処理する。
+ */
+function handleAnalyzeFormVideoDetailAction_(
+  payload
+) {
+  const frames =
+    payload &&
+    Array.isArray(payload.frames)
+      ? payload.frames
+      : [];
+
+  if (frames.length === 0) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "詳細AI評価するフォーム画像が指定されていません。"
+    });
+  }
+
+  try {
+    const analysisText =
+      requestFormVideoDetailAnalysis_(
+        frames
+      );
+
+    return createJsonResponse({
+      success: true,
+      message:
+        "フォーム動画の詳細AI評価が完了しました。",
+      frameCount:
+        frames.length,
+      analysis:
+        analysisText
+    });
+
+  } catch (error) {
+    console.error(
+      "フォーム動画詳細AI評価エラー:",
+      error
+    );
+
+    return createJsonResponse({
+      success: false,
+      message:
+        error &&
+        error.message
+          ? error.message
+          : "フォーム動画の詳細AI評価に失敗しました。"
     });
   }
 }
@@ -714,6 +781,258 @@ function requestFormVideoAnalysis_(
 }
 
 /**
+ * リリース前後を細かく抽出した静止画を
+ * OpenAI Responses APIへ送り、
+ * 詳細なフォーム評価を行う。
+ */
+function requestFormVideoDetailAnalysis_(
+  frames
+) {
+  if (
+    !Array.isArray(frames) ||
+    frames.length === 0
+  ) {
+    throw new Error(
+      "詳細AI評価する画像がありません。"
+    );
+  }
+
+  const apiKey =
+    getOpenAiApiKey_();
+
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY が設定されていません。"
+    );
+  }
+
+  const content = [
+    {
+      type:
+        "input_text",
+
+      text:
+        "これらはリカーブアーチェリーのフォーム動画から、" +
+        "リリース前後を約0.2秒間隔で抽出した連続静止画です。" +
+        "各画像の直前に動画開始からの時刻を示します。" +
+        "画像を単独で見るのではなく、" +
+        "前後の画像の変化を比較して時系列として評価してください。" +
+
+        "\n\n" +
+
+        "今回は射全体の評価ではなく、" +
+        "リリース直前からフォロースルーまでを重点的に評価してください。" +
+
+        "\n\n" +
+
+        "以下の項目について、日本語で評価してください。" +
+
+        "\n" +
+        "1. リリース直前の姿勢と伸び合い" +
+
+        "\n" +
+        "2. リリース時の引き手・指・手首の動き" +
+
+        "\n" +
+        "3. リリース前後の引き手の移動方向" +
+
+        "\n" +
+        "4. 弓手の安定性と射後の残り方" +
+
+        "\n" +
+        "5. 弓肩の上下・前後方向の動き" +
+
+        "\n" +
+        "6. リリース時の上体や頭部の動き" +
+
+        "\n" +
+        "7. フォロースルーの自然さと持続" +
+
+        "\n\n" +
+
+        "その後、以下もまとめてください。" +
+
+        "\n" +
+        "・詳細画像から確認できた良い点" +
+
+        "\n" +
+        "・リリース前後で改善したほうがよい点" +
+
+        "\n" +
+        "・次回の練習で試す具体的なポイント" +
+
+        "\n\n" +
+
+        "重要な注意事項：" +
+
+        "\n" +
+        "・画像から実際に確認できる動きだけを評価してください。" +
+
+        "\n" +
+        "・見えない手指や身体部分について推測しないでください。" +
+
+        "\n" +
+        "・判断できない項目は「判断困難」と明記してください。" +
+
+        "\n" +
+        "・クリッカーの音は確認できないため、" +
+        "クリッカーが落ちた正確な瞬間を断定しないでください。" +
+
+        "\n" +
+        "・矢が弓から離れた瞬間も、" +
+        "静止画から明確に確認できない場合は断定しないでください。" +
+
+        "\n" +
+        "・フォームの変化を指摘する場合は、" +
+        "可能な限り「動画開始から○○秒付近」のように時刻を示してください。" +
+
+        "\n" +
+        "・前後のフレームを比較し、" +
+        "どの時刻から動きが変化したかを具体的に示してください。" +
+
+        "\n" +
+        "・実際の練習で改善に使える具体的な表現にしてください。" +
+
+        "\n\n" +
+
+        "見出しを付けて読みやすく整理し、" +
+        "最後に「リリースで最優先すること」を1つだけ示してください。"
+    }
+  ];
+
+  frames.forEach(function (
+    frame
+  ) {
+    if (
+      !frame ||
+      typeof frame !== "object"
+    ) {
+      return;
+    }
+
+    const frameImage =
+      String(
+        frame.image || ""
+      );
+
+    const frameTime =
+      Number(
+        frame.time
+      );
+
+    if (
+      !frameImage.startsWith(
+        "data:image/"
+      )
+    ) {
+      return;
+    }
+
+    content.push({
+      type:
+        "input_text",
+
+      text:
+        Number.isFinite(
+          frameTime
+        )
+          ? "動画開始から " +
+            frameTime.toFixed(1) +
+            " 秒の画像です。"
+          : "動画から抽出した画像です。"
+    });
+
+    content.push({
+      type:
+        "input_image",
+
+      image_url:
+        frameImage,
+
+      detail:
+        "low"
+    });
+  });
+
+  if (content.length === 1) {
+    throw new Error(
+      "有効な詳細AI評価用画像がありません。"
+    );
+  }
+
+  const requestBody = {
+    model:
+      "gpt-5.6-luna",
+
+    input: [
+      {
+        role:
+          "user",
+
+        content:
+          content
+      }
+    ]
+  };
+
+  const response =
+    UrlFetchApp.fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method:
+          "post",
+
+        contentType:
+          "application/json",
+
+        headers: {
+          Authorization:
+            "Bearer " +
+            apiKey
+        },
+
+        payload:
+          JSON.stringify(
+            requestBody
+          ),
+
+        muteHttpExceptions:
+          true
+      }
+    );
+
+  const statusCode =
+    response.getResponseCode();
+
+  const responseText =
+    response.getContentText();
+
+  if (
+    statusCode < 200 ||
+    statusCode >= 300
+  ) {
+    console.error(
+      "OpenAI form detail analysis error:",
+      statusCode,
+      responseText
+    );
+
+    throw new Error(
+      "OpenAIによるフォーム詳細確認に失敗しました。"
+    );
+  }
+
+  const data =
+    JSON.parse(
+      responseText
+    );
+
+  return extractOpenAiOutputText_(
+    data
+  );
+}
+
+/**
  * OpenAI Responses APIのレスポンスから
  * 出力テキストを取り出す。
  */
@@ -757,6 +1076,237 @@ function extractOpenAiOutputText_(
   }
 
   return outputText.trim();
+}
+
+/**
+ * フォーム動画の一次AI評価から、
+ * 詳細解析すべき時間帯を取得する。
+ *
+ * この関数は現段階では既存処理から
+ * まだ呼び出さない。
+ */
+function requestFormVideoDetailRange_(
+  analysisText
+) {
+  const normalizedAnalysisText =
+    String(
+      analysisText || ""
+    ).trim();
+
+  if (!normalizedAnalysisText) {
+    throw new Error(
+      "詳細解析するためのAI評価結果がありません。"
+    );
+  }
+
+  const apiKey =
+    getOpenAiApiKey_();
+
+  if (!apiKey) {
+    throw new Error(
+      "OPENAI_API_KEY が設定されていません。"
+    );
+  }
+
+  const requestBody = {
+    model:
+      "gpt-5.6-luna",
+
+    input: [
+      {
+        role:
+          "user",
+
+        content: [
+          {
+            type:
+              "input_text",
+
+            text:
+              "以下はリカーブアーチェリーのフォーム動画を" +
+              "時系列静止画から評価した結果です。" +
+
+              "\n\n" +
+
+              normalizedAnalysisText +
+
+              "\n\n" +
+
+              "この評価結果から、リリースとフォロースルーを" +
+              "さらに細かく確認するために、" +
+              "最も詳細解析すべき連続した時間帯を1か所だけ選んでください。" +
+
+              "\n" +
+              "リリースが起きたと考えられる区間を最優先してください。" +
+
+              "\n" +
+              "前後の動きも確認できるよう、必要に応じて少し広めの時間帯にしてください。" +
+
+              "\n\n" +
+
+              "返答は説明文を付けず、必ず次の形式だけにしてください。" +
+
+              "\n" +
+              "{\"startTime\":7.5,\"endTime\":8.5}" +
+
+              "\n\n" +
+
+              "適切な時間帯を判断できない場合は、" +
+              "次の形式だけを返してください。" +
+
+              "\n" +
+              "{\"startTime\":null,\"endTime\":null}"
+          }
+        ]
+      }
+    ]
+  };
+
+  const response =
+    UrlFetchApp.fetch(
+      "https://api.openai.com/v1/responses",
+      {
+        method:
+          "post",
+
+        contentType:
+          "application/json",
+
+        headers: {
+          Authorization:
+            "Bearer " +
+            apiKey
+        },
+
+        payload:
+          JSON.stringify(
+            requestBody
+          ),
+
+        muteHttpExceptions:
+          true
+      }
+    );
+
+  const statusCode =
+    response.getResponseCode();
+
+  const responseText =
+    response.getContentText();
+
+  if (
+    statusCode < 200 ||
+    statusCode >= 300
+  ) {
+    console.error(
+      "OpenAI detail range error:",
+      statusCode,
+      responseText
+    );
+
+    throw new Error(
+      "フォーム動画の詳細解析時間帯を取得できませんでした。"
+    );
+  }
+
+  const data =
+    JSON.parse(
+      responseText
+    );
+
+  return extractOpenAiOutputText_(
+    data
+  );
+}
+
+/**
+ * AIが返した詳細解析時間帯のJSON文字列を、
+ * startTime / endTimeとして安全に読み取る。
+ */
+function parseFormVideoDetailRange_(
+  rangeText
+) {
+  const normalizedRangeText =
+    String(
+      rangeText || ""
+    ).trim();
+
+  if (!normalizedRangeText) {
+    return {
+      startTime: null,
+      endTime: null
+    };
+  }
+
+  try {
+    const parsed =
+      JSON.parse(
+        normalizedRangeText
+      );
+
+    const startTime =
+      parsed &&
+      parsed.startTime !== null
+        ? Number(
+            parsed.startTime
+          )
+        : null;
+
+    const endTime =
+      parsed &&
+      parsed.endTime !== null
+        ? Number(
+            parsed.endTime
+          )
+        : null;
+
+    if (
+      startTime === null ||
+      endTime === null
+    ) {
+      return {
+        startTime: null,
+        endTime: null
+      };
+    }
+
+    if (
+      !Number.isFinite(
+        startTime
+      ) ||
+      !Number.isFinite(
+        endTime
+      ) ||
+      startTime < 0 ||
+      endTime <=
+        startTime
+    ) {
+      return {
+        startTime: null,
+        endTime: null
+      };
+    }
+
+    return {
+      startTime:
+        startTime,
+
+      endTime:
+        endTime
+    };
+
+  } catch (error) {
+    console.error(
+      "Form video detail range parse error:",
+      normalizedRangeText,
+      error
+    );
+
+    return {
+      startTime: null,
+      endTime: null
+    };
+  }
 }
 
 /**
@@ -847,6 +1397,15 @@ if (action === "changeMyPassword") {
  */
 if (action === "analyzeFormVideo") {
   return handleAnalyzeFormVideoAction_(
+    payload
+  );
+}
+
+/*
+ * フォーム動画の詳細AI評価要求を処理する。
+ */
+if (action === "analyzeFormVideoDetail") {
+  return handleAnalyzeFormVideoDetailAction_(
     payload
   );
 }
