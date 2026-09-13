@@ -424,20 +424,20 @@ function handleAnalyzeFormVideoAction_(
     });
   }
 
-  try {
-    const analysisText =
+    try {
+        const analysisText =
       requestFormVideoAnalysis_(
         frames
       );
 
-    const detailRangeText =
-      requestFormVideoDetailRange_(
+    const extractedAnalysis =
+      extractFormVideoAnalysisResult_(
         analysisText
       );
 
     const detailRange =
       parseFormVideoDetailRange_(
-        detailRangeText
+        extractedAnalysis.detailRangeText
       );
 
     return createJsonResponse({
@@ -447,7 +447,7 @@ function handleAnalyzeFormVideoAction_(
       frameCount:
         frames.length,
       analysis:
-        analysisText,
+        extractedAnalysis.analysis,
       detailStartTime:
         detailRange.startTime,
       detailEndTime:
@@ -563,7 +563,7 @@ function requestFormVideoAnalysis_(
     );
   }
 
-    const content = [
+      const content = [
     {
       type:
         "input_text",
@@ -573,48 +573,177 @@ function requestFormVideoAnalysis_(
         "時系列で抽出した連続静止画です。" +
         "各画像の直前に動画開始からの時刻を示します。" +
         "画像の順番と時刻の変化を使って、" +
-        "射の流れをできるだけ時系列として評価してください。" +
+        "射全体の流れを評価してください。" +
 
         "\n\n" +
 
-        "以下の項目について、日本語で評価してください。" +
-
-        "\n" +
-        "1. セットアップ〜取りかけ" +
-
-        "\n" +
-        "2. ドローイングの安定性" +
-
-        "\n" +
-        "3. アンカリング" +
-
-        "\n" +
-        "4. クリッカーまでの伸び合い" +
-
-        "\n" +
-        "5. リリース" +
-
-        "\n" +
-        "6. フォロースルー" +
-
-        "\n" +
-        "7. 上体・肩・弓手の安定性" +
-
-        "\n" +
-        "8. 毎射の再現性" +
+        "100点満点でフォームを採点してください。" +
+        "採点は毎回できるだけ同じ基準で行い、" +
+        "前回との比較に使えるようにしてください。" +
 
         "\n\n" +
 
-        "その後、以下もまとめてください。" +
+                "配点は以下とします。" +
+
+        "\n\n" +
+
+        "【姿勢・安定性：20点】" +
 
         "\n" +
-        "・良かった点" +
+        "・上体の安定：0〜5点" +
 
         "\n" +
-        "・改善したほうがよい点" +
+        "・押し手の安定：0〜5点" +
 
         "\n" +
-        "・次回の練習で意識するポイント" +
+        "・肩の安定：0〜5点" +
+
+        "\n" +
+        "・頭部の安定：0〜5点" +
+
+        "\n\n" +
+
+        "【ドローイング：20点】" +
+
+        "\n" +
+        "・セットアップからの流れ：0〜5点" +
+
+        "\n" +
+        "・引き動作の滑らかさ：0〜5点" +
+
+        "\n" +
+        "・押し手と引き手の協調：0〜5点" +
+
+        "\n" +
+        "・上体の安定：0〜5点" +
+
+        "\n\n" +
+
+        "【アンカー・伸び合い：20点】" +
+
+        "\n" +
+        "・アンカー位置の安定：0〜5点" +
+
+        "\n" +
+        "・頭部との位置関係：0〜5点" +
+
+        "\n" +
+        "・肩の安定：0〜5点" +
+
+        "\n" +
+        "・伸び合いの継続：0〜5点" +
+
+        "\n\n" +
+
+        "【リリース：20点】" +
+
+        "\n" +
+        "・リリース直前の安定：0〜5点" +
+
+        "\n" +
+        "・引き手の移動方向：0〜5点" +
+
+        "\n" +
+        "・押し手の維持：0〜5点" +
+
+        "\n" +
+        "・上体の安定：0〜5点" +
+
+        "\n\n" +
+
+        "【フォロースルー：20点】" +
+
+        "\n" +
+        "・押し手を残せているか：0〜5点" +
+
+        "\n" +
+        "・引き手の残り方：0〜5点" +
+
+        "\n" +
+        "・頭部の安定：0〜5点" +
+
+        "\n" +
+        "・姿勢の維持：0〜5点" +
+
+        "\n\n" +
+
+        "各20点は必ず4つの小項目の合計で算出してください。" +
+
+        "\n" +
+        "総合点は5項目の合計で算出してください。" +
+
+        "\n" +
+        "画像で判断できない小項目は推測で高得点や低得点を付けず、" +
+        "確認できる範囲で一貫した基準を使用してください。" +
+
+        "\n\n" +
+
+        "出力は必ず次の形式にしてください。" +
+
+        "\n\n" +
+
+        "【総合点】" +
+
+        "\n" +
+        "○○ / 100点" +
+
+        "\n\n" +
+
+        "【項目別】" +
+
+        "\n" +
+        "姿勢・安定性：○ / 20" +
+
+        "\n" +
+        "ドローイング：○ / 20" +
+
+        "\n" +
+        "アンカー・伸び合い：○ / 20" +
+
+        "\n" +
+        "リリース：○ / 20" +
+
+        "\n" +
+        "フォロースルー：○ / 20" +
+
+        "\n\n" +
+
+        "【良かった点】" +
+
+        "\n" +
+        "・最大2項目。" +
+
+        "\n" +
+        "・各項目は25文字程度の短文にしてください。" +
+
+        "\n" +
+        "・不要な時刻説明は付けないでください。" +
+
+        "\n\n" +
+
+                "【改善点】" +
+
+        "\n" +
+        "・最大2項目。" +
+
+        "\n" +
+        "・各項目は25文字程度の短文にしてください。" +
+
+        "\n" +
+        "・実際のフォームで修正できる内容だけを書いてください。" +
+
+        "\n" +
+        "・撮影条件、評価不能、複数射不足などは改善点に含めないでください。" +
+
+        "\n" +
+        "・改善方法を簡潔に含めてください。" +
+
+        "\n\n" +
+
+        "【次回の最優先】" +
+
+        "\n" +
+        "・1項目だけ、20文字程度で示してください。" +
 
         "\n\n" +
 
@@ -627,24 +756,73 @@ function requestFormVideoAnalysis_(
         "・画像だけでは判断できない項目は、推測せず「判断困難」としてください。" +
 
         "\n" +
-        "・クリッカーの音や実際にクリッカーが落ちた瞬間など、" +
-        "音声や細かな動きが必要な情報を断定しないでください。" +
+        "・クリッカーの音や正確な作動瞬間など、" +
+        "画像から分からない情報を断定しないでください。" +
 
         "\n" +
-        "・フォーム上の変化を指摘する場合は、可能なら" +
-        "「動画開始から○秒付近」のように時刻を示してください。" +
+        "・再現性は100点の採点には含めないでください。" +
 
         "\n" +
-        "・複数射が含まれている場合は、射ごとの差や再現性も確認してください。" +
+        "・複数射が含まれている場合だけ、再現性を参考コメントとして短く示してください。" +
 
         "\n" +
-        "・必要以上に厳しい表現は避け、" +
-        "実際の練習で改善に使える具体的な内容にしてください。" +
+        "・アーチェリー用語では「弓手」という表現を使用せず、" +
+        "必ず「押し手」と表現してください。" +
+
+        "\n" +
+                "・長い解説は不要です。" +
 
         "\n\n" +
 
-        "見出しを付けて読みやすく整理し、" +
-        "最後に「次回の練習で最優先すること」を1つだけ示してください。"
+        "フォーム評価と同時に、" +
+        "リリースとフォロースルーをさらに詳しく解析するための" +
+        "連続した時間帯を1か所だけ決めてください。" +
+
+        "\n" +
+        "各画像の直前に示した動画開始からの時刻を使用してください。" +
+
+        "\n" +
+        "リリースが起きたと考えられる区間を最優先し、" +
+        "リリース直前からフォロースルーまで確認できるようにしてください。" +
+
+        "\n" +
+        "必要に応じてリリース前後を少し広めに含めてください。" +
+
+        "\n\n" +
+
+        "通常の評価文章の最後に、必ず次の形式を追加してください。" +
+
+        "\n" +
+        "[[DETAIL_RANGE]]" +
+
+        "\n" +
+        "{\"startTime\":7.5,\"endTime\":8.5}" +
+
+        "\n" +
+        "[[/DETAIL_RANGE]]" +
+
+        "\n\n" +
+
+        "詳細解析する時間帯を画像から判断できない場合は、" +
+        "次の形式を追加してください。" +
+
+        "\n" +
+        "[[DETAIL_RANGE]]" +
+
+        "\n" +
+        "{\"startTime\":null,\"endTime\":null}" +
+
+        "\n" +
+        "[[/DETAIL_RANGE]]" +
+
+        "\n\n" +
+
+        "DETAIL_RANGE部分以外の評価文章は、" +
+        "これまで指定した表示形式を変更しないでください。" +
+
+        "\n\n" +
+
+        "指定した形式を守り、簡潔に回答してください。"
     }
   ];
 
@@ -765,8 +943,10 @@ function requestFormVideoAnalysis_(
       responseText
     );
 
-    throw new Error(
-      "OpenAIによるフォーム画像確認に失敗しました。"
+        throw new Error(
+      "OpenAIによるフォーム画像確認に失敗しました。" +
+      " HTTP " +
+      statusCode
     );
   }
 
@@ -806,7 +986,7 @@ function requestFormVideoDetailAnalysis_(
     );
   }
 
-  const content = [
+    const content = [
     {
       type:
         "input_text",
@@ -815,51 +995,69 @@ function requestFormVideoDetailAnalysis_(
         "これらはリカーブアーチェリーのフォーム動画から、" +
         "リリース前後を約0.2秒間隔で抽出した連続静止画です。" +
         "各画像の直前に動画開始からの時刻を示します。" +
-        "画像を単独で見るのではなく、" +
-        "前後の画像の変化を比較して時系列として評価してください。" +
+        "前後の画像の変化を比較して、" +
+        "リリース直前からフォロースルーまでを評価してください。" +
 
         "\n\n" +
 
-        "今回は射全体の評価ではなく、" +
-        "リリース直前からフォロースルーまでを重点的に評価してください。" +
+        "リリース前後を40点満点で採点してください。" +
 
         "\n\n" +
 
-        "以下の項目について、日本語で評価してください。" +
+        "配点は以下とします。" +
 
         "\n" +
-        "1. リリース直前の姿勢と伸び合い" +
+        "・リリース動作：15点" +
 
         "\n" +
-        "2. リリース時の引き手・指・手首の動き" +
+        "・押し手・肩・上体の安定性：15点" +
 
         "\n" +
-        "3. リリース前後の引き手の移動方向" +
-
-        "\n" +
-        "4. 弓手の安定性と射後の残り方" +
-
-        "\n" +
-        "5. 弓肩の上下・前後方向の動き" +
-
-        "\n" +
-        "6. リリース時の上体や頭部の動き" +
-
-        "\n" +
-        "7. フォロースルーの自然さと持続" +
+        "・フォロースルー：10点" +
 
         "\n\n" +
 
-        "その後、以下もまとめてください。" +
+        "出力は必ず次の形式にしてください。" +
+
+        "\n\n" +
+
+        "【詳細点】" +
 
         "\n" +
-        "・詳細画像から確認できた良い点" +
+        "○○ / 40点" +
+
+        "\n\n" +
+
+        "【良かった点】" +
 
         "\n" +
-        "・リリース前後で改善したほうがよい点" +
+        "・最大2項目。" +
 
         "\n" +
-        "・次回の練習で試す具体的なポイント" +
+        "・各項目は25文字程度の短文にしてください。" +
+
+        "\n" +
+        "・不要な時刻説明は付けないでください。" +
+
+        "\n\n" +
+
+        "【改善点】" +
+
+        "\n" +
+        "・最大2項目。" +
+
+        "\n" +
+        "・各項目は25文字程度の短文にしてください。" +
+
+        "\n" +
+        "・改善方法を簡潔に含めてください。" +
+
+        "\n\n" +
+
+        "【最優先】" +
+
+        "\n" +
+        "・1項目だけ、20文字程度で示してください。" +
 
         "\n\n" +
 
@@ -872,31 +1070,24 @@ function requestFormVideoDetailAnalysis_(
         "・見えない手指や身体部分について推測しないでください。" +
 
         "\n" +
-        "・判断できない項目は「判断困難」と明記してください。" +
+        "・判断できない項目は「判断困難」としてください。" +
 
         "\n" +
-        "・クリッカーの音は確認できないため、" +
-        "クリッカーが落ちた正確な瞬間を断定しないでください。" +
+        "・クリッカーの音や正確な作動瞬間を断定しないでください。" +
 
         "\n" +
-        "・矢が弓から離れた瞬間も、" +
-        "静止画から明確に確認できない場合は断定しないでください。" +
+        "・矢が離れた瞬間が明確でない場合は断定しないでください。" +
 
         "\n" +
-        "・フォームの変化を指摘する場合は、" +
-        "可能な限り「動画開始から○○秒付近」のように時刻を示してください。" +
+        "・アーチェリー用語では「弓手」という表現を使用せず、" +
+        "必ず「押し手」と表現してください。" +
 
         "\n" +
-        "・前後のフレームを比較し、" +
-        "どの時刻から動きが変化したかを具体的に示してください。" +
-
-        "\n" +
-        "・実際の練習で改善に使える具体的な表現にしてください。" +
+        "・長い解説は不要です。" +
 
         "\n\n" +
 
-        "見出しを付けて読みやすく整理し、" +
-        "最後に「リリースで最優先すること」を1つだけ示してください。"
+        "指定した形式を守り、簡潔に回答してください。"
     }
   ];
 
@@ -1079,13 +1270,10 @@ function extractOpenAiOutputText_(
 }
 
 /**
- * フォーム動画の一次AI評価から、
- * 詳細解析すべき時間帯を取得する。
- *
- * この関数は現段階では既存処理から
- * まだ呼び出さない。
+ * 一次AI評価結果から、
+ * 表示用の評価文章と詳細解析時間帯JSONを分離する。
  */
-function requestFormVideoDetailRange_(
+function extractFormVideoAnalysisResult_(
   analysisText
 ) {
   const normalizedAnalysisText =
@@ -1093,136 +1281,74 @@ function requestFormVideoDetailRange_(
       analysisText || ""
     ).trim();
 
-  if (!normalizedAnalysisText) {
-    throw new Error(
-      "詳細解析するためのAI評価結果がありません。"
-    );
-  }
+  const startMarker =
+    "[[DETAIL_RANGE]]";
 
-  const apiKey =
-    getOpenAiApiKey_();
+  const endMarker =
+    "[[/DETAIL_RANGE]]";
 
-  if (!apiKey) {
-    throw new Error(
-      "OPENAI_API_KEY が設定されていません。"
-    );
-  }
-
-  const requestBody = {
-    model:
-      "gpt-5.6-luna",
-
-    input: [
-      {
-        role:
-          "user",
-
-        content: [
-          {
-            type:
-              "input_text",
-
-            text:
-              "以下はリカーブアーチェリーのフォーム動画を" +
-              "時系列静止画から評価した結果です。" +
-
-              "\n\n" +
-
-              normalizedAnalysisText +
-
-              "\n\n" +
-
-              "この評価結果から、リリースとフォロースルーを" +
-              "さらに細かく確認するために、" +
-              "最も詳細解析すべき連続した時間帯を1か所だけ選んでください。" +
-
-              "\n" +
-              "リリースが起きたと考えられる区間を最優先してください。" +
-
-              "\n" +
-              "前後の動きも確認できるよう、必要に応じて少し広めの時間帯にしてください。" +
-
-              "\n\n" +
-
-              "返答は説明文を付けず、必ず次の形式だけにしてください。" +
-
-              "\n" +
-              "{\"startTime\":7.5,\"endTime\":8.5}" +
-
-              "\n\n" +
-
-              "適切な時間帯を判断できない場合は、" +
-              "次の形式だけを返してください。" +
-
-              "\n" +
-              "{\"startTime\":null,\"endTime\":null}"
-          }
-        ]
-      }
-    ]
-  };
-
-  const response =
-    UrlFetchApp.fetch(
-      "https://api.openai.com/v1/responses",
-      {
-        method:
-          "post",
-
-        contentType:
-          "application/json",
-
-        headers: {
-          Authorization:
-            "Bearer " +
-            apiKey
-        },
-
-        payload:
-          JSON.stringify(
-            requestBody
-          ),
-
-        muteHttpExceptions:
-          true
-      }
+  const startIndex =
+    normalizedAnalysisText.indexOf(
+      startMarker
     );
 
-  const statusCode =
-    response.getResponseCode();
-
-  const responseText =
-    response.getContentText();
+  const endIndex =
+    normalizedAnalysisText.indexOf(
+      endMarker
+    );
 
   if (
-    statusCode < 200 ||
-    statusCode >= 300
+    startIndex < 0 ||
+    endIndex < 0 ||
+    endIndex <= startIndex
   ) {
-    console.error(
-      "OpenAI detail range error:",
-      statusCode,
-      responseText
-    );
+    return {
+      analysis:
+        normalizedAnalysisText,
 
-    throw new Error(
-      "フォーム動画の詳細解析時間帯を取得できませんでした。"
-    );
+      detailRangeText:
+        ""
+    };
   }
 
-  const data =
-    JSON.parse(
-      responseText
-    );
+  const detailRangeStart =
+    startIndex +
+    startMarker.length;
 
-  return extractOpenAiOutputText_(
-    data
-  );
+  const detailRangeText =
+    normalizedAnalysisText
+      .slice(
+        detailRangeStart,
+        endIndex
+      )
+      .trim();
+
+  const analysis =
+    (
+      normalizedAnalysisText.slice(
+        0,
+        startIndex
+      ) +
+      normalizedAnalysisText.slice(
+        endIndex +
+        endMarker.length
+      )
+    ).trim();
+
+  return {
+    analysis:
+      analysis,
+
+    detailRangeText:
+      detailRangeText
+  };
 }
 
 /**
  * AIが返した詳細解析時間帯のJSON文字列を、
  * startTime / endTimeとして安全に読み取る。
  */
+ 
 function parseFormVideoDetailRange_(
   rangeText
 ) {

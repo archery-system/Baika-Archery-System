@@ -1,34 +1,209 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
-    <title>分析 - Baika Archery System Ver4</title>
-    <link rel="stylesheet" href="../css/style.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <meta name="theme-color" content="#24113f">
+
+    <title>
+        分析 | Baika Archery System
+    </title>
+
+    <link rel="stylesheet" href="css/foundation/tokens.css">
+
+    <link rel="stylesheet" href="css/foundation/base.css">
+
+    <link rel="stylesheet" href="css/layouts/app-layout.css">
+
+    <link rel="stylesheet" href="css/components/header.css">
+
+    <link rel="stylesheet" href="css/components/page-header.css">
+
+    <link rel="stylesheet" href="css/components/card.css">
+
 </head>
+
 <body>
-    <div class="app-shell">
-        <div class="card">
-            <h1>📊 分析</h1>
-            <p>ランキング・グラフ・成績分析を確認する画面です。</p>
 
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
-                <a class="btn" href="../index.html">🏠 ホーム</a>
-                <a class="btn" href="input.html">📝 記録入力</a>
+    <div class="bas-app">
+
+        <div id="app-header"></div>
+
+        <main class="bas-app__main">
+
+            <div id="page-header"></div>
+
+            <div style="
+                width: min(100% - 32px, 900px);
+                margin: 0 auto;
+                padding-bottom: 32px;
+            ">
+
+                <section class="bas-card" style="
+                    margin-bottom: 20px;
+                    padding: 24px;
+                ">
+
+                    <h2>
+                        📈 得点分析
+                    </h2>
+
+                    <p>
+                        練習記録の得点推移や平均点を分析します。
+                    </p>
+
+                    <p>
+                        開発中
+                    </p>
+
+                </section>
+
+                <section class="bas-card" style="
+                    margin-bottom: 20px;
+                    padding: 24px;
+                ">
+
+                    <h2>
+                        📍 グルーピング分析
+                    </h2>
+
+                    <p>
+                        着弾傾向やグルーピングの変化を分析します。
+                    </p>
+
+                    <p>
+                        開発中
+                    </p>
+
+                </section>
+
+                <section class="bas-card" style="
+                    padding: 24px;
+                ">
+
+                    <p style="
+                        margin: 0 0 8px;
+                        color: #6b5b7d;
+                        font-weight: 700;
+                    ">
+                        フォーム動画分析
+                    </p>
+
+                    <h2 style="
+                        margin: 0 0 12px;
+                        color: #351c57;
+                    ">
+                        🎥 フォームAI分析
+                    </h2>
+
+                    <p style="
+                        margin-bottom: 16px;
+                        line-height: 1.8;
+                        color: #625b6b;
+                    ">
+                        撮影ライブラリーに保存されたフォーム動画を選択して、
+                        射形をAIで評価します。
+                    </p>
+
+                    <div id="aiFormVideoList" style="
+                        display: grid;
+                        gap: 16px;
+                    ">
+                        フォーム動画を読み込んでいます…
+                    </div>
+
+                    <div id="aiFormVideoAnalysisArea" style="
+                        display: none;
+                        margin-top: 20px;
+                        padding: 20px;
+                        border: 1px solid rgba(79, 38, 131, 0.16);
+                        border-radius: 16px;
+                        background: rgba(79, 38, 131, 0.05);
+                    ">
+
+                        <h3 style="
+                            margin: 0 0 12px;
+                            color: #351c57;
+                        ">
+                            🤖 AI評価
+                        </h3>
+
+                        <div id="aiFormVideoFramePreview"></div>
+
+                        <div id="aiFormVideoResult" style="
+        margin-top: 16px;
+        line-height: 1.8;
+        color: #351c57;
+        white-space: pre-wrap;
+    "></div>
+
+                    </div>
+
+                </section>
+
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-title">📈 分析エリア</div>
-            <p>ここに Ver3.2 のランキング・分析サマリー・平均点推移グラフを移植します。</p>
-        </div>
+        </main>
+
     </div>
+
+    <!-- Login Session -->
+    <script src="js/v4-session.js"></script>
+    <script src="js/auth/api.js"></script>
+
+    <!-- Project Zero Core -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/organization.js"></script>
+    <script src="js/core/theme.js"></script>
+    <script src="js/core/state.js"></script>
+    <script src="js/core/cloud.js"></script>
+
+    <!-- Project Zero Components -->
+    <script src="js/components/header.js"></script>
+    <script src="js/components/page-header.js"></script>
+    <script src="js/components/card.js"></script>
+
+    <!-- AI Analysis -->
+    <script src="js/v4-ai-analysis.js"></script>
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                if (
+                    window.BAS_HEADER &&
+                    typeof window.BAS_HEADER.render ===
+                    "function"
+                ) {
+                    window.BAS_HEADER.render({
+                        currentRoute:
+                            "analysis"
+                    });
+                }
+
+                if (
+                    window.BAS_PAGE_HEADER &&
+                    typeof window.BAS_PAGE_HEADER.render ===
+                    "function"
+                ) {
+                    window.BAS_PAGE_HEADER.render({
+                        eyebrow:
+                            "Analysis",
+
+                        title:
+                            "分析",
+
+                        description:
+                            "得点、グルーピング、フォーム動画を分析します。"
+                    });
+                }
+            }
+        );
+    </script>
+
 </body>
-<header class="v4-header">
-    <div class="v4-brand">🏹 Baika Archery System Ver4</div>
-    <nav class="v4-nav">
-        <a href="../index.html">🏠 ホーム</a>
-        <a href="input.html">📝 記録入力</a>
-        <a href="analysis.html">📊 分析</a>
-    </nav>
-</header>
+
 </html>

@@ -16,6 +16,9 @@
     const VIDEO_STORE_NAME =
         "formVideos";
 
+    const AI_SCORE_HISTORY_KEY_PREFIX =
+        "baika-ai-score-history-";
+
     let databasePromise =
         null;
 
@@ -34,6 +37,222 @@
 
     function initializeAiAnalysis() {
         loadFormVideosForAi();
+    }
+
+    function getAiScoreHistoryStorageKey() {
+        const memberId =
+            window.V4Session &&
+                typeof window.V4Session.getLoggedInMemberId ===
+                "function"
+                ? String(
+                    window.V4Session.getLoggedInMemberId() ||
+                    ""
+                ).trim()
+                : "";
+
+        if (!memberId) {
+            return (
+                AI_SCORE_HISTORY_KEY_PREFIX +
+                "unknown"
+            );
+        }
+
+        return (
+            AI_SCORE_HISTORY_KEY_PREFIX +
+            memberId
+        );
+    }
+
+    function loadPreviousAiScore() {
+        try {
+            const saved =
+                localStorage.getItem(
+                    getAiScoreHistoryStorageKey()
+                );
+
+            if (!saved) {
+                return null;
+            }
+
+            const parsed =
+                JSON.parse(
+                    saved
+                );
+
+            const score =
+                Number(
+                    parsed &&
+                    parsed.score
+                );
+
+            return Number.isFinite(
+                score
+            )
+                ? score
+                : null;
+
+        } catch (error) {
+            console.warn(
+                "AI score history load failed:",
+                error
+            );
+
+            return null;
+        }
+    }
+
+    function saveCurrentAiScore(
+        score
+    ) {
+        const normalizedScore =
+            Number(
+                score
+            );
+
+        if (
+            !Number.isFinite(
+                normalizedScore
+            )
+        ) {
+            return;
+        }
+
+        try {
+            localStorage.setItem(
+                getAiScoreHistoryStorageKey(),
+                JSON.stringify({
+                    score:
+                        normalizedScore,
+
+                    savedAt:
+                        new Date()
+                            .toISOString()
+                })
+            );
+
+        } catch (error) {
+            console.warn(
+                "AI score history save failed:",
+                error
+            );
+        }
+    }
+
+    function extractOverallAiScore(
+        analysisText
+    ) {
+        const normalizedText =
+            String(
+                analysisText || ""
+            );
+
+        const match =
+            normalizedText.match(
+                /【総合点】[\s\S]*?(\d{1,3})\s*\/\s*100点/
+            );
+
+        if (!match) {
+            return null;
+        }
+
+        const score =
+            Number(
+                match[1]
+            );
+
+        if (
+            !Number.isFinite(
+                score
+            ) ||
+            score < 0 ||
+            score > 100
+        ) {
+            return null;
+        }
+
+        return score;
+    }
+
+    function buildAiScoreComparisonText(
+        previousScore,
+        currentScore
+    ) {
+        const normalizedPreviousScore =
+            previousScore === null ||
+                previousScore === undefined ||
+                previousScore === ""
+                ? null
+                : Number(
+                    previousScore
+                );
+
+        const normalizedCurrentScore =
+            Number(
+                currentScore
+            );
+
+        if (
+            !Number.isFinite(
+                normalizedCurrentScore
+            )
+        ) {
+            return "";
+        }
+
+        if (
+            !Number.isFinite(
+                normalizedPreviousScore
+            )
+        ) {
+            return (
+                "【前回との比較】\n\n" +
+                "今回 " +
+                normalizedCurrentScore +
+                "点\n" +
+                "初回評価のため比較なし"
+            );
+        }
+
+        const difference =
+            normalizedCurrentScore -
+            normalizedPreviousScore;
+
+        let differenceText =
+            "±0";
+
+        let direction =
+            "→";
+
+        if (difference > 0) {
+            differenceText =
+                "+" +
+                difference;
+
+            direction =
+                "↑";
+        } else if (difference < 0) {
+            differenceText =
+                String(
+                    difference
+                );
+
+            direction =
+                "↓";
+        }
+
+        return (
+            "【前回との比較】\n\n" +
+            "前回 " +
+            normalizedPreviousScore +
+            "点\n" +
+            "今回 " +
+            normalizedCurrentScore +
+            "点\n" +
+            "変化 " +
+            differenceText +
+            "点 " +
+            direction
+        );
     }
 
     function openDatabase() {
@@ -601,26 +820,30 @@
                 );
             }
 
-            console.log(
-                "AI detail range:",
-                {
-                    detailStartTime:
-                        analysisResponse.detailStartTime,
-
-                    detailEndTime:
-                        analysisResponse.detailEndTime
-                }
-            );
-
             const detailStartTime =
                 Number(
-                    analysisResponse.detailStartTime
+                    analysisResponse
+                        ? analysisResponse.detailStartTime
+                        : NaN
                 );
 
             const detailEndTime =
                 Number(
-                    analysisResponse.detailEndTime
+                    analysisResponse
+                        ? analysisResponse.detailEndTime
+                        : NaN
                 );
+
+            console.log(
+                "AI detail range from primary analysis:",
+                {
+                    detailStartTime:
+                        detailStartTime,
+
+                    detailEndTime:
+                        detailEndTime
+                }
+            );
 
             let detailAnalysisText =
                 "";
@@ -684,15 +907,48 @@
                 analysisResponse.analysis ||
                 "フォーム画像を確認しました。";
 
+            const currentScore =
+                extractOverallAiScore(
+                    overallAnalysisText
+                );
+
+            const previousScore =
+                loadPreviousAiScore();
+
+            const comparisonText =
+                buildAiScoreComparisonText(
+                    previousScore,
+                    currentScore
+                );
+
+            saveCurrentAiScore(
+                currentScore
+            );
+
             result.textContent =
-                detailAnalysisText
-                    ? "【射全体のAI評価】\n\n" +
-                    overallAnalysisText +
+                comparisonText
+                    ? comparisonText +
                     "\n\n" +
-                    "【リリース前後の詳細評価】\n\n" +
-                    detailAnalysisText
-                    : "【射全体のAI評価】\n\n" +
-                    overallAnalysisText;
+                    (
+                        detailAnalysisText
+                            ? "【射全体のAI評価】\n\n" +
+                            overallAnalysisText +
+                            "\n\n" +
+                            "【リリース前後の詳細評価】\n\n" +
+                            detailAnalysisText
+                            : "【射全体のAI評価】\n\n" +
+                            overallAnalysisText
+                    )
+                    : (
+                        detailAnalysisText
+                            ? "【射全体のAI評価】\n\n" +
+                            overallAnalysisText +
+                            "\n\n" +
+                            "【リリース前後の詳細評価】\n\n" +
+                            detailAnalysisText
+                            : "【射全体のAI評価】\n\n" +
+                            overallAnalysisText
+                    );
 
             analysisArea.scrollIntoView({
                 behavior:
@@ -937,6 +1193,83 @@
         }
     }
 
+    async function readGasJsonResponse(
+        response,
+        actionName
+    ) {
+        const responseText =
+            await response.text();
+
+        const contentType =
+            String(
+                response.headers.get(
+                    "content-type"
+                ) || ""
+            );
+
+        console.log(
+            "GAS response:",
+            {
+                action:
+                    actionName,
+
+                status:
+                    response.status,
+
+                contentType:
+                    contentType
+            }
+        );
+
+        if (
+            !response.ok ||
+            !contentType.includes(
+                "application/json"
+            )
+        ) {
+            console.error(
+                "GAS non-JSON response:",
+                actionName,
+                response.status,
+                responseText.slice(
+                    0,
+                    1000
+                )
+            );
+
+            throw new Error(
+                actionName +
+                " の応答がJSONではありません。" +
+                " HTTP " +
+                response.status
+            );
+        }
+
+        try {
+            return JSON.parse(
+                responseText
+            );
+
+        } catch (error) {
+            console.error(
+                "GAS JSON parse failed:",
+                actionName,
+                responseText.slice(
+                    0,
+                    1000
+                ),
+                error
+            );
+
+            throw new Error(
+                actionName +
+                " の応答を読み取れませんでした。" +
+                " HTTP " +
+                response.status
+            );
+        }
+    }
+
     /**
  * 抽出したフォーム画像を
  * GASへ送信する。
@@ -963,6 +1296,28 @@
             );
         }
 
+        const requestBody =
+            JSON.stringify({
+                action:
+                    "analyzeFormVideo",
+
+                frames:
+                    frames
+            });
+
+        console.log(
+            "analyzeFormVideo request:",
+            {
+                frameCount:
+                    frames.length,
+
+                payloadBytes:
+                    new Blob([
+                        requestBody
+                    ]).size
+            }
+        );
+
         const response =
             await fetch(
                 V4_GAS_API_URL,
@@ -971,13 +1326,7 @@
                         "POST",
 
                     body:
-                        JSON.stringify({
-                            action:
-                                "analyzeFormVideo",
-
-                            frames:
-                                frames
-                        }),
+                        requestBody,
 
                     cache:
                         "no-store"
@@ -985,10 +1334,19 @@
             );
 
         const data =
-            await response.json();
+            await readGasJsonResponse(
+                response,
+                "analyzeFormVideo"
+            );
 
         return data;
     }
+
+    /**
+     * 一次AI評価結果をGASへ送り、
+     * 詳細解析する時間帯を取得する。
+     */
+    
 
     /**
      * リリース前後の詳細フォーム画像を
@@ -1038,7 +1396,10 @@
             );
 
         const data =
-            await response.json();
+            await readGasJsonResponse(
+                response,
+                "analyzeFormVideoDetail"
+            );
 
         return data;
     }
