@@ -2425,8 +2425,18 @@
                 resolve,
                 reject
             ) {
+                if (
+                    video.readyState >= 2 &&
+                    video.videoWidth > 0 &&
+                    video.videoHeight > 0
+                ) {
+                    resolve();
+
+                    return;
+                }
+
                 video.addEventListener(
-                    "loadedmetadata",
+                    "loadeddata",
                     resolve,
                     {
                         once:
@@ -2442,6 +2452,8 @@
                             true
                     }
                 );
+
+                video.load();
             });
 
             const duration =
