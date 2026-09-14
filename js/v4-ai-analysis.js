@@ -330,6 +330,177 @@
         });
     }
 
+    async function createFormVideoPosterForAi(
+        blob
+    ) {
+        if (!(blob instanceof Blob)) {
+            return "";
+        }
+
+        const video =
+            document.createElement(
+                "video"
+            );
+
+        const videoUrl =
+            URL.createObjectURL(
+                blob
+            );
+
+        try {
+            video.src =
+                videoUrl;
+
+            video.preload =
+                "auto";
+
+            video.muted =
+                true;
+
+            video.playsInline =
+                true;
+
+            await new Promise(function (
+                resolve,
+                reject
+            ) {
+                if (
+                    video.readyState >= 2 &&
+                    video.videoWidth > 0 &&
+                    video.videoHeight > 0
+                ) {
+                    resolve();
+
+                    return;
+                }
+
+                video.addEventListener(
+                    "loadeddata",
+                    resolve,
+                    {
+                        once:
+                            true
+                    }
+                );
+
+                video.addEventListener(
+                    "error",
+                    reject,
+                    {
+                        once:
+                            true
+                    }
+                );
+
+                video.load();
+            });
+
+            const duration =
+                Number(
+                    video.duration || 0
+                );
+
+            const targetTime =
+                Number.isFinite(duration) &&
+                    duration > 0
+                    ? Math.min(
+                        0.5,
+                        Math.max(
+                            0,
+                            duration / 2
+                        )
+                    )
+                    : 0;
+
+            if (targetTime > 0) {
+                await new Promise(function (
+                    resolve,
+                    reject
+                ) {
+                    video.addEventListener(
+                        "seeked",
+                        resolve,
+                        {
+                            once:
+                                true
+                        }
+                    );
+
+                    video.addEventListener(
+                        "error",
+                        reject,
+                        {
+                            once:
+                                true
+                        }
+                    );
+
+                    video.currentTime =
+                        targetTime;
+                });
+            }
+
+            if (
+                !video.videoWidth ||
+                !video.videoHeight
+            ) {
+                return "";
+            }
+
+            const canvas =
+                document.createElement(
+                    "canvas"
+                );
+
+            canvas.width =
+                video.videoWidth;
+
+            canvas.height =
+                video.videoHeight;
+
+            const context =
+                canvas.getContext(
+                    "2d"
+                );
+
+            if (!context) {
+                return "";
+            }
+
+            context.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            return canvas.toDataURL(
+                "image/jpeg",
+                0.8
+            );
+
+        } catch (error) {
+            console.warn(
+                "AI form video poster creation failed:",
+                error
+            );
+
+            return "";
+
+        } finally {
+            video.removeAttribute(
+                "src"
+            );
+
+            video.load();
+
+            URL.revokeObjectURL(
+                videoUrl
+            );
+        }
+    }
+
     async function loadFormVideosForAi() {
         const list =
             document.getElementById(
@@ -444,6 +615,17 @@
 
             video.preload =
                 "metadata";
+
+            createFormVideoPosterForAi(
+                record.blob
+            ).then(function (
+                poster
+            ) {
+                if (poster) {
+                    video.poster =
+                        poster;
+                }
+            });
 
             video.style.width =
                 "100%";
@@ -1346,7 +1528,7 @@
      * 一次AI評価結果をGASへ送り、
      * 詳細解析する時間帯を取得する。
      */
-    
+
 
     /**
      * リリース前後の詳細フォーム画像を
