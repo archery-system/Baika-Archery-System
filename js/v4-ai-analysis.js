@@ -25,6 +25,15 @@
     let objectUrls =
         [];
 
+    /*
+     * 直近のフォームAI解析結果を書き出すための一時データ。
+     *
+     * IndexedDB / localStorageには保存せず、
+     * ページを閉じると破棄される。
+     */
+    let latestFormAiExportData =
+        null;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeAiAnalysis
@@ -37,6 +46,42 @@
 
     function initializeAiAnalysis() {
         loadFormVideosForAi();
+
+        const exportButton =
+            document.getElementById(
+                "aiFormVideoExportButton"
+            );
+
+        if (exportButton) {
+            exportButton.addEventListener(
+                "click",
+                async function () {
+                    try {
+                        exportButton.disabled =
+                            true;
+
+                        await shareLatestFormAiAnalysis();
+
+                    } catch (error) {
+                        console.error(
+                            "Form AI export failed:",
+                            error
+                        );
+
+                        alert(
+                            error &&
+                                error.message
+                                ? error.message
+                                : "AI分析結果を書き出せませんでした。"
+                        );
+
+                    } finally {
+                        exportButton.disabled =
+                            false;
+                    }
+                }
+            );
+        }
     }
 
     function getAiScoreHistoryStorageKey() {
@@ -1030,6 +1075,9 @@
             let detailAnalysisText =
                 "";
 
+            let detailFramesForExport =
+                [];
+
             if (
                 Number.isFinite(
                     detailStartTime
@@ -1046,6 +1094,9 @@
                         detailStartTime,
                         detailEndTime
                     );
+
+                detailFramesForExport =
+                    detailFrames;
 
                 console.log(
                     "AI detail frames:",
@@ -1106,6 +1157,40 @@
             saveCurrentAiScore(
                 currentScore
             );
+
+            /*
+             * 書き出し用データはメモリ上だけに保持する。
+             * IndexedDB / localStorageには保存しない。
+             */
+            latestFormAiExportData = {
+                analyzedAt:
+                    new Date(),
+
+                overallFrames:
+                    frames,
+
+                detailFrames:
+                    detailFramesForExport,
+
+                overallAnalysis:
+                    overallAnalysisText,
+
+                detailAnalysis:
+                    detailAnalysisText,
+
+                comparison:
+                    comparisonText
+            };
+
+            const exportButton =
+                document.getElementById(
+                    "aiFormVideoExportButton"
+                );
+
+            if (exportButton) {
+                exportButton.style.display =
+                    "block";
+            }
 
             result.textContent =
                 comparisonText
@@ -1679,6 +1764,430 @@
                     )
                 );
         });
+    }
+
+    /**
+     * 直近のフォームAI解析結果から、
+     * 書き出し用テキストを作成する。
+     */
+    function buildFormAiExportText(
+        exportData
+    ) {
+        if (
+            !exportData ||
+            typeof exportData !== "object"
+        ) {
+            return "";
+        }
+
+        const analyzedAt =
+            exportData.analyzedAt instanceof Date
+                ? exportData.analyzedAt
+                : new Date(
+                    exportData.analyzedAt
+                );
+
+        const analyzedAtText =
+            Number.isNaN(
+                analyzedAt.getTime()
+            )
+                ? ""
+                : analyzedAt.toLocaleString(
+                    "ja-JP"
+                );
+
+        const sections =
+            [
+                "Baika Archery System",
+                "フォームAI分析結果"
+            ];
+
+        if (analyzedAtText) {
+            sections.push(
+                "解析日時：" +
+                analyzedAtText
+            );
+        }
+
+        const comparisonText =
+            String(
+                exportData.comparison ||
+                ""
+            ).trim();
+
+        if (comparisonText) {
+            sections.push(
+                comparisonText
+            );
+        }
+
+        const overallAnalysisText =
+            String(
+                exportData.overallAnalysis ||
+                ""
+            ).trim();
+
+        if (overallAnalysisText) {
+            sections.push(
+                "【射全体のAI評価】\n\n" +
+                overallAnalysisText
+            );
+        }
+
+        const detailAnalysisText =
+            String(
+                exportData.detailAnalysis ||
+                ""
+            ).trim();
+
+        if (detailAnalysisText) {
+            sections.push(
+                "【リリース前後の詳細評価】\n\n" +
+                detailAnalysisText
+            );
+        }
+
+        return sections.join(
+            "\n\n"
+        );
+    }
+
+    /**
+     * Data URL形式の分割画像を、
+     * 書き出し可能なFileへ変換する。
+     */
+    function createFormAiFrameFile(
+        frame,
+        fileName
+    ) {
+        if (
+            !frame ||
+            typeof frame !== "object"
+        ) {
+            return null;
+        }
+
+        const imageDataUrl =
+            String(
+                frame.image || ""
+            );
+
+        if (
+            !imageDataUrl.startsWith(
+                "data:image/"
+            )
+        ) {
+            return null;
+        }
+
+        try {
+            const parts =
+                imageDataUrl.split(
+                    ","
+                );
+
+            if (parts.length < 2) {
+                return null;
+            }
+
+            const header =
+                parts[0];
+
+            const base64Data =
+                parts
+                    .slice(1)
+                    .join(",");
+
+            const mimeMatch =
+                header.match(
+                    /^data:([^;]+);base64$/
+                );
+
+            if (!mimeMatch) {
+                return null;
+            }
+
+            const mimeType =
+                mimeMatch[1];
+
+            const binaryString =
+                atob(
+                    base64Data
+                );
+
+            const bytes =
+                new Uint8Array(
+                    binaryString.length
+                );
+
+            for (
+                let index = 0;
+                index < binaryString.length;
+                index += 1
+            ) {
+                bytes[index] =
+                    binaryString.charCodeAt(
+                        index
+                    );
+            }
+
+            return new File(
+                [
+                    bytes
+                ],
+                fileName,
+                {
+                    type:
+                        mimeType
+                }
+            );
+
+        } catch (error) {
+            console.warn(
+                "Form AI frame file creation failed:",
+                error
+            );
+
+            return null;
+        }
+    }
+
+    /**
+     * フォームAI解析に使用した分割画像を、
+     * 書き出し用File配列へまとめる。
+     */
+    function createFormAiFrameFilesForExport(
+        exportData
+    ) {
+        if (
+            !exportData ||
+            typeof exportData !== "object"
+        ) {
+            return [];
+        }
+
+        const files =
+            [];
+
+        const overallFrames =
+            Array.isArray(
+                exportData.overallFrames
+            )
+                ? exportData.overallFrames
+                : [];
+
+        overallFrames.forEach(function (
+            frame,
+            index
+        ) {
+            const frameTime =
+                Number(
+                    frame &&
+                    frame.time
+                );
+
+            const timeText =
+                Number.isFinite(
+                    frameTime
+                )
+                    ? frameTime.toFixed(1)
+                    : String(
+                        index + 1
+                    );
+
+            const file =
+                createFormAiFrameFile(
+                    frame,
+                    "射全体_" +
+                    String(
+                        index + 1
+                    ).padStart(
+                        2,
+                        "0"
+                    ) +
+                    "_" +
+                    timeText +
+                    "秒.jpg"
+                );
+
+            if (file) {
+                files.push(
+                    file
+                );
+            }
+        });
+
+        const detailFrames =
+            Array.isArray(
+                exportData.detailFrames
+            )
+                ? exportData.detailFrames
+                : [];
+
+        detailFrames.forEach(function (
+            frame,
+            index
+        ) {
+            const frameTime =
+                Number(
+                    frame &&
+                    frame.time
+                );
+
+            const timeText =
+                Number.isFinite(
+                    frameTime
+                )
+                    ? frameTime.toFixed(1)
+                    : String(
+                        index + 1
+                    );
+
+            const file =
+                createFormAiFrameFile(
+                    frame,
+                    "リリース前後_" +
+                    String(
+                        index + 1
+                    ).padStart(
+                        2,
+                        "0"
+                    ) +
+                    "_" +
+                    timeText +
+                    "秒.jpg"
+                );
+
+            if (file) {
+                files.push(
+                    file
+                );
+            }
+        });
+
+        return files;
+    }
+
+    /**
+     * AI分析結果テキストと分割画像を、
+     * 書き出し用File配列へまとめる。
+     */
+    function createFormAiExportFiles(
+        exportData
+    ) {
+        if (
+            !exportData ||
+            typeof exportData !== "object"
+        ) {
+            return [];
+        }
+
+        const files =
+            [];
+
+        const exportText =
+            buildFormAiExportText(
+                exportData
+            );
+
+        if (exportText) {
+            const textFile =
+                new File(
+                    [
+                        exportText
+                    ],
+                    "AI分析結果.txt",
+                    {
+                        type:
+                            "text/plain;charset=utf-8"
+                    }
+                );
+
+            files.push(
+                textFile
+            );
+        }
+
+        const frameFiles =
+            createFormAiFrameFilesForExport(
+                exportData
+            );
+
+        frameFiles.forEach(function (
+            file
+        ) {
+            files.push(
+                file
+            );
+        });
+
+        return files;
+    }
+
+    /**
+     * 直近のフォームAI解析結果を、
+     * Web Share APIを使って端末へ書き出す。
+     */
+    async function shareLatestFormAiAnalysis() {
+        if (!latestFormAiExportData) {
+            throw new Error(
+                "書き出せるAI分析結果がありません。"
+            );
+        }
+
+        const files =
+            createFormAiExportFiles(
+                latestFormAiExportData
+            );
+
+        if (files.length === 0) {
+            throw new Error(
+                "書き出すファイルを作成できませんでした。"
+            );
+        }
+
+        if (
+            !navigator.share ||
+            !navigator.canShare
+        ) {
+            throw new Error(
+                "この端末では共有機能を利用できません。"
+            );
+        }
+
+        const shareData = {
+            title:
+                "Baika Archery System フォームAI分析",
+            files:
+                files
+        };
+
+        if (
+            !navigator.canShare(
+                shareData
+            )
+        ) {
+            throw new Error(
+                "この端末ではAI分析結果と画像をまとめて共有できません。"
+            );
+        }
+
+        try {
+            await navigator.share(
+                shareData
+            );
+
+        } catch (error) {
+            if (
+                error &&
+                error.name ===
+                "AbortError"
+            ) {
+                return;
+            }
+
+            throw error;
+        }
     }
 
     function releaseObjectUrls() {
