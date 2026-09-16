@@ -1025,14 +1025,27 @@
                 "AIへフォーム画像を送信しています…";
 
             /*
-             * 分析用静止画をすべて表示したあと、
+             * iPhone Safariで静止画追加後の
+             * レイアウトが確定してから、
              * AI送信状況が見える位置まで移動する。
              */
+            await new Promise(function (
+                resolve
+            ) {
+                requestAnimationFrame(
+                    function () {
+                        requestAnimationFrame(
+                            resolve
+                        );
+                    }
+                );
+            });
+
             result.scrollIntoView({
                 behavior:
                     "smooth",
                 block:
-                    "end"
+                    "center"
             });
 
             const analysisResponse =
