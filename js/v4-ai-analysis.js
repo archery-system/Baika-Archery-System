@@ -1024,6 +1024,17 @@
             result.textContent =
                 "AIへフォーム画像を送信しています…";
 
+            /*
+             * 分析用静止画をすべて表示したあと、
+             * AI送信状況が見える位置まで移動する。
+             */
+            result.scrollIntoView({
+                behavior:
+                    "smooth",
+                block:
+                    "end"
+            });
+
             const analysisResponse =
                 await sendFormVideoFramesToAi(
                     frames
