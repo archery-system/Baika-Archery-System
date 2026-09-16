@@ -1032,20 +1032,27 @@
             await new Promise(function (
                 resolve
             ) {
-                requestAnimationFrame(
-                    function () {
-                        requestAnimationFrame(
-                            resolve
-                        );
-                    }
+                setTimeout(
+                    resolve,
+                    300
                 );
             });
 
-            result.scrollIntoView({
+            const resultRect =
+                result.getBoundingClientRect();
+
+            const resultScrollTop =
+                window.pageYOffset +
+                resultRect.top;
+
+            window.scrollTo({
+                top:
+                    Math.max(
+                        0,
+                        resultScrollTop - 120
+                    ),
                 behavior:
-                    "smooth",
-                block:
-                    "center"
+                    "smooth"
             });
 
             const analysisResponse =
