@@ -930,13 +930,57 @@ function requestFormVideoAnalysis_(
   const statusCode =
     response.getResponseCode();
 
-  const responseText =
+    const responseText =
     response.getContentText();
+
+  const responseHeaders =
+    response.getAllHeaders();
 
   if (
     statusCode < 200 ||
     statusCode >= 300
   ) {
+    console.error(
+      "OpenAI form analysis diagnostics:",
+      JSON.stringify({
+        statusCode:
+          statusCode,
+
+        retryAfter:
+          responseHeaders["retry-after"] ||
+          responseHeaders["Retry-After"] ||
+          "",
+
+        remainingRequests:
+          responseHeaders["x-ratelimit-remaining-requests"] ||
+          "",
+
+        remainingTokens:
+          responseHeaders["x-ratelimit-remaining-tokens"] ||
+          "",
+
+        resetRequests:
+          responseHeaders["x-ratelimit-reset-requests"] ||
+          "",
+
+        resetTokens:
+          responseHeaders["x-ratelimit-reset-tokens"] ||
+          ""
+      })
+    );
+
+    console.error(
+      "OpenAI form analysis error:",
+      statusCode,
+      responseText
+    );
+
+    throw new Error(
+      "OpenAIによるフォーム画像確認に失敗しました。" +
+      " HTTP " +
+      statusCode
+    );
+  }
     console.error(
       "OpenAI form analysis error:",
       statusCode,
