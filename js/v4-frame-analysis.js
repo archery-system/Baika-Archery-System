@@ -22,6 +22,12 @@
     let currentVideoUrl =
         "";
 
+    let frameStepTimer =
+        null;
+
+    let frameStepStarted =
+        false;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeFrameAnalysis
@@ -273,13 +279,16 @@
             currentVideoUrl;
 
         video.controls =
-            true;
+            false;
 
         video.playsInline =
             true;
 
         video.preload =
             "metadata";
+
+        video.disablePictureInPicture =
+            true;
 
         video.style.cssText = [
             "display: block",
@@ -346,19 +355,119 @@
             return;
         }
 
-        prevButton.addEventListener(
-            "click",
-            function () {
-                stepVideoTime(-0.1);
+        bindFrameStepButton(
+            prevButton,
+            -0.1
+        );
+
+        bindFrameStepButton(
+            nextButton,
+            0.1
+        );
+    }
+
+    function bindFrameStepButton(
+        button,
+        seconds
+    ) {
+        button.addEventListener(
+            "pointerdown",
+            function (event) {
+                event.preventDefault();
+
+                stopFrameStep();
+
+                frameStepStarted =
+                    false;
+
+                /*
+                 * 最初の1回はすぐに
+                 * 0.1秒移動する。
+                 */
+                stepVideoTime(
+                    seconds
+                );
+
+                /*
+                 * 少し押し続けた場合だけ
+                 * 連続コマ送りを開始する。
+                 */
+                frameStepTimer =
+                    window.setTimeout(
+                        function () {
+                            frameStepStarted =
+                                true;
+
+                            frameStepTimer =
+                                window.setInterval(
+                                    function () {
+                                        stepVideoTime(
+                                            seconds
+                                        );
+                                    },
+                                    180
+                                );
+                        },
+                        350
+                    );
             }
         );
 
-        nextButton.addEventListener(
-            "click",
-            function () {
-                stepVideoTime(0.1);
+        button.addEventListener(
+            "pointerup",
+            stopFrameStep
+        );
+
+        button.addEventListener(
+            "pointercancel",
+            stopFrameStep
+        );
+
+        button.addEventListener(
+            "pointerleave",
+            function (event) {
+                if (
+                    event.pointerType ===
+                    "mouse"
+                ) {
+                    stopFrameStep();
+                }
             }
         );
+
+        /*
+         * iPhoneの長押し時に
+         * テキスト選択などが起きるのを防ぐ。
+         */
+        button.style.touchAction =
+            "none";
+
+        button.style.userSelect =
+            "none";
+
+        button.style.webkitUserSelect =
+            "none";
+    }
+
+    function stopFrameStep() {
+        if (
+            frameStepTimer !==
+            null
+        ) {
+            window.clearTimeout(
+                frameStepTimer
+            );
+
+            window.clearInterval(
+                frameStepTimer
+            );
+
+            frameStepTimer =
+                null;
+        }
+
+        frameStepStarted =
+            false;
     }
 
     function stepVideoTime(
