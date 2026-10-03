@@ -599,16 +599,15 @@
                     false;
 
                 /*
-                 * 最初の1回はすぐに
-                 * 0.1秒移動する。
+                 * タップした瞬間は
+                 * 今までどおり0.1秒移動する。
                  */
                 stepVideoTime(
                     seconds
                 );
 
                 /*
-                 * 少し押し続けた場合だけ
-                 * 連続コマ送りを開始する。
+                 * 長押し開始まで少し待つ。
                  */
                 frameStepTimer =
                     window.setTimeout(
@@ -616,15 +615,10 @@
                             frameStepStarted =
                                 true;
 
-                            frameStepTimer =
-                                window.setInterval(
-                                    function () {
-                                        stepVideoTime(
-                                            seconds
-                                        );
-                                    },
-                                    180
-                                );
+                            startAcceleratingFrameStep(
+                                seconds,
+                                0
+                            );
                         },
                         350
                     );
@@ -665,6 +659,54 @@
 
         button.style.webkitUserSelect =
             "none";
+    }
+
+    function startAcceleratingFrameStep(
+        seconds,
+        repeatCount
+    ) {
+        if (!frameStepStarted) {
+            return;
+        }
+
+        stepVideoTime(
+            seconds
+        );
+
+        /*
+         * 押し続けるほど待ち時間を短くする。
+         *
+         * 0～4回   : 240ms
+         * 5～9回   : 180ms
+         * 10～17回 : 130ms
+         * 18回以降 : 90ms
+         */
+        let delay =
+            240;
+
+        if (repeatCount >= 18) {
+            delay =
+                90;
+
+        } else if (repeatCount >= 10) {
+            delay =
+                130;
+
+        } else if (repeatCount >= 5) {
+            delay =
+                180;
+        }
+
+        frameStepTimer =
+            window.setTimeout(
+                function () {
+                    startAcceleratingFrameStep(
+                        seconds,
+                        repeatCount + 1
+                    );
+                },
+                delay
+            );
     }
 
     function stopFrameStep() {
