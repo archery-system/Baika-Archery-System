@@ -28,6 +28,18 @@
     let frameStepStarted =
         false;
 
+    let frameZoomScale =
+        1;
+
+    const FRAME_ZOOM_MIN =
+        1;
+
+    const FRAME_ZOOM_MAX =
+        3;
+
+    const FRAME_ZOOM_STEP =
+        0.25;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeFrameAnalysis
@@ -44,6 +56,8 @@
         }
 
         bindFrameStepButtons();
+
+        bindFrameZoomButtons();
 
         try {
             const videos =
@@ -480,6 +494,13 @@
 
         releaseCurrentVideoUrl();
 
+        /*
+         * 別の動画を選択したときは
+         * ズーム倍率を100%へ戻す。
+         */
+        frameZoomScale =
+            1;
+
         currentVideoUrl =
             URL.createObjectURL(
                 record.blob
@@ -517,6 +538,20 @@
             "background: #000000"
         ].join(";");
 
+        /*
+ * 拡大した映像がカードの外へ
+ * はみ出さないようにする。
+ */
+        videoArea.style.cssText = [
+            "position: relative",
+            "width: 100%",
+            "max-width: 720px",
+            "margin: 0 auto",
+            "overflow: hidden",
+            "border-radius: 12px",
+            "background: #000000"
+        ].join(";");
+
         video.addEventListener(
             "loadedmetadata",
             function () {
@@ -541,6 +576,12 @@
             video
         );
 
+        /*
+         * 新しく選択した動画へ
+         * 100%のズーム状態を反映する。
+         */
+        updateFrameZoom();
+
         area.style.display =
             "block";
 
@@ -553,6 +594,133 @@
             behavior: "smooth",
             block: "start"
         });
+    }
+
+    function bindFrameZoomButtons() {
+        const zoomOutButton =
+            document.getElementById(
+                "frameAnalysisZoomOutButton"
+            );
+
+        const zoomResetButton =
+            document.getElementById(
+                "frameAnalysisZoomResetButton"
+            );
+
+        const zoomInButton =
+            document.getElementById(
+                "frameAnalysisZoomInButton"
+            );
+
+        if (
+            !zoomOutButton ||
+            !zoomResetButton ||
+            !zoomInButton
+        ) {
+            return;
+        }
+
+        zoomOutButton.addEventListener(
+            "click",
+            function () {
+                setFrameZoom(
+                    frameZoomScale -
+                    FRAME_ZOOM_STEP
+                );
+            }
+        );
+
+        zoomResetButton.addEventListener(
+            "click",
+            function () {
+                setFrameZoom(
+                    1
+                );
+            }
+        );
+
+        zoomInButton.addEventListener(
+            "click",
+            function () {
+                setFrameZoom(
+                    frameZoomScale +
+                    FRAME_ZOOM_STEP
+                );
+            }
+        );
+
+        updateFrameZoom();
+    }
+
+    function setFrameZoom(
+        scale
+    ) {
+        frameZoomScale =
+            Math.min(
+                FRAME_ZOOM_MAX,
+                Math.max(
+                    FRAME_ZOOM_MIN,
+                    scale
+                )
+            );
+
+        updateFrameZoom();
+    }
+
+    function updateFrameZoom() {
+        const video =
+            document.getElementById(
+                "frameAnalysisVideo"
+            );
+
+        const zoomResetButton =
+            document.getElementById(
+                "frameAnalysisZoomResetButton"
+            );
+
+        const zoomOutButton =
+            document.getElementById(
+                "frameAnalysisZoomOutButton"
+            );
+
+        const zoomInButton =
+            document.getElementById(
+                "frameAnalysisZoomInButton"
+            );
+
+        if (video) {
+            video.style.transform =
+                "scale(" +
+                frameZoomScale +
+                ")";
+
+            video.style.transformOrigin =
+                "center center";
+
+            video.style.transition =
+                "transform 0.15s ease";
+        }
+
+        if (zoomResetButton) {
+            zoomResetButton.textContent =
+                Math.round(
+                    frameZoomScale *
+                    100
+                ) +
+                "%";
+        }
+
+        if (zoomOutButton) {
+            zoomOutButton.disabled =
+                frameZoomScale <=
+                FRAME_ZOOM_MIN;
+        }
+
+        if (zoomInButton) {
+            zoomInButton.disabled =
+                frameZoomScale >=
+                FRAME_ZOOM_MAX;
+        }
     }
 
     function bindFrameStepButtons() {
