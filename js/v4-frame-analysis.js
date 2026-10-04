@@ -83,6 +83,8 @@
 
         bindFrameZoomButtons();
 
+        bindFrameSaveButton();
+
         try {
             const videos =
                 await getAllFormVideos();
@@ -628,6 +630,123 @@
             behavior: "smooth",
             block: "start"
         });
+    }
+
+    function bindFrameSaveButton() {
+        const button =
+            document.getElementById(
+                "frameAnalysisSaveFrameButton"
+            );
+
+        if (!button) {
+            return;
+        }
+
+        button.addEventListener(
+            "click",
+            function () {
+                captureCurrentFrame();
+            }
+        );
+    }
+
+    function captureCurrentFrame() {
+        const video =
+            document.getElementById(
+                "frameAnalysisVideo"
+            );
+
+        const message =
+            document.getElementById(
+                "frameAnalysisSaveMessage"
+            );
+
+        if (!video) {
+            if (message) {
+                message.textContent =
+                    "動画を選択してください。";
+            }
+
+            return;
+        }
+
+        if (
+            !video.videoWidth ||
+            !video.videoHeight
+        ) {
+            if (message) {
+                message.textContent =
+                    "動画を読み込んでいます。";
+            }
+
+            return;
+        }
+
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
+
+        canvas.width =
+            video.videoWidth;
+
+        canvas.height =
+            video.videoHeight;
+
+        const context =
+            canvas.getContext(
+                "2d"
+            );
+
+        if (!context) {
+            if (message) {
+                message.textContent =
+                    "静止画を作成できませんでした。";
+            }
+
+            return;
+        }
+
+        context.drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        const imageDataUrl =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.9
+            );
+
+        console.log(
+            "Frame captured:",
+            {
+                time:
+                    Number(
+                        video.currentTime.toFixed(
+                            1
+                        )
+                    ),
+                width:
+                    canvas.width,
+                height:
+                    canvas.height,
+                imageLength:
+                    imageDataUrl.length
+            }
+        );
+
+        if (message) {
+            message.textContent =
+                "✅ " +
+                video.currentTime.toFixed(
+                    1
+                ) +
+                "秒のコマを取得しました。";
+        }
     }
 
     function bindFramePan(
