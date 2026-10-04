@@ -35,10 +35,10 @@
         1;
 
     const FRAME_ZOOM_MAX =
-        3;
+        5;
 
     const FRAME_ZOOM_STEP =
-        0.25;
+        0.5;
 
     document.addEventListener(
         "DOMContentLoaded",
