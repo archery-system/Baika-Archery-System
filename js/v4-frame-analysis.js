@@ -40,6 +40,30 @@
     const FRAME_ZOOM_STEP =
         0.5;
 
+    let framePanX =
+        0;
+
+    let framePanY =
+        0;
+
+    let framePanStartX =
+        0;
+
+    let framePanStartY =
+        0;
+
+    let framePanPointerStartX =
+        0;
+
+    let framePanPointerStartY =
+        0;
+
+    let framePanPointerId =
+        null;
+
+    let framePanActive =
+        false;
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeFrameAnalysis
@@ -501,6 +525,12 @@
         frameZoomScale =
             1;
 
+        framePanX =
+            0;
+
+        framePanY =
+            0;
+
         currentVideoUrl =
             URL.createObjectURL(
                 record.blob
@@ -537,6 +567,10 @@
             "border-radius: 12px",
             "background: #000000"
         ].join(";");
+
+        bindFramePan(
+            video
+        );
 
         /*
  * 拡大した映像がカードの外へ
@@ -594,6 +628,256 @@
             behavior: "smooth",
             block: "start"
         });
+    }
+
+    function bindFramePan(
+        video
+    ) {
+        if (!video) {
+            return;
+        }
+
+        /*
+         * iPhoneでドラッグ中に
+         * ページスクロールが発生するのを防ぐ。
+         */
+        video.style.touchAction =
+            "none";
+
+        video.style.userSelect =
+            "none";
+
+        video.style.webkitUserSelect =
+            "none";
+
+        video.addEventListener(
+            "pointerdown",
+            function (event) {
+                /*
+                 * 100%では映像を動かさない。
+                 */
+                if (
+                    frameZoomScale <=
+                    FRAME_ZOOM_MIN
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                framePanActive =
+                    true;
+
+                framePanPointerId =
+                    event.pointerId;
+
+                framePanPointerStartX =
+                    event.clientX;
+
+                framePanPointerStartY =
+                    event.clientY;
+
+                framePanStartX =
+                    framePanX;
+
+                framePanStartY =
+                    framePanY;
+
+                if (
+                    typeof video.setPointerCapture ===
+                    "function"
+                ) {
+                    video.setPointerCapture(
+                        event.pointerId
+                    );
+                }
+
+                updateFrameZoom();
+            }
+        );
+
+        video.addEventListener(
+            "pointermove",
+            function (event) {
+                if (
+                    !framePanActive ||
+                    framePanPointerId !==
+                    event.pointerId
+                ) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                framePanX =
+                    framePanStartX +
+                    (
+                        event.clientX -
+                        framePanPointerStartX
+                    );
+
+                framePanY =
+                    framePanStartY +
+                    (
+                        event.clientY -
+                        framePanPointerStartY
+                    );
+
+                clampFramePan();
+
+                updateFrameZoom();
+            }
+        );
+
+        video.addEventListener(
+            "pointerup",
+            function (event) {
+                stopFramePan(
+                    video,
+                    event
+                );
+            }
+        );
+
+        video.addEventListener(
+            "pointercancel",
+            function (event) {
+                stopFramePan(
+                    video,
+                    event
+                );
+            }
+        );
+    }
+
+    function stopFramePan(
+        video,
+        event
+    ) {
+        if (
+            !framePanActive ||
+            framePanPointerId !==
+            event.pointerId
+        ) {
+            return;
+        }
+
+        framePanActive =
+            false;
+
+        framePanPointerId =
+            null;
+
+        if (
+            typeof video.hasPointerCapture ===
+            "function" &&
+            video.hasPointerCapture(
+                event.pointerId
+            ) &&
+            typeof video.releasePointerCapture ===
+            "function"
+        ) {
+            video.releasePointerCapture(
+                event.pointerId
+            );
+        }
+
+        updateFrameZoom();
+    }
+
+    function clampFramePan() {
+        const video =
+            document.getElementById(
+                "frameAnalysisVideo"
+            );
+
+        const videoArea =
+            document.getElementById(
+                "frameAnalysisVideoArea"
+            );
+
+        if (
+            !video ||
+            !videoArea
+        ) {
+            return;
+        }
+
+        if (
+            frameZoomScale <=
+            FRAME_ZOOM_MIN
+        ) {
+            framePanX =
+                0;
+
+            framePanY =
+                0;
+
+            return;
+        }
+
+        const videoWidth =
+            video.clientWidth;
+
+        const videoHeight =
+            video.clientHeight;
+
+        const areaWidth =
+            videoArea.clientWidth;
+
+        const areaHeight =
+            videoArea.clientHeight;
+
+        if (
+            !videoWidth ||
+            !videoHeight ||
+            !areaWidth ||
+            !areaHeight
+        ) {
+            return;
+        }
+
+        /*
+         * 拡大後に表示窓からはみ出す量の
+         * 半分まで移動できるようにする。
+         */
+        const maxPanX =
+            Math.max(
+                0,
+                (
+                    videoWidth *
+                    frameZoomScale -
+                    areaWidth
+                ) / 2
+            );
+
+        const maxPanY =
+            Math.max(
+                0,
+                (
+                    videoHeight *
+                    frameZoomScale -
+                    areaHeight
+                ) / 2
+            );
+
+        framePanX =
+            Math.min(
+                maxPanX,
+                Math.max(
+                    -maxPanX,
+                    framePanX
+                )
+            );
+
+        framePanY =
+            Math.min(
+                maxPanY,
+                Math.max(
+                    -maxPanY,
+                    framePanY
+                )
+            );
     }
 
     function bindFrameZoomButtons() {
@@ -664,6 +948,23 @@
                 )
             );
 
+        /*
+         * 100%へ戻した場合は
+         * 映像位置も中央へ戻す。
+         */
+        if (
+            frameZoomScale ===
+            FRAME_ZOOM_MIN
+        ) {
+            framePanX =
+                0;
+
+            framePanY =
+                0;
+        }
+
+        clampFramePan();
+
         updateFrameZoom();
     }
 
@@ -690,6 +991,11 @@
 
         if (video) {
             video.style.transform =
+                "translate(" +
+                framePanX +
+                "px, " +
+                framePanY +
+                "px) " +
                 "scale(" +
                 frameZoomScale +
                 ")";
@@ -698,7 +1004,9 @@
                 "center center";
 
             video.style.transition =
-                "transform 0.15s ease";
+                framePanActive
+                    ? "none"
+                    : "transform 0.15s ease";
         }
 
         if (zoomResetButton) {
