@@ -721,6 +721,8 @@
                 0.9
             );
 
+        flashFrameCapture();
+
         console.log(
             "Frame captured:",
             {
@@ -747,6 +749,54 @@
                 ) +
                 "秒のコマを取得しました。";
         }
+    }
+
+    function flashFrameCapture() {
+        const videoArea =
+            document.getElementById(
+                "frameAnalysisVideoArea"
+            );
+
+        if (!videoArea) {
+            return;
+        }
+
+        const flash =
+            document.createElement(
+                "div"
+            );
+
+        flash.style.cssText = [
+            "position: absolute",
+            "inset: 0",
+            "z-index: 20",
+            "pointer-events: none",
+            "background: #ffffff",
+            "opacity: 0.9",
+            "transition: opacity 180ms ease-out"
+        ].join(";");
+
+        videoArea.appendChild(
+            flash
+        );
+
+        window.requestAnimationFrame(
+            function () {
+                window.requestAnimationFrame(
+                    function () {
+                        flash.style.opacity =
+                            "0";
+                    }
+                );
+            }
+        );
+
+        window.setTimeout(
+            function () {
+                flash.remove();
+            },
+            220
+        );
     }
 
     function bindFramePan(
