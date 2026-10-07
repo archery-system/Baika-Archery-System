@@ -11,10 +11,13 @@
         "baika-archery-form-video-local";
 
     const DB_VERSION =
-        1;
+        2;
 
     const VIDEO_STORE_NAME =
         "formVideos";
+
+    const FRAME_STORE_NAME =
+        "formFrames";
 
     const PHOTO_DB_NAME =
         "baika-archery-local";
@@ -1369,6 +1372,31 @@
                                 }
                             );
                         }
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    FRAME_STORE_NAME
+                                )
+                        ) {
+                            const frameStore =
+                                db.createObjectStore(
+                                    FRAME_STORE_NAME,
+                                    {
+                                        keyPath: "id",
+                                        autoIncrement: true
+                                    }
+                                );
+
+                            frameStore.createIndex(
+                                "createdAt",
+                                "createdAt",
+                                {
+                                    unique: false
+                                }
+                            );
+                        }
+
                     };
 
                 request.onsuccess =

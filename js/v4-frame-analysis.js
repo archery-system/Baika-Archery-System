@@ -11,10 +11,13 @@
         "baika-archery-form-video-local";
 
     const DB_VERSION =
-        1;
+        2;
 
     const VIDEO_STORE_NAME =
         "formVideos";
+
+    const FRAME_STORE_NAME =
+        "formFrames";
 
     let databasePromise =
         null;
@@ -131,6 +134,60 @@
                         DB_NAME,
                         DB_VERSION
                     );
+
+                request.onupgradeneeded =
+                    function () {
+                        const db =
+                            request.result;
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    VIDEO_STORE_NAME
+                                )
+                        ) {
+                            const store =
+                                db.createObjectStore(
+                                    VIDEO_STORE_NAME,
+                                    {
+                                        keyPath: "id",
+                                        autoIncrement: true
+                                    }
+                                );
+
+                            store.createIndex(
+                                "createdAt",
+                                "createdAt",
+                                {
+                                    unique: false
+                                }
+                            );
+                        }
+
+                        if (
+                            !db.objectStoreNames
+                                .contains(
+                                    FRAME_STORE_NAME
+                                )
+                        ) {
+                            const frameStore =
+                                db.createObjectStore(
+                                    FRAME_STORE_NAME,
+                                    {
+                                        keyPath: "id",
+                                        autoIncrement: true
+                                    }
+                                );
+
+                            frameStore.createIndex(
+                                "createdAt",
+                                "createdAt",
+                                {
+                                    unique: false
+                                }
+                            );
+                        }
+                    };
 
                 request.onsuccess =
                     function () {
