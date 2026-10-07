@@ -707,7 +707,49 @@
         );
     }
 
-    function captureCurrentFrame() {
+    async function saveFormFrame(
+        record
+    ) {
+        const db =
+            await openDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    FRAME_STORE_NAME,
+                    "readwrite"
+                );
+
+            const store =
+                transaction.objectStore(
+                    FRAME_STORE_NAME
+                );
+
+            const request =
+                store.add(
+                    record
+                );
+
+            request.onsuccess =
+                function () {
+                    resolve(
+                        request.result
+                    );
+                };
+
+            request.onerror =
+                function () {
+                    reject(
+                        request.error
+                    );
+                };
+        });
+    }
+
+    async function captureCurrentFrame() {
         const video =
             document.getElementById(
                 "frameAnalysisVideo"
@@ -772,40 +814,102 @@
             canvas.height
         );
 
-        const imageDataUrl =
-            canvas.toDataURL(
-                "image/jpeg",
-                0.9
+        const frameTime =
+            Number(
+                video.currentTime.toFixed(
+                    1
+                )
             );
-
-        flashFrameCapture();
-
-        console.log(
-            "Frame captured:",
-            {
-                time:
-                    Number(
-                        video.currentTime.toFixed(
-                            1
-                        )
-                    ),
-                width:
-                    canvas.width,
-                height:
-                    canvas.height,
-                imageLength:
-                    imageDataUrl.length
-            }
-        );
 
         if (message) {
             message.textContent =
-                "✅ " +
-                video.currentTime.toFixed(
-                    1
-                ) +
-                "秒のコマを取得しました。";
+                "静止画を保存しています…";
         }
+
+        canvas.toBlob(
+            async function (blob) {
+                if (!blob) {
+                    if (message) {
+                        message.textContent =
+                            "静止画を作成できませんでした。";
+                    }
+
+                    return;
+                }
+
+                const record = {
+                    createdAt:
+                        new Date()
+                            .toISOString(),
+
+                    videoTime:
+                        frameTime,
+
+                    mimeType:
+                        blob.type ||
+                        "image/jpeg",
+
+                    size:
+                        blob.size,
+
+                    width:
+                        canvas.width,
+
+                    height:
+                        canvas.height,
+
+                    blob:
+                        blob
+                };
+
+                try {
+                    const frameId =
+                        await saveFormFrame(
+                            record
+                        );
+
+                    flashFrameCapture();
+
+                    console.log(
+                        "Frame saved:",
+                        {
+                            id:
+                                frameId,
+                            time:
+                                frameTime,
+                            width:
+                                canvas.width,
+                            height:
+                                canvas.height,
+                            size:
+                                blob.size
+                        }
+                    );
+
+                    if (message) {
+                        message.textContent =
+                            "✅ " +
+                            frameTime.toFixed(
+                                1
+                            ) +
+                            "秒のコマを保存しました。";
+                    }
+
+                } catch (error) {
+                    console.error(
+                        "Frame save failed:",
+                        error
+                    );
+
+                    if (message) {
+                        message.textContent =
+                            "静止画を保存できませんでした。";
+                    }
+                }
+            },
+            "image/jpeg",
+            0.9
+        );
     }
 
     function flashFrameCapture() {
