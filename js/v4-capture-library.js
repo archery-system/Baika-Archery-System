@@ -73,6 +73,7 @@
 
         loadTargetPhotos();
         loadFormVideos();
+        loadFormFrames();
     }
 
     function createTargetPhotoShareFile(
@@ -2107,6 +2108,47 @@
         });
     }
 
+    async function getAllFormFrames() {
+        const db =
+            await openDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    FRAME_STORE_NAME,
+                    "readonly"
+                );
+
+            const request =
+                transaction
+                    .objectStore(
+                        FRAME_STORE_NAME
+                    )
+                    .getAll();
+
+            request.onsuccess =
+                function () {
+                    resolve(
+                        Array.isArray(
+                            request.result
+                        )
+                            ? request.result
+                            : []
+                    );
+                };
+
+            request.onerror =
+                function () {
+                    reject(
+                        request.error
+                    );
+                };
+        });
+    }
+
     async function getAllFormVideos() {
         const db =
             await openDatabase();
@@ -2587,6 +2629,163 @@
             URL.revokeObjectURL(
                 videoUrl
             );
+        }
+    }
+
+    function renderFormFrames(
+        list,
+        frames
+    ) {
+        list.replaceChildren();
+
+        if (
+            !Array.isArray(frames) ||
+            frames.length === 0
+        ) {
+            const empty =
+                document.createElement(
+                    "p"
+                );
+
+            empty.textContent =
+                "保存されているフォーム静止画はありません。";
+
+            list.appendChild(
+                empty
+            );
+
+            return;
+        }
+
+        frames.forEach(function (
+            record
+        ) {
+            if (
+                !record ||
+                !(record.blob instanceof Blob)
+            ) {
+                return;
+            }
+
+            const card =
+                document.createElement(
+                    "article"
+                );
+
+            const title =
+                document.createElement(
+                    "h3"
+                );
+
+            title.textContent =
+                formatDateTime(
+                    record.createdAt
+                );
+
+            const image =
+                document.createElement(
+                    "img"
+                );
+
+            const url =
+                URL.createObjectURL(
+                    record.blob
+                );
+
+            objectUrls.push(
+                url
+            );
+
+            image.src =
+                url;
+
+            image.alt =
+                "フォーム静止画";
+
+            image.style.cssText = [
+                "display: block",
+                "width: 100%",
+                "height: auto",
+                "border-radius: 12px"
+            ].join(";");
+
+            const meta =
+                document.createElement(
+                    "p"
+                );
+
+            const frameTime =
+                Number(
+                    record.videoTime
+                );
+
+            meta.textContent =
+                Number.isFinite(
+                    frameTime
+                )
+                    ? "動画内 " +
+                    frameTime.toFixed(
+                        1
+                    ) +
+                    "秒"
+                    : "";
+
+            card.appendChild(
+                title
+            );
+
+            card.appendChild(
+                image
+            );
+
+            card.appendChild(
+                meta
+            );
+
+            list.appendChild(
+                card
+            );
+        });
+    }
+
+    async function loadFormFrames() {
+        const list =
+            document.getElementById(
+                "formFrameLibraryList"
+            );
+
+        if (!list) {
+            return;
+        }
+
+        try {
+            const frames =
+                await getAllFormFrames();
+
+            frames.sort(function (a, b) {
+                return (
+                    new Date(
+                        b.createdAt || 0
+                    ).getTime() -
+                    new Date(
+                        a.createdAt || 0
+                    ).getTime()
+                );
+            });
+
+            renderFormFrames(
+                list,
+                frames
+            );
+
+        } catch (error) {
+            console.error(
+                "Form frame library load failed:",
+                error
+            );
+
+            list.textContent =
+                "フォーム静止画を読み込めませんでした。";
         }
     }
 
