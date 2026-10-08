@@ -121,9 +121,42 @@
 
         <section class="capture-library-section">
 
-            <h2>
-                📌 フォーム静止画
-            </h2>
+            <div class="capture-library-photo-heading">
+
+                <h2>
+                    📌 フォーム静止画
+                </h2>
+
+                <div class="capture-library-photo-import">
+
+                    <button type="button" id="formFrameSelectButton" class="capture-library-photo-import__button">
+                        ☑ 静止画を選択
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="formFrameSelectionBar" class="capture-library-photo-selection-bar" hidden>
+                <span id="formFrameSelectionCount">
+                    0枚選択中
+                </span>
+
+                <div class="capture-library-photo-selection-actions">
+
+                    <button type="button" id="formFrameSelectAllButton" class="capture-library-photo-selection-button">
+                        すべて選択
+                    </button>
+
+                    <button type="button" id="formFrameShareButton"
+                        class="capture-library-photo-selection-button capture-library-photo-selection-button--primary"
+                        disabled>
+                        📤 選択した静止画を共有
+                    </button>
+
+                </div>
+
+            </div>
 
             <div id="formFrameLibraryList" class="capture-library-list">
                 読み込み中です…

@@ -55,6 +55,14 @@
     const selectedTargetPhotoIds =
         new Set();
 
+    let currentFormFrames = [];
+
+    let isFormFrameSelectMode =
+        false;
+
+    const selectedFormFrameIds =
+        new Set();
+
     document.addEventListener(
         "DOMContentLoaded",
         initializeCaptureLibrary
@@ -70,6 +78,7 @@
         bindTargetPhotoImport();
         bindTargetPhotoSelectionMode();
         bindFormVideoImport();
+        bindFormFrameSelectionMode();
 
         loadTargetPhotos();
         loadFormVideos();
@@ -2632,6 +2641,103 @@
         }
     }
 
+    function updateFormFrameSelectionUi() {
+        const selectionBar =
+            document.getElementById(
+                "formFrameSelectionBar"
+            );
+
+        const count =
+            document.getElementById(
+                "formFrameSelectionCount"
+            );
+
+        const selectAllButton =
+            document.getElementById(
+                "formFrameSelectAllButton"
+            );
+
+        const shareButton =
+            document.getElementById(
+                "formFrameShareButton"
+            );
+
+        if (selectionBar) {
+            selectionBar.hidden =
+                !isFormFrameSelectMode;
+        }
+
+        if (count) {
+            count.textContent =
+                selectedFormFrameIds.size +
+                "枚選択中";
+        }
+
+        if (shareButton) {
+            shareButton.disabled =
+                selectedFormFrameIds.size === 0;
+        }
+
+        if (selectAllButton) {
+            const selectableCount =
+                currentFormFrames.filter(
+                    function (record) {
+                        return (
+                            record &&
+                            record.id != null &&
+                            record.blob instanceof Blob
+                        );
+                    }
+                ).length;
+
+            selectAllButton.textContent =
+                selectableCount > 0 &&
+                    selectedFormFrameIds.size ===
+                    selectableCount
+                    ? "すべて解除"
+                    : "すべて選択";
+        }
+    }
+
+    function bindFormFrameSelectionMode() {
+        const selectButton =
+            document.getElementById(
+                "formFrameSelectButton"
+            );
+
+        if (!selectButton) {
+            return;
+        }
+
+        selectButton.addEventListener(
+            "click",
+            function () {
+                isFormFrameSelectMode =
+                    !isFormFrameSelectMode;
+
+                if (
+                    !isFormFrameSelectMode
+                ) {
+                    selectedFormFrameIds.clear();
+                }
+
+                selectButton.textContent =
+                    isFormFrameSelectMode
+                        ? "✕ 選択を終了"
+                        : "☑ 静止画を選択";
+
+                updateFormFrameSelectionUi();
+
+                renderFormFrames(
+                    document.getElementById(
+                        "formFrameLibraryList"
+                    ),
+                    currentFormFrames
+                );
+            }
+        );
+    }
+
     function renderFormFrames(
         list,
         frames
@@ -2671,6 +2777,32 @@
                 document.createElement(
                     "article"
                 );
+
+            if (
+                isFormFrameSelectMode &&
+                selectedFormFrameIds.has(
+                    record.id
+                )
+            ) {
+                card.classList.add(
+                    "is-selected"
+                );
+
+                const selectedLabel =
+                    document.createElement(
+                        "span"
+                    );
+
+                selectedLabel.className =
+                    "capture-library-photo-selected-label";
+
+                selectedLabel.textContent =
+                    "✓ 選択中";
+
+                card.appendChild(
+                    selectedLabel
+                );
+            }
 
             const title =
                 document.createElement(
@@ -2742,6 +2874,62 @@
                 meta
             );
 
+            if (
+                isFormFrameSelectMode &&
+                record.id != null
+            ) {
+                card.setAttribute(
+                    "role",
+                    "button"
+                );
+
+                card.tabIndex = 0;
+
+                const toggleSelection =
+                    function () {
+                        if (
+                            selectedFormFrameIds.has(
+                                record.id
+                            )
+                        ) {
+                            selectedFormFrameIds.delete(
+                                record.id
+                            );
+                        } else {
+                            selectedFormFrameIds.add(
+                                record.id
+                            );
+                        }
+
+                        updateFormFrameSelectionUi();
+
+                        renderFormFrames(
+                            list,
+                            frames
+                        );
+                    };
+
+                card.addEventListener(
+                    "click",
+                    toggleSelection
+                );
+
+                card.addEventListener(
+                    "keydown",
+                    function (event) {
+                        if (
+                            event.key !== "Enter" &&
+                            event.key !== " "
+                        ) {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        toggleSelection();
+                    }
+                );
+            }
+
             list.appendChild(
                 card
             );
@@ -2773,9 +2961,12 @@
                 );
             });
 
+            currentFormFrames =
+                frames.slice();
+
             renderFormFrames(
                 list,
-                frames
+                currentFormFrames
             );
 
         } catch (error) {
