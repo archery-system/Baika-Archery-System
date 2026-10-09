@@ -2709,6 +2709,62 @@
             return;
         }
 
+        const selectAllButton =
+            document.getElementById(
+                "formFrameSelectAllButton"
+            );
+
+        if (selectAllButton) {
+            selectAllButton.addEventListener(
+                "click",
+                function () {
+                    const selectableIds =
+                        currentFormFrames
+                            .filter(function (record) {
+                                return (
+                                    record &&
+                                    record.id != null &&
+                                    record.blob instanceof Blob
+                                );
+                            })
+                            .map(function (record) {
+                                return record.id;
+                            });
+
+                    const allSelected =
+                        selectableIds.length > 0 &&
+                        selectableIds.every(
+                            function (id) {
+                                return selectedFormFrameIds.has(
+                                    id
+                                );
+                            }
+                        );
+
+                    selectedFormFrameIds.clear();
+
+                    if (!allSelected) {
+                        selectableIds.forEach(
+                            function (id) {
+                                selectedFormFrameIds.add(
+                                    id
+                                );
+                            }
+                        );
+                    }
+
+                    updateFormFrameSelectionUi();
+
+                    renderFormFrames(
+                        document.getElementById(
+                            "formFrameLibraryList"
+                        ),
+                        currentFormFrames
+                    );
+                }
+            );
+        }
+
         selectButton.addEventListener(
             "click",
             function () {
