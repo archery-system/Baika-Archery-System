@@ -142,6 +142,62 @@
         );
     }
 
+    function createFormFrameShareFile(
+        record,
+        index
+    ) {
+        if (
+            !record ||
+            !(record.blob instanceof Blob)
+        ) {
+            return null;
+        }
+
+        const type =
+            record.blob.type ||
+            "image/jpeg";
+
+        const extension =
+            type === "image/png"
+                ? ".png"
+                : type === "image/webp"
+                    ? ".webp"
+                    : ".jpg";
+
+        const createdTime =
+            new Date(
+                record.createdAt || ""
+            ).getTime();
+
+        const lastModified =
+            Number.isFinite(createdTime)
+                ? createdTime
+                : Date.now();
+
+        const dateLabel =
+            Number.isFinite(createdTime)
+                ? new Date(createdTime)
+                    .toISOString()
+                    .replace(/[:.]/g, "-")
+                : "unknown-date";
+
+        const fileName =
+            "form-frame-" +
+            dateLabel +
+            "-" +
+            (index + 1) +
+            extension;
+
+        return new File(
+            [record.blob],
+            fileName,
+            {
+                type: type,
+                lastModified: lastModified
+            }
+        );
+    }
+
     function createTargetPhotoMetadataFile(
         records,
         photoFiles
@@ -2760,6 +2816,138 @@
                             "formFrameLibraryList"
                         ),
                         currentFormFrames
+                    );
+                }
+            );
+        }
+
+        const shareButton =
+            document.getElementById(
+                "formFrameShareButton"
+            );
+
+        if (shareButton) {
+            shareButton.addEventListener(
+                "click",
+                function () {
+                    const selectedFrames =
+                        currentFormFrames.filter(
+                            function (record) {
+                                return (
+                                    record &&
+                                    record.id != null &&
+                                    record.blob instanceof Blob &&
+                                    selectedFormFrameIds.has(
+                                        record.id
+                                    )
+                                );
+                            }
+                        );
+
+                    if (
+                        selectedFrames.length === 0
+                    ) {
+                        window.alert(
+                            "共有する静止画を選択してください。"
+                        );
+
+                        return;
+                    }
+
+                    const files =
+                        selectedFrames
+                            .map(
+                                function (
+                                    record,
+                                    index
+                                ) {
+                                    return createFormFrameShareFile(
+                                        record,
+                                        index
+                                    );
+                                }
+                            )
+                            .filter(Boolean);
+
+                    if (files.length === 0) {
+                        window.alert(
+                            "共有できる静止画がありません。"
+                        );
+
+                        return;
+                    }
+
+                    const canUseShare =
+                        typeof navigator.share ===
+                        "function" &&
+                        (
+                            typeof navigator.canShare !==
+                            "function" ||
+                            navigator.canShare({
+                                files: files
+                            })
+                        );
+
+                    if (canUseShare) {
+                        navigator.share({
+                            title:
+                                "Baika Archery System フォーム静止画",
+                            files: files
+                        }).catch(
+                            function (error) {
+                                if (
+                                    error &&
+                                    error.name ===
+                                    "AbortError"
+                                ) {
+                                    return;
+                                }
+
+                                console.error(
+                                    "Form frame share failed:",
+                                    error
+                                );
+
+                                window.alert(
+                                    "静止画を共有できませんでした。"
+                                );
+                            }
+                        );
+
+                        return;
+                    }
+
+                    files.forEach(
+                        function (file) {
+                            const url =
+                                URL.createObjectURL(
+                                    file
+                                );
+
+                            const link =
+                                document.createElement(
+                                    "a"
+                                );
+
+                            link.href = url;
+                            link.download = file.name;
+
+                            document.body.appendChild(
+                                link
+                            );
+
+                            link.click();
+                            link.remove();
+
+                            setTimeout(
+                                function () {
+                                    URL.revokeObjectURL(
+                                        url
+                                    );
+                                },
+                                60000
+                            );
+                        }
                     );
                 }
             );
