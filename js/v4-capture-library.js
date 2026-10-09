@@ -142,7 +142,7 @@
         );
     }
 
-    function createFormFrameShareFile(
+    async function createFormFrameShareFile(
         record,
         index
     ) {
@@ -188,14 +188,206 @@
             (index + 1) +
             extension;
 
+        const datedBlob =
+            await createDatedFormFrameBlob(
+                record
+            );
+
         return new File(
-            [record.blob],
-            fileName,
+            [datedBlob],
+            fileName.replace(
+                /\.[^.]+$/,
+                ".jpg"
+            ),
             {
-                type: type,
+                type: "image/jpeg",
                 lastModified: lastModified
             }
         );
+    }
+
+    async function createDatedFormFrameBlob(
+        record
+    ) {
+        if (
+            !record ||
+            !(record.blob instanceof Blob)
+        ) {
+            throw new Error(
+                "静止画データがありません。"
+            );
+        }
+
+        const image =
+            await createImageBitmap(
+                record.blob
+            );
+
+        try {
+            const canvas =
+                document.createElement(
+                    "canvas"
+                );
+
+            canvas.width = image.width;
+            canvas.height = image.height;
+
+            const ctx =
+                canvas.getContext("2d");
+
+            if (!ctx) {
+                throw new Error(
+                    "画像を処理できません。"
+                );
+            }
+
+            ctx.drawImage(
+                image,
+                0,
+                0
+            );
+
+            const fontSize =
+                Math.max(
+                    16,
+                    Math.round(
+                        canvas.width * 0.025
+                    )
+                );
+
+            const padding =
+                Math.round(
+                    fontSize * 0.6
+                );
+
+            const createdAt =
+                new Date(
+                    record.createdAt || ""
+                );
+
+            const dateText =
+                Number.isFinite(
+                    createdAt.getTime()
+                )
+                    ? "静止画保存 " +
+                    createdAt.toLocaleString(
+                        "ja-JP"
+                    )
+                    : "静止画保存日時 不明";
+
+            const videoTime =
+                Number(
+                    record.videoTime
+                );
+
+            const timeText =
+                Number.isFinite(videoTime)
+                    ? "動画内 " +
+                    videoTime.toFixed(1) +
+                    "秒"
+                    : "";
+
+            ctx.font =
+                fontSize +
+                "px sans-serif";
+
+            const lines =
+                timeText
+                    ? [dateText, timeText]
+                    : [dateText];
+
+            const lineHeight =
+                fontSize * 1.4;
+
+            const textWidth =
+                Math.max(
+                    ...lines.map(
+                        function (line) {
+                            return ctx.measureText(
+                                line
+                            ).width;
+                        }
+                    )
+                );
+
+            const boxWidth =
+                textWidth +
+                padding * 2;
+
+            const boxHeight =
+                lineHeight *
+                lines.length +
+                padding * 2;
+
+            const x =
+                Math.max(
+                    0,
+                    canvas.width -
+                    boxWidth -
+                    padding
+                );
+
+            const y =
+                Math.max(
+                    0,
+                    canvas.height -
+                    boxHeight -
+                    padding
+                );
+
+            ctx.fillStyle =
+                "rgba(0, 0, 0, 0.75)";
+
+            ctx.fillRect(
+                x,
+                y,
+                Math.min(
+                    boxWidth,
+                    canvas.width
+                ),
+                boxHeight
+            );
+
+            ctx.fillStyle =
+                "#ffffff";
+
+            ctx.textBaseline =
+                "top";
+
+            lines.forEach(
+                function (line, index) {
+                    ctx.fillText(
+                        line,
+                        x + padding,
+                        y +
+                        padding +
+                        lineHeight * index
+                    );
+                }
+            );
+
+            return await new Promise(
+                function (resolve, reject) {
+                    canvas.toBlob(
+                        function (blob) {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(
+                                    new Error(
+                                        "画像の書き出しに失敗しました。"
+                                    )
+                                );
+                            }
+                        },
+                        "image/jpeg",
+                        0.92
+                    );
+                }
+            );
+        } finally {
+            image.close();
+        }
     }
 
     function createTargetPhotoMetadataFile(
@@ -2829,7 +3021,7 @@
         if (shareButton) {
             shareButton.addEventListener(
                 "click",
-                function () {
+                async function () {
                     const selectedFrames =
                         currentFormFrames.filter(
                             function (record) {
@@ -2854,20 +3046,36 @@
                         return;
                     }
 
-                    const files =
-                        selectedFrames
-                            .map(
-                                function (
-                                    record,
-                                    index
-                                ) {
-                                    return createFormFrameShareFile(
+                    let files;
+
+                    try {
+                        files = (
+                            await Promise.all(
+                                selectedFrames.map(
+                                    function (
                                         record,
                                         index
-                                    );
-                                }
+                                    ) {
+                                        return createFormFrameShareFile(
+                                            record,
+                                            index
+                                        );
+                                    }
+                                )
                             )
-                            .filter(Boolean);
+                        ).filter(Boolean);
+                    } catch (error) {
+                        console.error(
+                            "Form frame image creation failed:",
+                            error
+                        );
+
+                        window.alert(
+                            "日時入り静止画を作成できませんでした。"
+                        );
+
+                        return;
+                    }
 
                     if (files.length === 0) {
                         window.alert(
