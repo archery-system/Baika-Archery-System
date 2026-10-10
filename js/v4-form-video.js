@@ -22,6 +22,12 @@
 
     let mediaRecorder = null;
 
+    /*
+ * フォーム動画の録画開始日時
+ */
+    let recordingStartedAt =
+        null;
+
     let recordedChunks = [];
     let recordedVideoUrl = null;
 
@@ -96,7 +102,8 @@
 
     async function saveFormVideo(
         videoBlob,
-        mimeType
+        mimeType,
+        videoRecordedAt
     ) {
         const db =
             await openDatabase();
@@ -104,6 +111,12 @@
         const record = {
             createdAt:
                 new Date().toISOString(),
+
+            /*
+             * 実際に録画を開始した日時
+             */
+            videoRecordedAt:
+                videoRecordedAt || null,
 
             mimeType:
                 String(
@@ -283,6 +296,14 @@
 
         recordedChunks = [];
 
+        /*
+         * 前回の録画開始日時を消去する。
+         * 録画に失敗した場合も
+         * 古い日時を引き継がない。
+         */
+        recordingStartedAt =
+            null;
+
         try {
             mediaRecorder =
                 new MediaRecorder(
@@ -309,6 +330,13 @@
             );
 
             mediaRecorder.start();
+
+            /*
+             * 録画開始日時を記録する。
+             * 動画の保存日時とは区別する。
+             */
+            recordingStartedAt =
+                new Date().toISOString();
 
             elements.startRecordingButton.disabled =
                 true;
@@ -389,7 +417,8 @@
             const savedVideoId =
                 await saveFormVideo(
                     videoBlob,
-                    mimeType
+                    mimeType,
+                    recordingStartedAt
                 );
 
             console.log(

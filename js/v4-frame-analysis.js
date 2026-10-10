@@ -25,6 +25,9 @@
     let currentVideoUrl =
         "";
 
+    let currentVideoRecord =
+        null;
+
     let frameStepTimer =
         null;
 
@@ -578,6 +581,13 @@
         releaseCurrentVideoUrl();
 
         /*
+         * 現在選択している元動画の
+         * 記録情報を保持する。
+         */
+        currentVideoRecord =
+            record;
+
+        /*
          * 別の動画を選択したときは
          * ズーム倍率を100%へ戻す。
          */
@@ -841,6 +851,16 @@
                     createdAt:
                         new Date()
                             .toISOString(),
+
+                    /*
+                     * 元動画の録画開始日時を引き継ぐ。
+                     * 撮影日時が不明な場合は null。
+                     */
+                    videoRecordedAt:
+                        currentVideoRecord &&
+                            currentVideoRecord.videoRecordedAt
+                            ? currentVideoRecord.videoRecordedAt
+                            : null,
 
                     videoTime:
                         frameTime,

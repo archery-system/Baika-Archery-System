@@ -260,20 +260,27 @@
                     fontSize * 0.6
                 );
 
-            const createdAt =
-                new Date(
-                    record.createdAt || ""
-                );
+            /*
+ * 元動画の撮影日時を表示する。
+ * 静止画の保存日時は使用しない。
+ */
+            const videoRecordedAt =
+                record.videoRecordedAt
+                    ? new Date(
+                        record.videoRecordedAt
+                    )
+                    : null;
 
             const dateText =
-                Number.isFinite(
-                    createdAt.getTime()
-                )
-                    ? "静止画保存 " +
-                    createdAt.toLocaleString(
+                videoRecordedAt &&
+                    Number.isFinite(
+                        videoRecordedAt.getTime()
+                    )
+                    ? "動画撮影 " +
+                    videoRecordedAt.toLocaleString(
                         "ja-JP"
                     )
-                    : "静止画保存日時 不明";
+                    : "動画撮影日時 不明";
 
             const videoTime =
                 Number(
@@ -2314,6 +2321,13 @@
             createdAt:
                 createdAt,
 
+            /*
+             * 外部動画の撮影日時は未確認。
+             * ファイル更新日時を撮影日時として扱わない。
+             */
+            videoRecordedAt:
+                null,
+
             mimeType:
                 String(
                     file.type ||
@@ -3262,9 +3276,12 @@
                 );
 
             title.textContent =
-                formatDateTime(
-                    record.createdAt
-                );
+                record.videoRecordedAt
+                    ? "🎥 動画撮影日時：" +
+                    formatDateTime(
+                        record.videoRecordedAt
+                    )
+                    : "🎥 動画撮影日時：不明";
 
             const image =
                 document.createElement(
@@ -3568,9 +3585,12 @@
                 );
 
             title.textContent =
-                formatDateTime(
-                    record.createdAt
-                );
+                record.videoRecordedAt
+                    ? "🎥 動画撮影日時：" +
+                    formatDateTime(
+                        record.videoRecordedAt
+                    )
+                    : "🎥 動画撮影日時：不明";
 
             const video =
                 document.createElement(
