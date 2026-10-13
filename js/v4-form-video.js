@@ -435,8 +435,20 @@
                 error
             );
 
+            const errorName =
+                error && error.name
+                    ? error.name
+                    : "UnknownError";
+
+            const errorMessage =
+                error && error.message
+                    ? error.message
+                    : "詳細不明";
+
             updateStatus(
-                "動画は撮影できましたが、端末内へ保存できませんでした。"
+                "動画の保存に失敗しました。" +
+                " [" + errorName + "] " +
+                errorMessage
             );
         }
 
