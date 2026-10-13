@@ -413,6 +413,8 @@
                 }
             );
 
+        let savedSuccessfully = false;
+
         try {
             const savedVideoId =
                 await saveFormVideo(
@@ -425,6 +427,7 @@
                 "フォーム動画を端末へ保存しました:",
                 savedVideoId
             );
+            savedSuccessfully = true;
 
         } catch (error) {
             console.error(
@@ -460,9 +463,11 @@
         elements.startCameraButton.disabled =
             false;
 
-        updateStatus(
-            "録画が完了しました。下の動画で確認できます。"
-        );
+        if (savedSuccessfully) {
+            updateStatus(
+                "動画を端末に保存しました。下の動画で確認できます。"
+            );
+        }
 
         mediaRecorder = null;
     }
