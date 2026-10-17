@@ -11,7 +11,7 @@
         "baika-archery-form-video-local";
 
     const DB_VERSION =
-        1;
+        2;
 
     const VIDEO_STORE_NAME =
         "formVideos";
