@@ -3344,6 +3344,77 @@
             );
 
             if (
+                !isFormFrameSelectMode &&
+                record.id != null
+            ) {
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.type =
+                    "button";
+
+                deleteButton.className =
+                    "capture-library-delete-button";
+
+                deleteButton.textContent =
+                    "🗑 削除";
+
+                deleteButton.addEventListener(
+                    "click",
+                    async function () {
+                        const confirmed =
+                            window.confirm(
+                                "このフォーム静止画を削除しますか？\n\n削除すると元に戻せません。"
+                            );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        deleteButton.disabled =
+                            true;
+
+                        deleteButton.textContent =
+                            "削除中…";
+
+                        try {
+                            await deleteFormFrame(
+                                record.id
+                            );
+
+                            selectedFormFrameIds.delete(
+                                record.id
+                            );
+
+                            await loadFormFrames();
+
+                        } catch (error) {
+                            console.error(
+                                "Form frame delete failed:",
+                                error
+                            );
+
+                            window.alert(
+                                "フォーム静止画を削除できませんでした。"
+                            );
+
+                            deleteButton.disabled =
+                                false;
+
+                            deleteButton.textContent =
+                                "🗑 削除";
+                        }
+                    }
+                );
+
+                card.appendChild(
+                    deleteButton
+                );
+            }
+
+            if (
                 isFormFrameSelectMode &&
                 record.id != null
             ) {
@@ -3488,6 +3559,64 @@
             list.textContent =
                 "フォーム動画を読み込めませんでした。";
         }
+    }
+
+    async function deleteFormFrame(
+        frameId
+    ) {
+        const id =
+            Number(frameId);
+
+        if (
+            !Number.isInteger(id) ||
+            id <= 0
+        ) {
+            throw new Error(
+                "削除する静止画のIDが不正です。"
+            );
+        }
+
+        const db =
+            await openDatabase();
+
+        return new Promise(function (
+            resolve,
+            reject
+        ) {
+            const transaction =
+                db.transaction(
+                    FRAME_STORE_NAME,
+                    "readwrite"
+                );
+
+            transaction.oncomplete =
+                function () {
+                    resolve();
+                };
+
+            transaction.onerror =
+                function () {
+                    reject(
+                        transaction.error
+                    );
+                };
+
+            transaction.onabort =
+                function () {
+                    reject(
+                        transaction.error ||
+                        new Error(
+                            "静止画の削除が中断されました。"
+                        )
+                    );
+                };
+
+            transaction
+                .objectStore(
+                    FRAME_STORE_NAME
+                )
+                .delete(id);
+        });
     }
 
     async function deleteFormVideo(
