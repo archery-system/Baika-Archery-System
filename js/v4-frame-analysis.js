@@ -5,1769 +5,1456 @@
  */
 
 (function () {
-    "use strict";
+  "use strict";
 
-    const DB_NAME =
-        "baika-archery-form-video-local";
+  const DB_NAME = "baika-archery-form-video-local";
 
-    const DB_VERSION =
-        2;
+  const DB_VERSION = 2;
 
-    const VIDEO_STORE_NAME =
-        "formVideos";
+  const VIDEO_STORE_NAME = "formVideos";
 
-    const FRAME_STORE_NAME =
-        "formFrames";
+  const FRAME_STORE_NAME = "formFrames";
 
-    let databasePromise =
-        null;
+  let databasePromise = null;
 
-    let currentVideoUrl =
-        "";
+  let currentVideoUrl = "";
 
-    let currentVideoRecord =
-        null;
+  let currentVideoRecord = null;
 
-    let frameStepTimer =
-        null;
+  let frameStepTimer = null;
 
-    let frameStepStarted =
-        false;
+  let frameStepStarted = false;
 
-    let frameZoomScale =
-        1;
+  let frameZoomScale = 1;
 
-    const FRAME_ZOOM_MIN =
-        1;
+  const FRAME_ZOOM_MIN = 1;
 
-    const FRAME_ZOOM_MAX =
-        5;
+  const FRAME_ZOOM_MAX = 5;
 
-    const FRAME_ZOOM_STEP =
-        0.5;
+  const FRAME_ZOOM_STEP = 0.5;
 
-    let framePanX =
-        0;
+  let framePanX = 0;
 
-    let framePanY =
-        0;
+  let framePanY = 0;
 
-    let framePanStartX =
-        0;
+  let framePanStartX = 0;
 
-    let framePanStartY =
-        0;
+  let framePanStartY = 0;
 
-    let framePanPointerStartX =
-        0;
+  let framePanPointerStartX = 0;
 
-    let framePanPointerStartY =
-        0;
+  let framePanPointerStartY = 0;
 
-    let framePanPointerId =
-        null;
+  let framePanPointerId = null;
 
-    let framePanActive =
-        false;
+  let framePanActive = false;
 
-    document.addEventListener(
-        "DOMContentLoaded",
-        initializeFrameAnalysis
-    );
+  /*
+   * フォーム補助線の操作モード
+   * move：動画の移動
+   * draw：補助線の入力
+   */
+  let frameLineMode = "move";
 
-    async function initializeFrameAnalysis() {
-        const list =
-            document.getElementById(
-                "frameAnalysisVideoList"
-            );
+  /*
+   * フォーム補助線の管理
+   */
 
-        if (!list) {
-            return;
-        }
+  // 描画済みの直線
+  let frameLines = [];
 
-        bindFrameStepButtons();
+  // 現在描画中の直線
+  let frameDrawingLine = null;
 
-        bindFrameZoomButtons();
+  // 使用する線の色（初期値：赤）
+  let frameLineColor = "#ff0000";
 
-        bindFrameSaveButton();
+  // 描画操作中の指を識別
+  let frameLinePointerId = null;
 
-        try {
-            const videos =
-                await getAllFormVideos();
+  document.addEventListener("DOMContentLoaded", initializeFrameAnalysis);
 
-            videos.sort(function (a, b) {
-                return (
-                    new Date(
-                        b.createdAt || 0
-                    ).getTime() -
-                    new Date(
-                        a.createdAt || 0
-                    ).getTime()
-                );
-            });
+  async function initializeFrameAnalysis() {
+    const list = document.getElementById("frameAnalysisVideoList");
 
-            renderVideoList(
-                list,
-                videos
-            );
-
-        } catch (error) {
-            console.error(
-                "Frame analysis video load failed:",
-                error
-            );
-
-            list.textContent =
-                "フォーム動画を読み込めませんでした。";
-        }
+    if (!list) {
+      return;
     }
 
-    function openDatabase() {
-        if (databasePromise) {
-            return databasePromise;
-        }
+    bindFrameStepButtons();
 
-        databasePromise =
-            new Promise(function (
-                resolve,
-                reject
-            ) {
-                const request =
-                    indexedDB.open(
-                        DB_NAME,
-                        DB_VERSION
-                    );
+    bindFrameZoomButtons();
 
-                request.onupgradeneeded =
-                    function () {
-                        const db =
-                            request.result;
+    bindFrameSaveButton();
 
-                        if (
-                            !db.objectStoreNames
-                                .contains(
-                                    VIDEO_STORE_NAME
-                                )
-                        ) {
-                            const store =
-                                db.createObjectStore(
-                                    VIDEO_STORE_NAME,
-                                    {
-                                        keyPath: "id",
-                                        autoIncrement: true
-                                    }
-                                );
+    bindFrameLineModeButtons();
 
-                            store.createIndex(
-                                "createdAt",
-                                "createdAt",
-                                {
-                                    unique: false
-                                }
-                            );
-                        }
+    bindFrameLineColorButtons();
 
-                        if (
-                            !db.objectStoreNames
-                                .contains(
-                                    FRAME_STORE_NAME
-                                )
-                        ) {
-                            const frameStore =
-                                db.createObjectStore(
-                                    FRAME_STORE_NAME,
-                                    {
-                                        keyPath: "id",
-                                        autoIncrement: true
-                                    }
-                                );
+    bindFrameLineEditButtons();
 
-                            frameStore.createIndex(
-                                "createdAt",
-                                "createdAt",
-                                {
-                                    unique: false
-                                }
-                            );
-                        }
-                    };
+    try {
+      const videos = await getAllFormVideos();
 
-                request.onsuccess =
-                    function () {
-                        resolve(
-                            request.result
-                        );
-                    };
-
-                request.onerror =
-                    function () {
-                        reject(
-                            request.error
-                        );
-                    };
-            });
-
-        return databasePromise;
-    }
-
-    async function getAllFormVideos() {
-        const db =
-            await openDatabase();
-
-        return new Promise(function (
-            resolve,
-            reject
-        ) {
-            const transaction =
-                db.transaction(
-                    VIDEO_STORE_NAME,
-                    "readonly"
-                );
-
-            const request =
-                transaction
-                    .objectStore(
-                        VIDEO_STORE_NAME
-                    )
-                    .getAll();
-
-            request.onsuccess =
-                function () {
-                    resolve(
-                        Array.isArray(
-                            request.result
-                        )
-                            ? request.result
-                            : []
-                    );
-                };
-
-            request.onerror =
-                function () {
-                    reject(
-                        request.error
-                    );
-                };
-        });
-    }
-
-    async function createFormVideoPoster(
-        blob
-    ) {
-        if (!(blob instanceof Blob)) {
-            return "";
-        }
-
-        const video =
-            document.createElement(
-                "video"
-            );
-
-        const videoUrl =
-            URL.createObjectURL(
-                blob
-            );
-
-        try {
-            video.src =
-                videoUrl;
-
-            video.preload =
-                "auto";
-
-            video.muted =
-                true;
-
-            video.playsInline =
-                true;
-
-            await new Promise(function (
-                resolve,
-                reject
-            ) {
-                if (
-                    video.readyState >= 2 &&
-                    video.videoWidth > 0 &&
-                    video.videoHeight > 0
-                ) {
-                    resolve();
-
-                    return;
-                }
-
-                video.addEventListener(
-                    "loadeddata",
-                    resolve,
-                    {
-                        once:
-                            true
-                    }
-                );
-
-                video.addEventListener(
-                    "error",
-                    reject,
-                    {
-                        once:
-                            true
-                    }
-                );
-
-                video.load();
-            });
-
-            const duration =
-                Number(
-                    video.duration || 0
-                );
-
-            const targetTime =
-                Number.isFinite(duration) &&
-                    duration > 0
-                    ? Math.min(
-                        0.5,
-                        Math.max(
-                            0,
-                            duration / 2
-                        )
-                    )
-                    : 0;
-
-            if (targetTime > 0) {
-                await new Promise(function (
-                    resolve,
-                    reject
-                ) {
-                    video.addEventListener(
-                        "seeked",
-                        resolve,
-                        {
-                            once:
-                                true
-                        }
-                    );
-
-                    video.addEventListener(
-                        "error",
-                        reject,
-                        {
-                            once:
-                                true
-                        }
-                    );
-
-                    video.currentTime =
-                        targetTime;
-                });
-            }
-
-            if (
-                !video.videoWidth ||
-                !video.videoHeight
-            ) {
-                return "";
-            }
-
-            const canvas =
-                document.createElement(
-                    "canvas"
-                );
-
-            canvas.width =
-                video.videoWidth;
-
-            canvas.height =
-                video.videoHeight;
-
-            const context =
-                canvas.getContext(
-                    "2d"
-                );
-
-            if (!context) {
-                return "";
-            }
-
-            context.drawImage(
-                video,
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-
-            return canvas.toDataURL(
-                "image/jpeg",
-                0.8
-            );
-
-        } catch (error) {
-            console.warn(
-                "Frame analysis poster creation failed:",
-                error
-            );
-
-            return "";
-
-        } finally {
-            video.removeAttribute(
-                "src"
-            );
-
-            video.load();
-
-            URL.revokeObjectURL(
-                videoUrl
-            );
-        }
-    }
-
-    function renderVideoList(
-        list,
-        videos
-    ) {
-        list.replaceChildren();
-
-        if (
-            !Array.isArray(videos) ||
-            videos.length === 0
-        ) {
-            list.textContent =
-                "保存されているフォーム動画はありません。";
-
-            return;
-        }
-
-        videos.forEach(function (
-            record
-        ) {
-            if (
-                !record ||
-                !(record.blob instanceof Blob)
-            ) {
-                return;
-            }
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.type =
-                "button";
-
-            button.style.cssText = [
-                "width: 100%",
-                "padding: 14px 16px",
-                "border: 1px solid rgba(79, 38, 131, 0.18)",
-                "border-radius: 14px",
-                "font: inherit",
-                "text-align: left",
-                "cursor: pointer",
-                "color: #351c57",
-                "background: #ffffff"
-            ].join(";");
-
-            const createdAt =
-                formatDateTime(
-                    record.createdAt
-                );
-
-            const size =
-                formatFileSize(
-                    record.size
-                );
-
-            const thumbnail =
-                document.createElement(
-                    "img"
-                );
-
-            thumbnail.alt =
-                "フォーム動画のサムネイル";
-
-            thumbnail.style.cssText = [
-                "display: none",
-                "width: 100%",
-                "max-height: 320px",
-                "margin-bottom: 10px",
-                "border-radius: 10px",
-                "object-fit: contain",
-                "background: #000000"
-            ].join(";");
-
-            const info =
-                document.createElement(
-                    "div"
-                );
-
-            info.innerHTML =
-                "<strong>🎥 " +
-                escapeHtml(createdAt) +
-                "</strong>" +
-                "<br>" +
-                "<span style=\"" +
-                "font-size: 0.9rem;" +
-                "color: #6b5b7d;" +
-                "\">" +
-                escapeHtml(size) +
-                "</span>";
-
-            button.appendChild(
-                thumbnail
-            );
-
-            button.appendChild(
-                info
-            );
-
-            createFormVideoPoster(
-                record.blob
-            ).then(function (
-                poster
-            ) {
-                if (!poster) {
-                    return;
-                }
-
-                thumbnail.src =
-                    poster;
-
-                thumbnail.style.display =
-                    "block";
-            });
-
-            button.addEventListener(
-                "click",
-                function () {
-                    showSelectedVideo(
-                        record
-                    );
-                }
-            );
-
-            list.appendChild(
-                button
-            );
-        });
-    }
-
-    function showSelectedVideo(
-        record
-    ) {
-        const area =
-            document.getElementById(
-                "frameAnalysisArea"
-            );
-
-        const videoArea =
-            document.getElementById(
-                "frameAnalysisVideoArea"
-            );
-
-        const timeDisplay =
-            document.getElementById(
-                "frameAnalysisCurrentTime"
-            );
-
-        if (
-            !area ||
-            !videoArea ||
-            !(record.blob instanceof Blob)
-        ) {
-            return;
-        }
-
-        releaseCurrentVideoUrl();
-
-        /*
-         * 現在選択している元動画の
-         * 記録情報を保持する。
-         */
-        currentVideoRecord =
-            record;
-
-        /*
-         * 別の動画を選択したときは
-         * ズーム倍率を100%へ戻す。
-         */
-        frameZoomScale =
-            1;
-
-        framePanX =
-            0;
-
-        framePanY =
-            0;
-
-        currentVideoUrl =
-            URL.createObjectURL(
-                record.blob
-            );
-
-        const video =
-            document.createElement(
-                "video"
-            );
-
-        video.id =
-            "frameAnalysisVideo";
-
-        video.src =
-            currentVideoUrl;
-
-        video.controls =
-            false;
-
-        video.playsInline =
-            true;
-
-        video.preload =
-            "metadata";
-
-        video.disablePictureInPicture =
-            true;
-
-        video.style.cssText = [
-            "display: block",
-            "width: 100%",
-            "max-width: 720px",
-            "margin: 0 auto",
-            "border-radius: 12px",
-            "background: #000000"
-        ].join(";");
-
-        bindFramePan(
-            video
+      videos.sort(function (a, b) {
+        return (
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
         );
+      });
 
-        /*
- * 拡大した映像がカードの外へ
- * はみ出さないようにする。
- */
-        videoArea.style.cssText = [
-            "position: relative",
-            "width: 100%",
-            "max-width: 720px",
-            "margin: 0 auto",
-            "overflow: hidden",
-            "border-radius: 12px",
-            "background: #000000"
-        ].join(";");
+      renderVideoList(list, videos);
+    } catch (error) {
+      console.error("Frame analysis video load failed:", error);
 
-        video.addEventListener(
-            "loadedmetadata",
-            function () {
-                updateTimeDisplay(
-                    video,
-                    timeDisplay
-                );
-            }
-        );
+      list.textContent = "フォーム動画を読み込めませんでした。";
+    }
+  }
 
-        video.addEventListener(
-            "timeupdate",
-            function () {
-                updateTimeDisplay(
-                    video,
-                    timeDisplay
-                );
-            }
-        );
-
-        videoArea.replaceChildren(
-            video
-        );
-
-        /*
-         * 新しく選択した動画へ
-         * 100%のズーム状態を反映する。
-         */
-        updateFrameZoom();
-
-        area.style.display =
-            "block";
-
-        if (timeDisplay) {
-            timeDisplay.textContent =
-                "0.0 秒";
-        }
-
-        area.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
+  /*
+   * 補助線Canvasで指・マウスの操作を受け取る。
+   */
+  function bindFrameLineDrawing(canvas) {
+    if (!canvas) {
+      return;
     }
 
-    function bindFrameSaveButton() {
-        const button =
-            document.getElementById(
-                "frameAnalysisSaveFrameButton"
-            );
+    /*
+     * 画面上の座標をCanvas内部の座標へ変換する。
+     * ズームや移動があっても線の位置を合わせる。
+     */
+    function getCanvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+
+      if (!rect.width || !rect.height) {
+        return null;
+      }
+
+      const x = ((event.clientX - rect.left) / rect.width) * canvas.width;
+
+      const y = ((event.clientY - rect.top) / rect.height) * canvas.height;
+
+      return {
+        x: Math.max(0, Math.min(canvas.width, x)),
+        y: Math.max(0, Math.min(canvas.height, y)),
+      };
+    }
+
+    canvas.addEventListener("pointerdown", function (event) {
+      if (frameLineMode !== "draw") {
+        return;
+      }
+
+      if (frameLinePointerId !== null) {
+        return;
+      }
+
+      const point = getCanvasPoint(event);
+
+      if (!point) {
+        return;
+      }
+
+      event.preventDefault();
+
+      frameLinePointerId = event.pointerId;
+
+      frameDrawingLine = {
+        startX: point.x,
+        startY: point.y,
+        endX: point.x,
+        endY: point.y,
+        color: frameLineColor,
+      };
+
+      canvas.setPointerCapture(event.pointerId);
+
+      renderFrameLines();
+    });
+
+    canvas.addEventListener("pointermove", function (event) {
+      if (event.pointerId !== frameLinePointerId) {
+        return;
+      }
+
+      if (!frameDrawingLine) {
+        return;
+      }
+
+      const point = getCanvasPoint(event);
+
+      if (!point) {
+        return;
+      }
+
+      event.preventDefault();
+
+      frameDrawingLine.endX = point.x;
+      frameDrawingLine.endY = point.y;
+
+      renderFrameLines();
+    });
+
+    function finishDrawing(event) {
+      if (event.pointerId !== frameLinePointerId) {
+        return;
+      }
+
+      if (frameDrawingLine) {
+        const point = getCanvasPoint(event);
+
+        if (point) {
+          frameDrawingLine.endX = point.x;
+          frameDrawingLine.endY = point.y;
+        }
+
+        frameLines.push(frameDrawingLine);
+
+        frameDrawingLine = null;
+      }
+
+      frameLinePointerId = null;
+
+      if (canvas.hasPointerCapture(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId);
+      }
+
+      renderFrameLines();
+    }
+
+    canvas.addEventListener("pointerup", finishDrawing);
+    canvas.addEventListener("pointercancel", finishDrawing);
+  }
+
+  /*
+   * フォーム補助線をCanvasに描画する。
+   */
+  function renderFrameLines() {
+    const canvas = document.getElementById("frameAnalysisLineCanvas");
+
+    if (!canvas || !canvas.width || !canvas.height) {
+      return;
+    }
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      return;
+    }
+
+    /*
+     * 前回の描画を消去してから描き直す。
+     */
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    /*
+     * 描画済みの線と、現在描画中の線を表示する。
+     */
+    const lines = frameDrawingLine
+      ? [...frameLines, frameDrawingLine]
+      : frameLines;
+
+    lines.forEach(function (line) {
+      context.beginPath();
+
+      context.moveTo(line.startX, line.startY);
+
+      context.lineTo(line.endX, line.endY);
+
+      context.strokeStyle = line.color;
+
+      /*
+       * 動画の解像度に応じた線の太さ。
+       */
+      context.lineWidth = Math.max(3, canvas.width / 320);
+
+      context.lineCap = "round";
+
+      context.stroke();
+    });
+  }
+
+  /*
+   * 補助線の取り消し・全消去ボタンを設定する。
+   */
+  function bindFrameLineEditButtons() {
+    const undoButton = document.getElementById("frameLineUndoButton");
+
+    const clearButton = document.getElementById("frameLineClearButton");
+
+    /*
+     * 最後に描いた直線を1本取り消す。
+     */
+    if (undoButton) {
+      undoButton.addEventListener("click", function () {
+        if (frameLines.length === 0) {
+          return;
+        }
+
+        frameLines.pop();
+
+        renderFrameLines();
+      });
+    }
+
+    /*
+     * 描画済みの補助線をすべて消去する。
+     */
+    if (clearButton) {
+      clearButton.addEventListener("click", function () {
+        if (frameLines.length === 0) {
+          return;
+        }
+
+        const confirmed = window.confirm("すべての補助線を消去しますか？");
+
+        if (!confirmed) {
+          return;
+        }
+
+        frameLines = [];
+
+        renderFrameLines();
+      });
+    }
+  }
+
+  /*
+   * 補助線の色選択ボタンを設定する。
+   */
+  function bindFrameLineColorButtons() {
+    const colors = [
+      {
+        id: "frameLineRedButton",
+        color: "#ff0000",
+      },
+      {
+        id: "frameLineYellowButton",
+        color: "#ffff00",
+      },
+      {
+        id: "frameLineBlueButton",
+        color: "#0066ff",
+      },
+      {
+        id: "frameLineWhiteButton",
+        color: "#ffffff",
+      },
+    ];
+
+    function updateColorButtons() {
+      colors.forEach(function (item) {
+        const button = document.getElementById(item.id);
 
         if (!button) {
-            return;
+          return;
         }
 
-        button.addEventListener(
-            "click",
-            function () {
-                captureCurrentFrame();
-            }
-        );
+        button.style.outline =
+          frameLineColor === item.color ? "3px solid #673ab7" : "none";
+
+        button.style.outlineOffset = "2px";
+      });
     }
 
-    async function saveFormFrame(
-        record
-    ) {
-        const db =
-            await openDatabase();
+    colors.forEach(function (item) {
+      const button = document.getElementById(item.id);
 
-        return new Promise(function (
-            resolve,
-            reject
+      if (!button) {
+        return;
+      }
+
+      button.addEventListener("click", function () {
+        frameLineColor = item.color;
+
+        updateColorButtons();
+      });
+    });
+
+    updateColorButtons();
+  }
+
+  function bindFrameLineModeButtons() {
+    const moveButton = document.getElementById("frameLineMoveButton");
+
+    const drawButton = document.getElementById("frameLineDrawButton");
+
+    if (!moveButton || !drawButton) {
+      return;
+    }
+
+    function updateButtons() {
+      const isMove = frameLineMode === "move";
+
+      /*
+       * 線を引くモードではCanvasで指の操作を受け取る。
+       * 移動モードでは動画側で操作を受け取る。
+       */
+      const lineCanvas = document.getElementById("frameAnalysisLineCanvas");
+
+      if (lineCanvas) {
+        lineCanvas.style.pointerEvents = isMove ? "none" : "auto";
+
+        lineCanvas.style.touchAction = "none";
+      }
+
+      moveButton.style.background = isMove ? "#673ab7" : "#ffffff";
+
+      moveButton.style.color = isMove ? "#ffffff" : "#673ab7";
+
+      drawButton.style.background = isMove ? "#ffffff" : "#673ab7";
+
+      drawButton.style.color = isMove ? "#673ab7" : "#ffffff";
+    }
+
+    moveButton.addEventListener("click", function () {
+      frameLineMode = "move";
+
+      updateButtons();
+    });
+
+    drawButton.addEventListener("click", function () {
+      frameLineMode = "draw";
+
+      updateButtons();
+    });
+
+    updateButtons();
+  }
+
+  function openDatabase() {
+    if (databasePromise) {
+      return databasePromise;
+    }
+
+    databasePromise = new Promise(function (resolve, reject) {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onupgradeneeded = function () {
+        const db = request.result;
+
+        if (!db.objectStoreNames.contains(VIDEO_STORE_NAME)) {
+          const store = db.createObjectStore(VIDEO_STORE_NAME, {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+
+          store.createIndex("createdAt", "createdAt", {
+            unique: false,
+          });
+        }
+
+        if (!db.objectStoreNames.contains(FRAME_STORE_NAME)) {
+          const frameStore = db.createObjectStore(FRAME_STORE_NAME, {
+            keyPath: "id",
+            autoIncrement: true,
+          });
+
+          frameStore.createIndex("createdAt", "createdAt", {
+            unique: false,
+          });
+        }
+      };
+
+      request.onsuccess = function () {
+        resolve(request.result);
+      };
+
+      request.onerror = function () {
+        reject(request.error);
+      };
+    });
+
+    return databasePromise;
+  }
+
+  async function getAllFormVideos() {
+    const db = await openDatabase();
+
+    return new Promise(function (resolve, reject) {
+      const transaction = db.transaction(VIDEO_STORE_NAME, "readonly");
+
+      const request = transaction.objectStore(VIDEO_STORE_NAME).getAll();
+
+      request.onsuccess = function () {
+        resolve(Array.isArray(request.result) ? request.result : []);
+      };
+
+      request.onerror = function () {
+        reject(request.error);
+      };
+    });
+  }
+
+  async function createFormVideoPoster(blob) {
+    if (!(blob instanceof Blob)) {
+      return "";
+    }
+
+    const video = document.createElement("video");
+
+    const videoUrl = URL.createObjectURL(blob);
+
+    try {
+      video.src = videoUrl;
+
+      video.preload = "auto";
+
+      video.muted = true;
+
+      video.playsInline = true;
+
+      await new Promise(function (resolve, reject) {
+        if (
+          video.readyState >= 2 &&
+          video.videoWidth > 0 &&
+          video.videoHeight > 0
         ) {
-            const transaction =
-                db.transaction(
-                    FRAME_STORE_NAME,
-                    "readwrite"
-                );
+          resolve();
 
-            const store =
-                transaction.objectStore(
-                    FRAME_STORE_NAME
-                );
+          return;
+        }
 
-            const request =
-                store.add(
-                    record
-                );
-
-            request.onsuccess =
-                function () {
-                    resolve(
-                        request.result
-                    );
-                };
-
-            request.onerror =
-                function () {
-                    reject(
-                        request.error
-                    );
-                };
+        video.addEventListener("loadeddata", resolve, {
+          once: true,
         });
+
+        video.addEventListener("error", reject, {
+          once: true,
+        });
+
+        video.load();
+      });
+
+      const duration = Number(video.duration || 0);
+
+      const targetTime =
+        Number.isFinite(duration) && duration > 0
+          ? Math.min(0.5, Math.max(0, duration / 2))
+          : 0;
+
+      if (targetTime > 0) {
+        await new Promise(function (resolve, reject) {
+          video.addEventListener("seeked", resolve, {
+            once: true,
+          });
+
+          video.addEventListener("error", reject, {
+            once: true,
+          });
+
+          video.currentTime = targetTime;
+        });
+      }
+
+      if (!video.videoWidth || !video.videoHeight) {
+        return "";
+      }
+
+      const canvas = document.createElement("canvas");
+
+      canvas.width = video.videoWidth;
+
+      canvas.height = video.videoHeight;
+
+      const context = canvas.getContext("2d");
+
+      if (!context) {
+        return "";
+      }
+
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      return canvas.toDataURL("image/jpeg", 0.8);
+    } catch (error) {
+      console.warn("Frame analysis poster creation failed:", error);
+
+      return "";
+    } finally {
+      video.removeAttribute("src");
+
+      video.load();
+
+      URL.revokeObjectURL(videoUrl);
+    }
+  }
+
+  function renderVideoList(list, videos) {
+    list.replaceChildren();
+
+    if (!Array.isArray(videos) || videos.length === 0) {
+      list.textContent = "保存されているフォーム動画はありません。";
+
+      return;
     }
 
-    async function captureCurrentFrame() {
-        const video =
-            document.getElementById(
-                "frameAnalysisVideo"
-            );
+    videos.forEach(function (record) {
+      if (!record || !(record.blob instanceof Blob)) {
+        return;
+      }
 
-        const message =
-            document.getElementById(
-                "frameAnalysisSaveMessage"
-            );
+      const button = document.createElement("button");
 
-        if (!video) {
-            if (message) {
-                message.textContent =
-                    "動画を選択してください。";
-            }
+      button.type = "button";
 
-            return;
+      button.style.cssText = [
+        "width: 100%",
+        "padding: 14px 16px",
+        "border: 1px solid rgba(79, 38, 131, 0.18)",
+        "border-radius: 14px",
+        "font: inherit",
+        "text-align: left",
+        "cursor: pointer",
+        "color: #351c57",
+        "background: #ffffff",
+      ].join(";");
+
+      const createdAt = formatDateTime(record.createdAt);
+
+      const size = formatFileSize(record.size);
+
+      const thumbnail = document.createElement("img");
+
+      thumbnail.alt = "フォーム動画のサムネイル";
+
+      thumbnail.style.cssText = [
+        "display: none",
+        "width: 100%",
+        "max-height: 320px",
+        "margin-bottom: 10px",
+        "border-radius: 10px",
+        "object-fit: contain",
+        "background: #000000",
+      ].join(";");
+
+      const info = document.createElement("div");
+
+      info.innerHTML =
+        "<strong>🎥 " +
+        escapeHtml(createdAt) +
+        "</strong>" +
+        "<br>" +
+        '<span style="' +
+        "font-size: 0.9rem;" +
+        "color: #6b5b7d;" +
+        '">' +
+        escapeHtml(size) +
+        "</span>";
+
+      button.appendChild(thumbnail);
+
+      button.appendChild(info);
+
+      createFormVideoPoster(record.blob).then(function (poster) {
+        if (!poster) {
+          return;
         }
 
-        if (
-            !video.videoWidth ||
-            !video.videoHeight
-        ) {
-            if (message) {
-                message.textContent =
-                    "動画を読み込んでいます。";
-            }
+        thumbnail.src = poster;
 
-            return;
+        thumbnail.style.display = "block";
+      });
+
+      button.addEventListener("click", function () {
+        showSelectedVideo(record);
+      });
+
+      list.appendChild(button);
+    });
+  }
+
+  function showSelectedVideo(record) {
+    const area = document.getElementById("frameAnalysisArea");
+
+    const videoArea = document.getElementById("frameAnalysisVideoArea");
+
+    const timeDisplay = document.getElementById("frameAnalysisCurrentTime");
+
+    if (!area || !videoArea || !(record.blob instanceof Blob)) {
+      return;
+    }
+
+    releaseCurrentVideoUrl();
+
+    /*
+     * 現在選択している元動画の
+     * 記録情報を保持する。
+     */
+    currentVideoRecord = record;
+
+    /*
+     * 新しい動画を選択したときは
+     * 前の動画の補助線を消去する。
+     */
+    frameLines = [];
+
+    frameDrawingLine = null;
+
+    frameLinePointerId = null;
+
+    /*
+     * 別の動画を選択したときは
+     * ズーム倍率を100%へ戻す。
+     */
+    frameZoomScale = 1;
+
+    framePanX = 0;
+
+    framePanY = 0;
+
+    currentVideoUrl = URL.createObjectURL(record.blob);
+
+    const video = document.createElement("video");
+
+    video.id = "frameAnalysisVideo";
+
+    video.src = currentVideoUrl;
+
+    video.controls = false;
+
+    video.playsInline = true;
+
+    video.preload = "metadata";
+
+    video.disablePictureInPicture = true;
+
+    video.style.cssText = [
+      "display: block",
+      "width: 100%",
+      "max-width: 720px",
+      "margin: 0 auto",
+      "border-radius: 12px",
+      "background: #000000",
+    ].join(";");
+
+    bindFramePan(video);
+
+    /*
+     * 拡大した映像がカードの外へ
+     * はみ出さないようにする。
+     */
+    videoArea.style.cssText = [
+      "position: relative",
+      "width: 100%",
+      "max-width: 720px",
+      "margin: 0 auto",
+      "overflow: hidden",
+      "border-radius: 12px",
+      "background: #000000",
+    ].join(";");
+
+    video.addEventListener("loadedmetadata", function () {
+      /*
+       * 補助線Canvasの内部解像度を
+       * 動画の元解像度に合わせる。
+       */
+      const lineCanvas = document.getElementById("frameAnalysisLineCanvas");
+
+      if (lineCanvas && video.videoWidth && video.videoHeight) {
+        lineCanvas.width = video.videoWidth;
+        lineCanvas.height = video.videoHeight;
+      }
+
+      updateTimeDisplay(video, timeDisplay);
+    });
+
+    video.addEventListener("timeupdate", function () {
+      updateTimeDisplay(video, timeDisplay);
+    });
+
+    /*
+     * 動画と補助線を同じレイヤー内に配置する。
+     */
+    const frameLayer = document.createElement("div");
+
+    frameLayer.id = "frameAnalysisLayer";
+
+    frameLayer.style.cssText = [
+      "position: relative",
+      "width: 100%",
+      "max-width: 720px",
+      "margin: 0 auto",
+    ].join(";");
+
+    const lineCanvas = document.createElement("canvas");
+
+    lineCanvas.id = "frameAnalysisLineCanvas";
+
+    lineCanvas.style.cssText = [
+      "position: absolute",
+      "top: 0",
+      "left: 0",
+      "width: 100%",
+      "height: 100%",
+      "z-index: 2",
+      "pointer-events: none",
+    ].join(";");
+
+    frameLayer.appendChild(video);
+    frameLayer.appendChild(lineCanvas);
+
+    videoArea.replaceChildren(frameLayer);
+
+    /*
+     * 動画を切り替えた直後にも
+     * 現在の操作モードをCanvasへ反映する。
+     */
+    lineCanvas.style.pointerEvents = frameLineMode === "draw" ? "auto" : "none";
+
+    lineCanvas.style.touchAction = "none";
+
+    /*
+     * 新しい動画のCanvasに描画操作を接続する。
+     */
+    bindFrameLineDrawing(lineCanvas);
+
+    /*
+     * Canvas作成時点ですでに動画情報を
+     * 取得できている場合にも解像度を設定する。
+     */
+    if (video.videoWidth && video.videoHeight) {
+      lineCanvas.width = video.videoWidth;
+      lineCanvas.height = video.videoHeight;
+    }
+
+    /*
+     * 新しく選択した動画へ
+     * 100%のズーム状態を反映する。
+     */
+    updateFrameZoom();
+
+    area.style.display = "block";
+
+    if (timeDisplay) {
+      timeDisplay.textContent = "0.0 秒";
+    }
+
+    area.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+
+  function bindFrameSaveButton() {
+    const button = document.getElementById("frameAnalysisSaveFrameButton");
+
+    if (!button) {
+      return;
+    }
+
+    button.addEventListener("click", function () {
+      captureCurrentFrame();
+    });
+  }
+
+  async function saveFormFrame(record) {
+    const db = await openDatabase();
+
+    return new Promise(function (resolve, reject) {
+      const transaction = db.transaction(FRAME_STORE_NAME, "readwrite");
+
+      const store = transaction.objectStore(FRAME_STORE_NAME);
+
+      const request = store.add(record);
+
+      request.onsuccess = function () {
+        resolve(request.result);
+      };
+
+      request.onerror = function () {
+        reject(request.error);
+      };
+    });
+  }
+
+  async function captureCurrentFrame() {
+    const video = document.getElementById("frameAnalysisVideo");
+
+    const message = document.getElementById("frameAnalysisSaveMessage");
+
+    if (!video) {
+      if (message) {
+        message.textContent = "動画を選択してください。";
+      }
+
+      return;
+    }
+
+    if (!video.videoWidth || !video.videoHeight) {
+      if (message) {
+        message.textContent = "動画を読み込んでいます。";
+      }
+
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+
+    canvas.height = video.videoHeight;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      if (message) {
+        message.textContent = "静止画を作成できませんでした。";
+      }
+
+      return;
+    }
+
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    /*
+     * 動画の上に補助線を合成する。
+     * 拡大・移動の表示状態には影響されず、
+     * 元動画の解像度で保存する。
+     */
+    const lineCanvas = document.getElementById("frameAnalysisLineCanvas");
+
+    if (lineCanvas && lineCanvas.width && lineCanvas.height) {
+      /*
+       * 描画途中の線も含めてCanvasを最新状態にする。
+       */
+      renderFrameLines();
+
+      context.drawImage(lineCanvas, 0, 0, canvas.width, canvas.height);
+    }
+
+    const frameTime = Number(video.currentTime.toFixed(1));
+
+    if (message) {
+      message.textContent = "静止画を保存しています…";
+    }
+
+    canvas.toBlob(
+      async function (blob) {
+        if (!blob) {
+          if (message) {
+            message.textContent = "静止画を作成できませんでした。";
+          }
+
+          return;
         }
 
-        const canvas =
-            document.createElement(
-                "canvas"
-            );
+        const record = {
+          createdAt: new Date().toISOString(),
 
-        canvas.width =
-            video.videoWidth;
+          /*
+           * 元動画の録画開始日時を引き継ぐ。
+           * 撮影日時が不明な場合は null。
+           */
+          videoRecordedAt:
+            currentVideoRecord && currentVideoRecord.videoRecordedAt
+              ? currentVideoRecord.videoRecordedAt
+              : null,
 
-        canvas.height =
-            video.videoHeight;
+          videoTime: frameTime,
 
-        const context =
-            canvas.getContext(
-                "2d"
-            );
+          mimeType: blob.type || "image/jpeg",
 
-        if (!context) {
-            if (message) {
-                message.textContent =
-                    "静止画を作成できませんでした。";
-            }
+          size: blob.size,
 
-            return;
-        }
+          width: canvas.width,
 
-        context.drawImage(
-            video,
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
+          height: canvas.height,
 
-        const frameTime =
-            Number(
-                video.currentTime.toFixed(
-                    1
-                )
-            );
+          blob: blob,
+        };
 
-        if (message) {
+        try {
+          const frameId = await saveFormFrame(record);
+
+          flashFrameCapture();
+
+          console.log("Frame saved:", {
+            id: frameId,
+            time: frameTime,
+            width: canvas.width,
+            height: canvas.height,
+            size: blob.size,
+          });
+
+          if (message) {
             message.textContent =
-                "静止画を保存しています…";
+              "✅ " + frameTime.toFixed(1) + "秒のコマを保存しました。";
+          }
+        } catch (error) {
+          console.error("Frame save failed:", error);
+
+          if (message) {
+            message.textContent = "静止画を保存できませんでした。";
+          }
         }
+      },
+      "image/jpeg",
+      0.9,
+    );
+  }
 
-        canvas.toBlob(
-            async function (blob) {
-                if (!blob) {
-                    if (message) {
-                        message.textContent =
-                            "静止画を作成できませんでした。";
-                    }
+  function flashFrameCapture() {
+    const videoArea = document.getElementById("frameAnalysisVideoArea");
 
-                    return;
-                }
-
-                const record = {
-                    createdAt:
-                        new Date()
-                            .toISOString(),
-
-                    /*
-                     * 元動画の録画開始日時を引き継ぐ。
-                     * 撮影日時が不明な場合は null。
-                     */
-                    videoRecordedAt:
-                        currentVideoRecord &&
-                            currentVideoRecord.videoRecordedAt
-                            ? currentVideoRecord.videoRecordedAt
-                            : null,
-
-                    videoTime:
-                        frameTime,
-
-                    mimeType:
-                        blob.type ||
-                        "image/jpeg",
-
-                    size:
-                        blob.size,
-
-                    width:
-                        canvas.width,
-
-                    height:
-                        canvas.height,
-
-                    blob:
-                        blob
-                };
-
-                try {
-                    const frameId =
-                        await saveFormFrame(
-                            record
-                        );
-
-                    flashFrameCapture();
-
-                    console.log(
-                        "Frame saved:",
-                        {
-                            id:
-                                frameId,
-                            time:
-                                frameTime,
-                            width:
-                                canvas.width,
-                            height:
-                                canvas.height,
-                            size:
-                                blob.size
-                        }
-                    );
-
-                    if (message) {
-                        message.textContent =
-                            "✅ " +
-                            frameTime.toFixed(
-                                1
-                            ) +
-                            "秒のコマを保存しました。";
-                    }
-
-                } catch (error) {
-                    console.error(
-                        "Frame save failed:",
-                        error
-                    );
-
-                    if (message) {
-                        message.textContent =
-                            "静止画を保存できませんでした。";
-                    }
-                }
-            },
-            "image/jpeg",
-            0.9
-        );
+    if (!videoArea) {
+      return;
     }
 
-    function flashFrameCapture() {
-        const videoArea =
-            document.getElementById(
-                "frameAnalysisVideoArea"
-            );
+    const flash = document.createElement("div");
 
-        if (!videoArea) {
-            return;
-        }
+    flash.style.cssText = [
+      "position: absolute",
+      "inset: 0",
+      "z-index: 20",
+      "pointer-events: none",
+      "background: #ffffff",
+      "opacity: 0.9",
+      "transition: opacity 180ms ease-out",
+    ].join(";");
 
-        const flash =
-            document.createElement(
-                "div"
-            );
+    videoArea.appendChild(flash);
 
-        flash.style.cssText = [
-            "position: absolute",
-            "inset: 0",
-            "z-index: 20",
-            "pointer-events: none",
-            "background: #ffffff",
-            "opacity: 0.9",
-            "transition: opacity 180ms ease-out"
-        ].join(";");
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(function () {
+        flash.style.opacity = "0";
+      });
+    });
 
-        videoArea.appendChild(
-            flash
-        );
+    window.setTimeout(function () {
+      flash.remove();
+    }, 220);
+  }
 
-        window.requestAnimationFrame(
-            function () {
-                window.requestAnimationFrame(
-                    function () {
-                        flash.style.opacity =
-                            "0";
-                    }
-                );
-            }
-        );
-
-        window.setTimeout(
-            function () {
-                flash.remove();
-            },
-            220
-        );
+  function bindFramePan(video) {
+    if (!video) {
+      return;
     }
 
-    function bindFramePan(
-        video
+    /*
+     * iPhoneでドラッグ中に
+     * ページスクロールが発生するのを防ぐ。
+     */
+    video.style.touchAction = "none";
+
+    video.style.userSelect = "none";
+
+    video.style.webkitUserSelect = "none";
+
+    video.addEventListener("pointerdown", function (event) {
+      /*
+       * 100%では映像を動かさない。
+       */
+      if (frameLineMode !== "move" || frameZoomScale <= FRAME_ZOOM_MIN) {
+        return;
+      }
+
+      event.preventDefault();
+
+      framePanActive = true;
+
+      framePanPointerId = event.pointerId;
+
+      framePanPointerStartX = event.clientX;
+
+      framePanPointerStartY = event.clientY;
+
+      framePanStartX = framePanX;
+
+      framePanStartY = framePanY;
+
+      if (typeof video.setPointerCapture === "function") {
+        video.setPointerCapture(event.pointerId);
+      }
+
+      updateFrameZoom();
+    });
+
+    video.addEventListener("pointermove", function (event) {
+      if (!framePanActive || framePanPointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+
+      framePanX = framePanStartX + (event.clientX - framePanPointerStartX);
+
+      framePanY = framePanStartY + (event.clientY - framePanPointerStartY);
+
+      clampFramePan();
+
+      updateFrameZoom();
+    });
+
+    video.addEventListener("pointerup", function (event) {
+      stopFramePan(video, event);
+    });
+
+    video.addEventListener("pointercancel", function (event) {
+      stopFramePan(video, event);
+    });
+  }
+
+  function stopFramePan(video, event) {
+    if (!framePanActive || framePanPointerId !== event.pointerId) {
+      return;
+    }
+
+    framePanActive = false;
+
+    framePanPointerId = null;
+
+    if (
+      typeof video.hasPointerCapture === "function" &&
+      video.hasPointerCapture(event.pointerId) &&
+      typeof video.releasePointerCapture === "function"
     ) {
-        if (!video) {
-            return;
-        }
-
-        /*
-         * iPhoneでドラッグ中に
-         * ページスクロールが発生するのを防ぐ。
-         */
-        video.style.touchAction =
-            "none";
-
-        video.style.userSelect =
-            "none";
-
-        video.style.webkitUserSelect =
-            "none";
-
-        video.addEventListener(
-            "pointerdown",
-            function (event) {
-                /*
-                 * 100%では映像を動かさない。
-                 */
-                if (
-                    frameZoomScale <=
-                    FRAME_ZOOM_MIN
-                ) {
-                    return;
-                }
-
-                event.preventDefault();
-
-                framePanActive =
-                    true;
-
-                framePanPointerId =
-                    event.pointerId;
-
-                framePanPointerStartX =
-                    event.clientX;
-
-                framePanPointerStartY =
-                    event.clientY;
-
-                framePanStartX =
-                    framePanX;
-
-                framePanStartY =
-                    framePanY;
-
-                if (
-                    typeof video.setPointerCapture ===
-                    "function"
-                ) {
-                    video.setPointerCapture(
-                        event.pointerId
-                    );
-                }
-
-                updateFrameZoom();
-            }
-        );
-
-        video.addEventListener(
-            "pointermove",
-            function (event) {
-                if (
-                    !framePanActive ||
-                    framePanPointerId !==
-                    event.pointerId
-                ) {
-                    return;
-                }
-
-                event.preventDefault();
-
-                framePanX =
-                    framePanStartX +
-                    (
-                        event.clientX -
-                        framePanPointerStartX
-                    );
-
-                framePanY =
-                    framePanStartY +
-                    (
-                        event.clientY -
-                        framePanPointerStartY
-                    );
-
-                clampFramePan();
-
-                updateFrameZoom();
-            }
-        );
-
-        video.addEventListener(
-            "pointerup",
-            function (event) {
-                stopFramePan(
-                    video,
-                    event
-                );
-            }
-        );
-
-        video.addEventListener(
-            "pointercancel",
-            function (event) {
-                stopFramePan(
-                    video,
-                    event
-                );
-            }
-        );
+      video.releasePointerCapture(event.pointerId);
     }
 
-    function stopFramePan(
-        video,
-        event
-    ) {
-        if (
-            !framePanActive ||
-            framePanPointerId !==
-            event.pointerId
-        ) {
-            return;
-        }
+    updateFrameZoom();
+  }
 
-        framePanActive =
-            false;
+  function clampFramePan() {
+    const video = document.getElementById("frameAnalysisVideo");
 
-        framePanPointerId =
-            null;
+    const videoArea = document.getElementById("frameAnalysisVideoArea");
 
-        if (
-            typeof video.hasPointerCapture ===
-            "function" &&
-            video.hasPointerCapture(
-                event.pointerId
-            ) &&
-            typeof video.releasePointerCapture ===
-            "function"
-        ) {
-            video.releasePointerCapture(
-                event.pointerId
-            );
-        }
-
-        updateFrameZoom();
+    if (!video || !videoArea) {
+      return;
     }
 
-    function clampFramePan() {
-        const video =
-            document.getElementById(
-                "frameAnalysisVideo"
-            );
+    if (frameZoomScale <= FRAME_ZOOM_MIN) {
+      framePanX = 0;
 
-        const videoArea =
-            document.getElementById(
-                "frameAnalysisVideoArea"
-            );
+      framePanY = 0;
 
-        if (
-            !video ||
-            !videoArea
-        ) {
-            return;
-        }
-
-        if (
-            frameZoomScale <=
-            FRAME_ZOOM_MIN
-        ) {
-            framePanX =
-                0;
-
-            framePanY =
-                0;
-
-            return;
-        }
-
-        const videoWidth =
-            video.clientWidth;
-
-        const videoHeight =
-            video.clientHeight;
-
-        const areaWidth =
-            videoArea.clientWidth;
-
-        const areaHeight =
-            videoArea.clientHeight;
-
-        if (
-            !videoWidth ||
-            !videoHeight ||
-            !areaWidth ||
-            !areaHeight
-        ) {
-            return;
-        }
-
-        /*
-         * 拡大後に表示窓からはみ出す量の
-         * 半分まで移動できるようにする。
-         */
-        const maxPanX =
-            Math.max(
-                0,
-                (
-                    videoWidth *
-                    frameZoomScale -
-                    areaWidth
-                ) / 2
-            );
-
-        const maxPanY =
-            Math.max(
-                0,
-                (
-                    videoHeight *
-                    frameZoomScale -
-                    areaHeight
-                ) / 2
-            );
-
-        framePanX =
-            Math.min(
-                maxPanX,
-                Math.max(
-                    -maxPanX,
-                    framePanX
-                )
-            );
-
-        framePanY =
-            Math.min(
-                maxPanY,
-                Math.max(
-                    -maxPanY,
-                    framePanY
-                )
-            );
+      return;
     }
 
-    function bindFrameZoomButtons() {
-        const zoomOutButton =
-            document.getElementById(
-                "frameAnalysisZoomOutButton"
-            );
+    const videoWidth = video.clientWidth;
 
-        const zoomResetButton =
-            document.getElementById(
-                "frameAnalysisZoomResetButton"
-            );
+    const videoHeight = video.clientHeight;
 
-        const zoomInButton =
-            document.getElementById(
-                "frameAnalysisZoomInButton"
-            );
+    const areaWidth = videoArea.clientWidth;
 
-        if (
-            !zoomOutButton ||
-            !zoomResetButton ||
-            !zoomInButton
-        ) {
-            return;
-        }
+    const areaHeight = videoArea.clientHeight;
 
-        zoomOutButton.addEventListener(
-            "click",
-            function () {
-                setFrameZoom(
-                    frameZoomScale -
-                    FRAME_ZOOM_STEP
-                );
-            }
-        );
-
-        zoomResetButton.addEventListener(
-            "click",
-            function () {
-                setFrameZoom(
-                    1
-                );
-            }
-        );
-
-        zoomInButton.addEventListener(
-            "click",
-            function () {
-                setFrameZoom(
-                    frameZoomScale +
-                    FRAME_ZOOM_STEP
-                );
-            }
-        );
-
-        updateFrameZoom();
+    if (!videoWidth || !videoHeight || !areaWidth || !areaHeight) {
+      return;
     }
 
-    function setFrameZoom(
-        scale
-    ) {
-        frameZoomScale =
-            Math.min(
-                FRAME_ZOOM_MAX,
-                Math.max(
-                    FRAME_ZOOM_MIN,
-                    scale
-                )
-            );
-
-        /*
-         * 100%へ戻した場合は
-         * 映像位置も中央へ戻す。
-         */
-        if (
-            frameZoomScale ===
-            FRAME_ZOOM_MIN
-        ) {
-            framePanX =
-                0;
-
-            framePanY =
-                0;
-        }
-
-        clampFramePan();
-
-        updateFrameZoom();
-    }
-
-    function updateFrameZoom() {
-        const video =
-            document.getElementById(
-                "frameAnalysisVideo"
-            );
-
-        const zoomResetButton =
-            document.getElementById(
-                "frameAnalysisZoomResetButton"
-            );
-
-        const zoomOutButton =
-            document.getElementById(
-                "frameAnalysisZoomOutButton"
-            );
-
-        const zoomInButton =
-            document.getElementById(
-                "frameAnalysisZoomInButton"
-            );
-
-        if (video) {
-            video.style.transform =
-                "translate(" +
-                framePanX +
-                "px, " +
-                framePanY +
-                "px) " +
-                "scale(" +
-                frameZoomScale +
-                ")";
-
-            video.style.transformOrigin =
-                "center center";
-
-            video.style.transition =
-                framePanActive
-                    ? "none"
-                    : "transform 0.15s ease";
-        }
-
-        if (zoomResetButton) {
-            zoomResetButton.textContent =
-                Math.round(
-                    frameZoomScale *
-                    100
-                ) +
-                "%";
-        }
-
-        if (zoomOutButton) {
-            zoomOutButton.disabled =
-                frameZoomScale <=
-                FRAME_ZOOM_MIN;
-        }
-
-        if (zoomInButton) {
-            zoomInButton.disabled =
-                frameZoomScale >=
-                FRAME_ZOOM_MAX;
-        }
-    }
-
-    function bindFrameStepButtons() {
-        const prevButton =
-            document.getElementById(
-                "frameAnalysisPrevButton"
-            );
-
-        const nextButton =
-            document.getElementById(
-                "frameAnalysisNextButton"
-            );
-
-        if (
-            !prevButton ||
-            !nextButton
-        ) {
-            return;
-        }
-
-        bindFrameStepButton(
-            prevButton,
-            -0.1
-        );
-
-        bindFrameStepButton(
-            nextButton,
-            0.1
-        );
-    }
-
-    function bindFrameStepButton(
-        button,
-        seconds
-    ) {
-        button.addEventListener(
-            "pointerdown",
-            function (event) {
-                event.preventDefault();
-
-                stopFrameStep();
-
-                frameStepStarted =
-                    false;
-
-                /*
-                 * タップした瞬間は
-                 * 今までどおり0.1秒移動する。
-                 */
-                stepVideoTime(
-                    seconds
-                );
-
-                /*
-                 * 長押し開始まで少し待つ。
-                 */
-                frameStepTimer =
-                    window.setTimeout(
-                        function () {
-                            frameStepStarted =
-                                true;
-
-                            startAcceleratingFrameStep(
-                                seconds,
-                                0
-                            );
-                        },
-                        350
-                    );
-            }
-        );
-
-        button.addEventListener(
-            "pointerup",
-            stopFrameStep
-        );
-
-        button.addEventListener(
-            "pointercancel",
-            stopFrameStep
-        );
-
-        button.addEventListener(
-            "pointerleave",
-            function (event) {
-                if (
-                    event.pointerType ===
-                    "mouse"
-                ) {
-                    stopFrameStep();
-                }
-            }
-        );
-
-        /*
-         * iPhoneの長押し時に
-         * テキスト選択などが起きるのを防ぐ。
-         */
-        button.style.touchAction =
-            "none";
-
-        button.style.userSelect =
-            "none";
-
-        button.style.webkitUserSelect =
-            "none";
-    }
-
-    function startAcceleratingFrameStep(
-        seconds,
-        repeatCount
-    ) {
-        if (!frameStepStarted) {
-            return;
-        }
-
-        stepVideoTime(
-            seconds
-        );
-
-        /*
-         * 押し続けるほど待ち時間を短くする。
-         *
-         * 0～4回   : 240ms
-         * 5～9回   : 180ms
-         * 10～17回 : 130ms
-         * 18回以降 : 90ms
-         */
-        let delay =
-            240;
-
-        if (repeatCount >= 18) {
-            delay =
-                90;
-
-        } else if (repeatCount >= 10) {
-            delay =
-                130;
-
-        } else if (repeatCount >= 5) {
-            delay =
-                180;
-        }
-
-        frameStepTimer =
-            window.setTimeout(
-                function () {
-                    startAcceleratingFrameStep(
-                        seconds,
-                        repeatCount + 1
-                    );
-                },
-                delay
-            );
-    }
-
-    function stopFrameStep() {
-        if (
-            frameStepTimer !==
-            null
-        ) {
-            window.clearTimeout(
-                frameStepTimer
-            );
-
-            window.clearInterval(
-                frameStepTimer
-            );
-
-            frameStepTimer =
-                null;
-        }
-
-        frameStepStarted =
-            false;
-    }
-
-    function stepVideoTime(
-        seconds
-    ) {
-        const video =
-            document.getElementById(
-                "frameAnalysisVideo"
-            );
-
-        const timeDisplay =
-            document.getElementById(
-                "frameAnalysisCurrentTime"
-            );
-
-        if (!video) {
-            return;
-        }
-
-        video.pause();
-
-        const currentTime =
-            Number(
-                video.currentTime || 0
-            );
-
-        const duration =
-            Number(
-                video.duration
-            );
-
-        let nextTime =
-            currentTime +
-            Number(seconds || 0);
-
-        nextTime =
-            Math.max(
-                0,
-                nextTime
-            );
-
-        if (
-            Number.isFinite(duration) &&
-            duration > 0
-        ) {
-            nextTime =
-                Math.min(
-                    duration,
-                    nextTime
-                );
-        }
-
-        /*
-         * 小数計算による
-         * 0.30000000000000004 のような
-         * 誤差を抑える。
-         */
-        nextTime =
-            Math.round(
-                nextTime * 10
-            ) / 10;
-
-        video.currentTime =
-            nextTime;
-
-        updateTimeDisplay(
-            video,
-            timeDisplay
-        );
-    }
-
-
-    function updateTimeDisplay(
-        video,
-        element
-    ) {
-        if (
-            !video ||
-            !element
-        ) {
-            return;
-        }
-
-        const currentTime =
-            Number(
-                video.currentTime || 0
-            );
-
-        const duration =
-            Number(
-                video.duration || 0
-            );
-
-        element.textContent =
-            currentTime.toFixed(1) +
-            " 秒 / " +
-            (
-                Number.isFinite(duration)
-                    ? duration.toFixed(1)
-                    : "0.0"
-            ) +
-            " 秒";
-    }
-
-    function releaseCurrentVideoUrl() {
-        if (!currentVideoUrl) {
-            return;
-        }
-
-        URL.revokeObjectURL(
-            currentVideoUrl
-        );
-
-        currentVideoUrl =
-            "";
-    }
-
-    function formatDateTime(
-        value
-    ) {
-        const date =
-            new Date(value);
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-            return "日時不明";
-        }
-
-        return date.toLocaleString(
-            "ja-JP"
-        );
-    }
-
-    function formatFileSize(
-        value
-    ) {
-        const bytes =
-            Number(value || 0);
-
-        if (
-            !Number.isFinite(bytes) ||
-            bytes <= 0
-        ) {
-            return "サイズ不明";
-        }
-
-        if (bytes < 1024) {
-            return (
-                bytes +
-                " B"
-            );
-        }
-
-        if (
-            bytes <
-            1024 * 1024
-        ) {
-            return (
-                (
-                    bytes /
-                    1024
-                ).toFixed(1) +
-                " KB"
-            );
-        }
-
-        return (
-            (
-                bytes /
-                (
-                    1024 *
-                    1024
-                )
-            ).toFixed(1) +
-            " MB"
-        );
-    }
-
-    function escapeHtml(
-        value
-    ) {
-        return String(
-            value == null
-                ? ""
-                : value
-        )
-            .replace(
-                /&/g,
-                "&amp;"
-            )
-            .replace(
-                /</g,
-                "&lt;"
-            )
-            .replace(
-                />/g,
-                "&gt;"
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
-            );
-    }
-
-    window.addEventListener(
-        "pagehide",
-        releaseCurrentVideoUrl
+    /*
+     * 拡大後に表示窓からはみ出す量の
+     * 半分まで移動できるようにする。
+     */
+    const maxPanX = Math.max(0, (videoWidth * frameZoomScale - areaWidth) / 2);
+
+    const maxPanY = Math.max(
+      0,
+      (videoHeight * frameZoomScale - areaHeight) / 2,
     );
 
+    framePanX = Math.min(maxPanX, Math.max(-maxPanX, framePanX));
+
+    framePanY = Math.min(maxPanY, Math.max(-maxPanY, framePanY));
+  }
+
+  function bindFrameZoomButtons() {
+    const zoomOutButton = document.getElementById("frameAnalysisZoomOutButton");
+
+    const zoomResetButton = document.getElementById(
+      "frameAnalysisZoomResetButton",
+    );
+
+    const zoomInButton = document.getElementById("frameAnalysisZoomInButton");
+
+    if (!zoomOutButton || !zoomResetButton || !zoomInButton) {
+      return;
+    }
+
+    zoomOutButton.addEventListener("click", function () {
+      setFrameZoom(frameZoomScale - FRAME_ZOOM_STEP);
+    });
+
+    zoomResetButton.addEventListener("click", function () {
+      setFrameZoom(1);
+    });
+
+    zoomInButton.addEventListener("click", function () {
+      setFrameZoom(frameZoomScale + FRAME_ZOOM_STEP);
+    });
+
+    updateFrameZoom();
+  }
+
+  function setFrameZoom(scale) {
+    frameZoomScale = Math.min(FRAME_ZOOM_MAX, Math.max(FRAME_ZOOM_MIN, scale));
+
+    /*
+     * 100%へ戻した場合は
+     * 映像位置も中央へ戻す。
+     */
+    if (frameZoomScale === FRAME_ZOOM_MIN) {
+      framePanX = 0;
+
+      framePanY = 0;
+    }
+
+    clampFramePan();
+
+    updateFrameZoom();
+  }
+
+  function updateFrameZoom() {
+    const video = document.getElementById("frameAnalysisVideo");
+
+    const zoomResetButton = document.getElementById(
+      "frameAnalysisZoomResetButton",
+    );
+
+    const zoomOutButton = document.getElementById("frameAnalysisZoomOutButton");
+
+    const zoomInButton = document.getElementById("frameAnalysisZoomInButton");
+
+    const frameLayer = document.getElementById("frameAnalysisLayer");
+
+    if (video && frameLayer) {
+      /*
+       * 動画と補助線をまとめて拡大・移動する。
+       */
+      frameLayer.style.transform =
+        "translate(" +
+        framePanX +
+        "px, " +
+        framePanY +
+        "px) " +
+        "scale(" +
+        frameZoomScale +
+        ")";
+
+      frameLayer.style.transformOrigin = "center center";
+
+      frameLayer.style.transition = framePanActive
+        ? "none"
+        : "transform 0.15s ease";
+
+      /*
+       * 動画単体にはズームを適用しない。
+       */
+      video.style.transform = "none";
+    }
+
+    if (zoomResetButton) {
+      zoomResetButton.textContent = Math.round(frameZoomScale * 100) + "%";
+    }
+
+    if (zoomOutButton) {
+      zoomOutButton.disabled = frameZoomScale <= FRAME_ZOOM_MIN;
+    }
+
+    if (zoomInButton) {
+      zoomInButton.disabled = frameZoomScale >= FRAME_ZOOM_MAX;
+    }
+  }
+
+  function bindFrameStepButtons() {
+    const prevButton = document.getElementById("frameAnalysisPrevButton");
+
+    const nextButton = document.getElementById("frameAnalysisNextButton");
+
+    if (!prevButton || !nextButton) {
+      return;
+    }
+
+    bindFrameStepButton(prevButton, -0.1);
+
+    bindFrameStepButton(nextButton, 0.1);
+  }
+
+  function bindFrameStepButton(button, seconds) {
+    button.addEventListener("pointerdown", function (event) {
+      event.preventDefault();
+
+      stopFrameStep();
+
+      frameStepStarted = false;
+
+      /*
+       * タップした瞬間は
+       * 今までどおり0.1秒移動する。
+       */
+      stepVideoTime(seconds);
+
+      /*
+       * 長押し開始まで少し待つ。
+       */
+      frameStepTimer = window.setTimeout(function () {
+        frameStepStarted = true;
+
+        startAcceleratingFrameStep(seconds, 0);
+      }, 350);
+    });
+
+    button.addEventListener("pointerup", stopFrameStep);
+
+    button.addEventListener("pointercancel", stopFrameStep);
+
+    button.addEventListener("pointerleave", function (event) {
+      if (event.pointerType === "mouse") {
+        stopFrameStep();
+      }
+    });
+
+    /*
+     * iPhoneの長押し時に
+     * テキスト選択などが起きるのを防ぐ。
+     */
+    button.style.touchAction = "none";
+
+    button.style.userSelect = "none";
+
+    button.style.webkitUserSelect = "none";
+  }
+
+  function startAcceleratingFrameStep(seconds, repeatCount) {
+    if (!frameStepStarted) {
+      return;
+    }
+
+    stepVideoTime(seconds);
+
+    /*
+     * 押し続けるほど待ち時間を短くする。
+     *
+     * 0～4回   : 240ms
+     * 5～9回   : 180ms
+     * 10～17回 : 130ms
+     * 18回以降 : 90ms
+     */
+    let delay = 240;
+
+    if (repeatCount >= 18) {
+      delay = 90;
+    } else if (repeatCount >= 10) {
+      delay = 130;
+    } else if (repeatCount >= 5) {
+      delay = 180;
+    }
+
+    frameStepTimer = window.setTimeout(function () {
+      startAcceleratingFrameStep(seconds, repeatCount + 1);
+    }, delay);
+  }
+
+  function stopFrameStep() {
+    if (frameStepTimer !== null) {
+      window.clearTimeout(frameStepTimer);
+
+      window.clearInterval(frameStepTimer);
+
+      frameStepTimer = null;
+    }
+
+    frameStepStarted = false;
+  }
+
+  function stepVideoTime(seconds) {
+    const video = document.getElementById("frameAnalysisVideo");
+
+    const timeDisplay = document.getElementById("frameAnalysisCurrentTime");
+
+    if (!video) {
+      return;
+    }
+
+    video.pause();
+
+    const currentTime = Number(video.currentTime || 0);
+
+    const duration = Number(video.duration);
+
+    let nextTime = currentTime + Number(seconds || 0);
+
+    nextTime = Math.max(0, nextTime);
+
+    if (Number.isFinite(duration) && duration > 0) {
+      nextTime = Math.min(duration, nextTime);
+    }
+
+    /*
+     * 小数計算による
+     * 0.30000000000000004 のような
+     * 誤差を抑える。
+     */
+    nextTime = Math.round(nextTime * 10) / 10;
+
+    video.currentTime = nextTime;
+
+    updateTimeDisplay(video, timeDisplay);
+  }
+
+  function updateTimeDisplay(video, element) {
+    if (!video || !element) {
+      return;
+    }
+
+    const currentTime = Number(video.currentTime || 0);
+
+    const duration = Number(video.duration || 0);
+
+    element.textContent =
+      currentTime.toFixed(1) +
+      " 秒 / " +
+      (Number.isFinite(duration) ? duration.toFixed(1) : "0.0") +
+      " 秒";
+  }
+
+  function releaseCurrentVideoUrl() {
+    if (!currentVideoUrl) {
+      return;
+    }
+
+    URL.revokeObjectURL(currentVideoUrl);
+
+    currentVideoUrl = "";
+  }
+
+  function formatDateTime(value) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "日時不明";
+    }
+
+    return date.toLocaleString("ja-JP");
+  }
+
+  function formatFileSize(value) {
+    const bytes = Number(value || 0);
+
+    if (!Number.isFinite(bytes) || bytes <= 0) {
+      return "サイズ不明";
+    }
+
+    if (bytes < 1024) {
+      return bytes + " B";
+    }
+
+    if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toFixed(1) + " KB";
+    }
+
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  window.addEventListener("pagehide", releaseCurrentVideoUrl);
 })();

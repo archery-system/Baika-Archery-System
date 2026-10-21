@@ -129,6 +129,114 @@
 
                         <div id="frameAnalysisVideoArea"></div>
 
+<!-- フォーム補助線 操作パネル -->
+<div
+    id="frameAnalysisLineControls"
+    style="
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px solid #e5d9f2;
+        border-radius: 12px;
+        background: #faf7ff;
+    "
+>
+    <div style="
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+    ">
+        <button
+            id="frameLineMoveButton"
+            type="button"
+            style="
+                flex: 1;
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid #673ab7;
+                background: #673ab7;
+                color: white;
+            "
+        >
+            ✋ 動画を移動
+        </button>
+
+        <button
+            id="frameLineDrawButton"
+            type="button"
+            style="
+                flex: 1;
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid #673ab7;
+                background: white;
+                color: #673ab7;
+            "
+        >
+            ✏️ 補助線を引く
+        </button>
+    </div>
+
+    <div style="
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+        justify-content: center;
+    ">
+        <button
+            id="frameLineRedButton"
+            type="button"
+            style="padding: 8px 12px;"
+        >
+            🔴 赤
+        </button>
+
+        <button
+            id="frameLineYellowButton"
+            type="button"
+            style="padding: 8px 12px;"
+        >
+            🟡 黄
+        </button>
+
+        <button
+            id="frameLineBlueButton"
+            type="button"
+            style="padding: 8px 12px;"
+        >
+            🔵 青
+        </button>
+
+        <button
+            id="frameLineWhiteButton"
+            type="button"
+            style="padding: 8px 12px;"
+        >
+            ⚪ 白
+        </button>
+    </div>
+
+    <div style="
+        display: flex;
+        gap: 8px;
+    ">
+        <button
+            id="frameLineUndoButton"
+            type="button"
+            style="flex: 1; padding: 10px;"
+        >
+            ↩️ 1本戻す
+        </button>
+
+        <button
+            id="frameLineClearButton"
+            type="button"
+            style="flex: 1; padding: 10px;"
+        >
+            🗑️ 全消去
+        </button>
+    </div>
+</div>
+
                         <div id="frameAnalysisCurrentTime" style="
                                 margin-top: 12px;
                                 text-align: center;
