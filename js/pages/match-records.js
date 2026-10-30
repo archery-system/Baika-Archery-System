@@ -571,7 +571,7 @@
         renderRecords(sorted);
 
         updateMatchRecordSearchCount(
-            sorted.length
+            sorted
         );
     }
 
@@ -648,7 +648,7 @@
      * 検索結果件数を表示する
      */
     function updateMatchRecordSearchCount(
-        count
+        records
     ) {
         const element =
             document.getElementById(
@@ -659,8 +659,47 @@
             return;
         }
 
+        const scores =
+            records
+                .filter(function (record) {
+                    return (
+                        record.total !== null &&
+                        record.total !== undefined &&
+                        String(record.total).trim() !== "" &&
+                        Number.isFinite(
+                            Number(record.total)
+                        )
+                    );
+                })
+                .map(function (record) {
+                    return Number(record.total);
+                });
+
+        if (scores.length === 0) {
+            element.textContent =
+                `該当 ${records.length}件`;
+            return;
+        }
+
+        const max =
+            Math.max(...scores);
+
+        const min =
+            Math.min(...scores);
+
+        const average =
+            scores.reduce(
+                function (sum, score) {
+                    return sum + score;
+                },
+                0
+            ) / scores.length;
+
         element.textContent =
-            `該当 ${count}件`;
+            `該当 ${records.length}件　` +
+            `Max ${max}点　` +
+            `Min ${min}点　` +
+            `Avg ${average.toFixed(1)}点`;
     }
 
 
