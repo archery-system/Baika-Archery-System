@@ -46,19 +46,71 @@
                     margin-bottom: 20px;
                     padding: 24px;
                 ">
-
                     <h2>
                         📈 得点分析
                     </h2>
-
+                
                     <p>
                         練習記録の得点推移や平均点を分析します。
                     </p>
-
-                    <p>
-                        開発中
-                    </p>
-
+                
+                    <div id="scoreAnalysisArea">
+                
+                        <div style="
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 12px;
+                            margin: 20px 0;
+                        ">
+                            <label>
+                                距離
+                                <select id="scoreAnalysisDistance">
+                                    <option value="all">すべて</option>
+                                </select>
+                            </label>
+                
+                            <label>
+                                集計単位
+                                <select id="scoreAnalysisUnit">
+                                    <option value="6">6射</option>
+                                    <option value="36">36射</option>
+                                    <option value="72">72射</option>
+                                </select>
+                            </label>
+                        </div>
+                
+                        <div id="scoreAnalysisSummary" style="
+                            display: grid;
+                            grid-template-columns:
+                                repeat(auto-fit, minmax(110px, 1fr));
+                            gap: 12px;
+                            margin-bottom: 20px;
+                        ">
+                            <div class="bas-card">
+                                <p>最高点</p>
+                                <strong id="scoreAnalysisMax">--</strong>
+                            </div>
+                
+                            <div class="bas-card">
+                                <p>最低点</p>
+                                <strong id="scoreAnalysisMin">--</strong>
+                            </div>
+                
+                            <div class="bas-card">
+                                <p>平均点</p>
+                                <strong id="scoreAnalysisAvg">--</strong>
+                            </div>
+                        </div>
+                
+                        <div id="scoreAnalysisChart">
+                            <p>得点推移グラフを準備中です。</p>
+                        </div>
+                
+                        <p id="scoreAnalysisStatus" aria-live="polite">
+                            得点分析機能を準備中です。
+                        </p>
+                
+                    </div>
                 </section>
 
                 <section class="bas-card" style="
@@ -459,6 +511,9 @@
     <script src="js/components/page-header.js"></script>
     <script src="js/components/card.js"></script>
 
+    <!-- Score Analysis -->
+    <script src="js/v4-score-analysis.js"></script>
+    
     <!-- AI Analysis -->
     <script src="js/v4-ai-analysis.js"></script>
 
