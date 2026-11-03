@@ -99,6 +99,36 @@
                 memberRecords
             );
 
+            const distanceSelect =
+                document.getElementById(
+                    "scoreAnalysisDistance"
+                );
+
+            if (distanceSelect) {
+                distanceSelect.onchange =
+                    function () {
+                        const selectedDistance =
+                            distanceSelect.value;
+
+                        const filteredRecords =
+                            selectedDistance === "all"
+                                ? memberRecords
+                                : memberRecords.filter(
+                                    function (record) {
+                                        return (
+                                            String(
+                                                record.distance || ""
+                                            ).trim() === selectedDistance
+                                        );
+                                    }
+                                );
+
+                        updateScoreAnalysisSummary(
+                            filteredRecords
+                        );
+                    };
+            }
+
             updateScoreAnalysisSummary(
                 memberRecords
             );
