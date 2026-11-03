@@ -95,6 +95,10 @@
                     );
                 });
 
+            updateScoreAnalysisDistanceOptions(
+                memberRecords
+            );
+
             updateScoreAnalysisSummary(
                 memberRecords
             );
@@ -215,7 +219,70 @@
         minElement.textContent =
             `${minScore}点`;
 
-        avgElement.textContent =
+                avgElement.textContent =
             `${averageScore.toFixed(1)}点`;
+    }
+
+    /**
+     * 練習記録に存在する距離を選択肢へ追加する
+     */
+    function updateScoreAnalysisDistanceOptions(records) {
+        const distanceSelect =
+            document.getElementById(
+                "scoreAnalysisDistance"
+            );
+
+        if (!distanceSelect) {
+            return;
+        }
+
+        const distances =
+            Array.from(
+                new Set(
+                    records
+                        .map(function (record) {
+                            return String(
+                                record.distance || ""
+                            ).trim();
+                        })
+                        .filter(function (distance) {
+                            return distance !== "";
+                        })
+                )
+            );
+
+        distances.sort(function (a, b) {
+            const numberA = parseFloat(a);
+            const numberB = parseFloat(b);
+
+            if (
+                Number.isFinite(numberA) &&
+                Number.isFinite(numberB)
+            ) {
+                return numberB - numberA;
+            }
+
+            return a.localeCompare(b, "ja");
+        });
+
+        distanceSelect.replaceChildren();
+
+        const allOption =
+            document.createElement("option");
+
+        allOption.value = "all";
+        allOption.textContent = "すべて";
+
+        distanceSelect.appendChild(allOption);
+
+        distances.forEach(function (distance) {
+            const option =
+                document.createElement("option");
+
+            option.value = distance;
+            option.textContent = distance;
+
+            distanceSelect.appendChild(option);
+        });
     }
 })();
