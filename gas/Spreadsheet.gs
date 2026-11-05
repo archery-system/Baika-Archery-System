@@ -962,6 +962,57 @@ function appendPracticeRecord(record) {
         return value;
       });
 
+    /*
+     * 同じrecordIdの練習記録が
+     * すでに保存されている場合は
+     * 重複登録しない。
+     */
+    const recordId =
+      String(
+        record.recordId || ""
+      ).trim();
+
+    const recordIdColumn =
+      headers.indexOf(
+        "recordId"
+      ) + 1;
+
+    if (
+      recordId &&
+      recordIdColumn > 0 &&
+      sheet.getLastRow() >= 2
+    ) {
+      const existingIds =
+        sheet
+          .getRange(
+            2,
+            recordIdColumn,
+            sheet.getLastRow() - 1,
+            1
+          )
+          .getValues();
+
+      const existingIndex =
+        existingIds.findIndex(
+          function (row) {
+            return (
+              String(
+                row[0] || ""
+              ).trim() === recordId
+            );
+          }
+        );
+
+      if (existingIndex !== -1) {
+        return {
+          rowNumber:
+            existingIndex + 2,
+          operation:
+            "already_exists"
+        };
+      }
+    }
+
     const targetRow =
       Math.max(
         sheet.getLastRow() + 1,
