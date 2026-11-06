@@ -584,7 +584,20 @@
 
             const name =
                 createTableCell(
+                    normalizedMember.name
+                );
+
+            const nickname =
+                createTableCell(
+                    normalizedMember.nickname ||
                     normalizedMember.displayName
+                );
+
+            const sortOrder =
+                createTableCell(
+                    normalizedMember.sortOrder === ""
+                        ? "—"
+                        : normalizedMember.sortOrder
                 );
 
             const role =
@@ -608,6 +621,8 @@
 
             row.appendChild(memberId);
             row.appendChild(name);
+            row.appendChild(nickname);
+            row.appendChild(sortOrder);
             row.appendChild(role);
             row.appendChild(status);
             row.appendChild(actionCell);
@@ -627,7 +642,10 @@
             return {
                 memberId:
                     `legacy_${String(index + 1).padStart(3, "0")}`,
+                name: member,
                 displayName: member,
+                nickname: "",
+                sortOrder: "",
                 role: "member",
                 active: true
             };
@@ -635,22 +653,48 @@
 
         const memberData =
             member &&
-                typeof member === "object"
+            typeof member === "object"
                 ? member
                 : {};
 
+        const name =
+            String(
+                memberData.name ||
+                memberData.memberName ||
+                memberData.displayName ||
+                "氏名未設定"
+            ).trim();
+
         const displayName =
-            memberData.displayName ||
-            memberData.name ||
-            memberData.memberName ||
-            "氏名未設定";
+            String(
+                memberData.displayName ||
+                name
+            ).trim();
+
+        const nickname =
+            String(
+                memberData.nickname || ""
+            ).trim();
+
+        const sortOrder =
+            memberData.sortOrder === null ||
+            memberData.sortOrder === undefined ||
+            String(memberData.sortOrder).trim() === ""
+                ? ""
+                : String(memberData.sortOrder);
 
         return {
             memberId:
                 memberData.memberId ||
                 `legacy_${String(index + 1).padStart(3, "0")}`,
 
+            name: name,
+
             displayName: displayName,
+
+            nickname: nickname,
+
+            sortOrder: sortOrder,
 
             role:
                 memberData.role || "member",
@@ -786,7 +830,7 @@
         const cell =
             document.createElement("td");
 
-        cell.colSpan = 5;
+        cell.colSpan = 7;
         cell.style.padding = "24px";
         cell.style.textAlign = "center";
 
@@ -838,7 +882,7 @@
         const row = document.createElement("tr");
         const cell = document.createElement("td");
 
-        cell.colSpan = 5;
+        cell.colSpan = 7;
         cell.textContent = message;
         cell.style.padding = "20px";
         cell.style.textAlign = "center";
