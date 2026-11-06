@@ -2553,20 +2553,73 @@ async function processPracticeSaveQueue() {
                 );
             }
 
-            const result =
-                await response.json();
+const result =
+    await response.json();
 
-            if (
-                !result ||
-                result.success !== true
-            ) {
-                throw new Error(
-                    result &&
-                        result.message
-                        ? result.message
-                        : "練習記録を保存できませんでした。"
-                );
-            }
+/*
+ * 練習記録保存時の応答確認用ログ。
+ * 保存処理・成功判定には影響しない。
+ */
+console.log(
+    "[練習保存] GAS応答確認:",
+    {
+        httpStatus: response.status,
+        responseUrl: response.url,
+        success: result?.success,
+        operation: result?.operation,
+        message: result?.message,
+        responseKeys:
+            result &&
+            typeof result === "object"
+                ? Object.keys(result)
+                : []
+    }
+);
+
+/*
+ * GASから正常な保存応答が返った場合は成功。
+ *
+ * リダイレクトにより練習記録一覧が
+ * 返された場合は、recordIdで保存済みか確認する。
+ */
+const savedByResponse =
+    result?.success === true;
+
+const sentRecordId =
+    String(
+        item.record?.recordId || ""
+    ).trim();
+
+const savedByRecordId =
+    !savedByResponse &&
+    sentRecordId !== "" &&
+    Array.isArray(result?.practice) &&
+    result.practice.some(
+        function (cloudRecord) {
+            return (
+                String(
+                    cloudRecord?.recordId || ""
+                ).trim() === sentRecordId
+            );
+        }
+    );
+
+if (
+    !savedByResponse &&
+    !savedByRecordId
+) {
+    throw new Error(
+        result?.message ||
+        "練習記録のクラウド保存を確認できませんでした。"
+    );
+}
+
+if (savedByRecordId) {
+    console.log(
+        "[練習保存] recordId照合で保存を確認:",
+        sentRecordId
+    );
+}
 
             /*
              * クラウド送信中に追加された記録を
