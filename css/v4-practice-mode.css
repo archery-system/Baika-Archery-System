@@ -1,0 +1,68 @@
+
+/* 練習モードの状態表示 */
+
+#v4PracticeModeCard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 20px;
+    align-items: start;
+}
+
+/* タイトルと説明は横幅いっぱいに表示 */
+#v4PracticeModeCard > .v4-card-title,
+#v4PracticeModeCard > .v4-card-subtitle,
+#v4ScoreSessionPanel {
+    grid-column: 1 / -1;
+}
+
+/* 右側の状態表示 */
+.v4-practice-mode-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+    padding: 16px;
+    border: 2px solid #16a34a;
+    border-radius: 14px;
+    background: #f0fdf4;
+    color: #15803d;
+    text-align: center;
+}
+
+#v4PracticeModeIndicatorText {
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+/* スマートフォンでは縦並び */
+@media (max-width: 600px) {
+    #v4PracticeModeCard {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .v4-practice-mode-indicator {
+        min-height: 76px;
+    }
+}
+
+/* 通常練習 */
+.v4-practice-mode-indicator.is-normal {
+    background: #f0fdf4;
+    border-color: #16a34a;
+    color: #15803d;
+}
+
+/* 点取り開始前 */
+.v4-practice-mode-indicator.is-waiting {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+    color: #374151;
+}
+
+/* 点取り中 */
+.v4-practice-mode-indicator.is-active {
+    background: #fff7ed;
+    border-color: #ea580c;
+    color: #c2410c;
+}

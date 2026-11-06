@@ -2021,6 +2021,43 @@ const PRACTICE_SAVE_QUEUE_KEY =
 let isPracticeSaveQueueRunning =
     false;
 
+/*
+ * 6射記録のクラウド保存状態を表示する。
+ *
+ * sending : クラウド送信中
+ * saved   : クラウド保存完了
+ * pending : クラウド保存待ち
+ */
+function updatePracticeCloudSaveStatus(
+    status
+) {
+    const element =
+        document.getElementById(
+            "v4PracticeCloudSaveStatus"
+        );
+
+    if (!element) {
+        return;
+    }
+
+    const messages = {
+        sending: "☁️ クラウド送信中…",
+        saved: "✅ クラウド保存完了",
+        pending: "⚠️ クラウド保存待ち（再送信が必要）"
+    };
+
+    if (!Object.prototype.hasOwnProperty.call(messages, status)) {
+        element.textContent = "";
+        element.hidden = true;
+        return;
+    }
+
+    element.textContent =
+        messages[status];
+
+    element.hidden = false;
+}
+
 function loadPracticeSaveQueue() {
     try {
         const raw =
@@ -2028,23 +2065,29 @@ function loadPracticeSaveQueue() {
                 PRACTICE_SAVE_QUEUE_KEY
             );
 
-        if (!raw) {
+        if (raw === null) {
             return [];
         }
 
         const parsed =
             JSON.parse(raw);
 
-        return Array.isArray(parsed)
-            ? parsed
-            : [];
+        if (!Array.isArray(parsed)) {
+            throw new Error(
+                "保存キューのデータ形式が正しくありません。"
+            );
+        }
+
+        return parsed;
     } catch (error) {
         console.error(
             "[練習保存キュー] 読み込み失敗:",
             error
         );
 
-        return [];
+        throw new Error(
+            "保存待ちの練習記録を読み込めませんでした。"
+        );
     }
 }
 
@@ -2056,11 +2099,15 @@ function savePracticeSaveQueue(
             PRACTICE_SAVE_QUEUE_KEY,
             JSON.stringify(queue)
         );
+
+        return true;
     } catch (error) {
         console.error(
             "[練習保存キュー] 保存失敗:",
             error
         );
+
+        return false;
     }
 }
 
@@ -2095,23 +2142,314 @@ function enqueuePracticeRecord(
         }
     });
 
-    savePracticeSaveQueue(
-        queue
-    );
+    const saved =
+        savePracticeSaveQueue(
+            queue
+        );
 
-    processPracticeSaveQueue();
+    if (!saved) {
+        throw new Error(
+            "端末内に練習記録を保存できませんでした。"
+        );
+    }
+
+    return recordId;
 }
+
+/*
+ * 点取り記録が現在の有効なセッションに
+ * 属しているかを確認する。
+ *
+ * この関数では集計もクラウド送信も行わない。
+ */
+function isCurrentScoreSessionRecord(
+    record
+) {
+    if (
+        !record ||
+        record.scoreSessionType !== "score"
+    ) {
+        return false;
+    }
+
+    const scoreSessionApi =
+        window.BAS_SCORE_SESSION;
+
+    if (
+        !scoreSessionApi ||
+        typeof scoreSessionApi.getActiveSession !==
+            "function"
+    ) {
+        return false;
+    }
+
+    const session =
+        scoreSessionApi.getActiveSession();
+
+    const currentMemberId =
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMemberId ===
+            "function"
+            ? window.V4Session.getLoggedInMemberId()
+            : "";
+
+    return Boolean(
+        session &&
+        currentMemberId &&
+        session.id === record.scoreSessionId &&
+        session.memberId === record.memberId &&
+        session.memberId === currentMemberId
+    );
+}
+
+/*
+ * 保存キューの記録が送信候補かを判定する。
+ *
+ * 点取り記録は現在の有効なセッションに
+ * 属している場合だけ候補とする。
+ *
+ * この関数だけでは送信を許可しない。
+ * 送信前に集計の確認が必要。
+ */
+function isPracticeRecordSendCandidate(
+    record
+) {
+    if (
+        !record ||
+        typeof record !== "object" ||
+        !record.memberId
+    ) {
+        return false;
+    }
+
+    const currentMemberId =
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMemberId ===
+            "function"
+            ? window.V4Session.getLoggedInMemberId()
+            : "";
+
+    if (
+        !currentMemberId ||
+        record.memberId !== currentMemberId
+    ) {
+        return false;
+    }
+
+    if (
+        record.scoreSessionType === "score"
+    ) {
+        return isCurrentScoreSessionRecord(
+            record
+        );
+    }
+
+    return (
+        record.scoreSessionType === undefined ||
+        record.scoreSessionType === null
+    );
+}
+
+/*
+ * 保存待ちの練習記録を確認する。
+ * この段階ではクラウド送信しない。
+ */
+function checkPendingPracticeRecords() {
+    try {
+        const queue =
+            loadPracticeSaveQueue();
+
+        if (queue.length > 0) {
+            console.log(
+                "[練習保存キュー] 保存待ち:",
+                queue.length,
+                "件"
+            );
+        }
+
+        const scoreSessionApi =
+            window.BAS_SCORE_SESSION;
+
+        if (
+            !scoreSessionApi ||
+            typeof scoreSessionApi.getActiveSession !==
+                "function" ||
+            typeof scoreSessionApi.recordSavedEnd !==
+                "function"
+        ) {
+            /*
+             * 点取り機能が利用できない場合、
+             * 点取り記録は保存キューに保留する。
+             * 通常練習の送信は妨げない。
+             */
+            console.warn(
+                "[点取り集計] セッション確認機能が利用できません。点取り記録は保留します。"
+            );
+
+            return queue;
+        }
+
+        for (const item of queue) {
+            const record = item.record;
+
+            if (
+                !record ||
+                record.scoreSessionType !== "score"
+            ) {
+                continue;
+            }
+
+            if (
+                !isCurrentScoreSessionRecord(record)
+            ) {
+                console.warn(
+                    "[点取り集計] 復旧対象外の記録を保留:",
+                    item.id,
+                    record.scoreSessionId
+                );
+
+                /*
+                 * 他の部員や過去のセッションの記録は
+                 * 集計せず、保存キューにも残す。
+                 */
+                continue;
+            }
+
+            const arrows = [
+                record.a1,
+                record.a2,
+                record.a3,
+                record.a4,
+                record.a5,
+                record.a6
+            ].filter(
+                value =>
+                    value !== null &&
+                    value !== undefined &&
+                    value !== ""
+            );
+
+            const restored =
+                scoreSessionApi.recordSavedEnd(
+                    record.scoreSessionId,
+                    item.id,
+                    arrows.length,
+                    Number(record.total)
+                );
+
+            if (!restored) {
+                console.error(
+                    "[点取り集計] 復旧失敗:",
+                    item.id
+                );
+                return null;
+            }
+        }
+
+        return queue;
+    } catch (error) {
+        console.error(
+            "[練習保存キュー] 確認失敗:",
+            error
+        );
+
+        return null;
+    }
+}
+
+/*
+ * 点取りモード初期化後に呼び出す
+ * 保存待ち記録の確認用窓口。
+ */
+window.BAS_CHECK_PENDING_PRACTICE_RECORDS =
+    checkPendingPracticeRecords;
+
+/*
+ * クラウド送信中かどうかを
+ * 他の画面から確認するための窓口。
+ */
+window.BAS_IS_PRACTICE_SAVE_RUNNING =
+    function () {
+        return isPracticeSaveQueueRunning;
+    };
 
 async function processPracticeSaveQueue() {
     if (isPracticeSaveQueueRunning) {
         return;
     }
 
+    /*
+     * 送信開始時のログイン部員を固定する。
+     * 送信中に部員が切り替わった場合は、
+     * 次の記録を送信しない。
+     */
+    const saveMemberId =
+        window.V4Session &&
+        typeof window.V4Session.getLoggedInMemberId ===
+            "function"
+            ? window.V4Session.getLoggedInMemberId()
+            : "";
+
+    if (!saveMemberId) {
+        console.warn(
+            "[練習保存キュー] ログイン部員を確認できないため送信を保留します。"
+        );
+        return;
+    }
+
+    /*
+     * クラウド送信前に保存キューを確認し、
+     * 点取り集計の反映漏れを復旧する。
+     */
+    const pendingRecords =
+        checkPendingPracticeRecords();
+
+    if (pendingRecords === null) {
+        console.warn(
+            "[練習保存キュー] 復旧確認ができないため送信を保留します。"
+        );
+        return;
+    }
+
     isPracticeSaveQueueRunning =
         true;
 
+    /*
+     * 今回の送信処理で
+     * クラウド保存が完了した件数。
+     */
+    let savedRecordCount = 0;
+
+    /*
+     * 点取りセッションの確認失敗などで
+     * 送信を途中停止したかどうか。
+     */
+    let wasPracticeSaveInterrupted = false;
+
     try {
         while (true) {
+            /*
+             * 送信開始時と現在のログイン部員を照合する。
+             * 部員が切り替わった場合は送信を停止する。
+             */
+            const currentMemberId =
+                window.V4Session &&
+                typeof window.V4Session.getLoggedInMemberId ===
+                    "function"
+                    ? window.V4Session.getLoggedInMemberId()
+                    : "";
+
+            if (
+                currentMemberId !== saveMemberId
+            ) {
+                console.warn(
+                    "[練習保存キュー] ログイン部員が変更されたため送信を停止します。"
+                );
+
+                wasPracticeSaveInterrupted = true;
+                break;
+            }
+
             const queue =
                 loadPracticeSaveQueue();
 
@@ -2119,8 +2457,66 @@ async function processPracticeSaveQueue() {
                 break;
             }
 
+            /*
+             * 現在の部員に属する送信候補だけを選ぶ。
+             * 対象外の記録はキューに残す。
+             */
             const item =
-                queue[0];
+                queue.find(function (queuedItem) {
+                    return (
+                        queuedItem &&
+                        isPracticeRecordSendCandidate(
+                            queuedItem.record
+                        )
+                    );
+                });
+
+            if (!item) {
+                console.log(
+                    "[練習保存キュー] 送信可能な記録がありません。"
+                );
+                break;
+            }
+
+            /*
+             * 送信直前に点取り集計を再確認する。
+             * 集計できない場合は送信せず、
+             * 記録を保存キューに残す。
+             */
+            if (
+                item.record.scoreSessionType === "score"
+            ) {
+                if (
+                    !isCurrentScoreSessionRecord(
+                        item.record
+                    )
+                ) {
+                    console.warn(
+                        "[練習保存キュー] セッション不一致のため送信を保留:",
+                        item.id
+                    );
+
+                    wasPracticeSaveInterrupted = true;
+                    break;
+                }
+
+                const session =
+                    window.BAS_SCORE_SESSION
+                        .getActiveSession();
+
+                if (
+                    !Array.isArray(session.recordIds) ||
+                    !session.recordIds.includes(item.id)
+                ) {
+                    console.warn(
+                        "[練習保存キュー] 点取り集計が未確認のため送信を保留:",
+                        item.id
+                    );
+
+                    wasPracticeSaveInterrupted = true;
+                    break;
+                }
+            }
 
             const payload = {
                 action:
@@ -2129,6 +2525,13 @@ async function processPracticeSaveQueue() {
                 record:
                     item.record
             };
+
+            /*
+             * クラウドへの送信を開始する。
+             */
+            updatePracticeCloudSaveStatus(
+                "sending"
+            );
 
             const response =
                 await fetch(
@@ -2165,10 +2568,85 @@ async function processPracticeSaveQueue() {
                 );
             }
 
-            queue.shift();
+            /*
+             * クラウド送信中に追加された記録を
+             * 消さないよう、最新のキューを取得する。
+             */
+            const latestQueue =
+                loadPracticeSaveQueue();
 
-            savePracticeSaveQueue(
-                queue
+            const remainingQueue =
+                latestQueue.filter(
+                    function (queuedItem) {
+                        return queuedItem.id !== item.id;
+                    }
+                );
+
+            const queueUpdated =
+                savePracticeSaveQueue(
+                    remainingQueue
+                );
+
+            if (!queueUpdated) {
+                throw new Error(
+                    "クラウド保存後に端末内の保存キューを更新できませんでした。"
+                );
+            }
+
+            /*
+             * GASへの保存と端末内キューの更新が
+             * 両方成功した場合だけ件数を増やす。
+             */
+            savedRecordCount += 1;
+        }
+
+        /*
+         * 送信処理が正常終了した場合だけ、
+         * 現在の部員の送信対象記録が
+         * 残っていないことを確認する。
+         */
+        const finalQueue =
+            loadPracticeSaveQueue();
+
+        const hasPendingRecords =
+            finalQueue.some(
+                function (queuedItem) {
+                    return (
+                        queuedItem &&
+                        isPracticeRecordSendCandidate(
+                            queuedItem.record
+                        )
+                    );
+                }
+            );
+
+        /*
+         * 今回の送信で保存成功があった場合だけ、
+         * 保存状態の表示を更新する。
+         */
+        /*
+         * 送信開始時と現在のログイン部員が
+         * 一致する場合だけ保存結果を表示する。
+         */
+        const displayMemberId =
+            window.V4Session &&
+            typeof window.V4Session.getLoggedInMemberId ===
+                "function"
+                ? window.V4Session.getLoggedInMemberId()
+                : "";
+
+        if (
+            displayMemberId === saveMemberId &&
+            (
+                savedRecordCount > 0 ||
+                wasPracticeSaveInterrupted
+            )
+        ) {
+            updatePracticeCloudSaveStatus(
+                hasPendingRecords ||
+                    wasPracticeSaveInterrupted
+                    ? "pending"
+                    : "saved"
             );
         }
     } catch (error) {
@@ -2176,11 +2654,37 @@ async function processPracticeSaveQueue() {
             "[練習保存キュー] 送信失敗:",
             error
         );
+
+        /*
+         * 送信開始時と現在のログイン部員が
+         * 一致する場合だけ保存待ちを表示する。
+         */
+        const errorMemberId =
+            window.V4Session &&
+            typeof window.V4Session.getLoggedInMemberId ===
+                "function"
+                ? window.V4Session.getLoggedInMemberId()
+                : "";
+
+        if (errorMemberId === saveMemberId) {
+            updatePracticeCloudSaveStatus(
+                "pending"
+            );
+        }
     } finally {
         isPracticeSaveQueueRunning =
             false;
     }
 }
+
+/*
+ * 保存待ちの練習記録をクラウドへ再送するための窓口。
+ *
+ * 既存の送信処理を利用し、
+ * 新しい送信ロジックは作成しない。
+ */
+window.BAS_RETRY_PENDING_PRACTICE_RECORDS =
+    processPracticeSaveQueue;
 
 async function registerPhotoPracticeEnd(photoPins) {
     if (!Array.isArray(photoPins)) {
@@ -2356,8 +2860,29 @@ async function registerPhotoPracticeEnd(photoPins) {
             },
             0
         ),
-        pins: arrows
+                pins: arrows
     };
+
+    /*
+     * 点取り練習中の記録だけに
+     * セッション識別情報を追加する。
+     */
+    const scoreSession =
+        window.BAS_SCORE_SESSION &&
+        typeof window.BAS_SCORE_SESSION.getActiveSession === "function"
+            ? window.BAS_SCORE_SESSION.getActiveSession()
+            : null;
+
+    if (scoreSession) {
+        record.scoreSessionId =
+            scoreSession.id;
+
+        record.scoreSessionType =
+            "score";
+
+        record.scoreEndNumber =
+            (scoreSession.endNumber || 0) + 1;
+    }
 
     console.log(
         "[練習保存] 送信直前のrecord",
@@ -2371,9 +2896,78 @@ async function registerPhotoPracticeEnd(photoPins) {
  * GASの保存完了は待たず、
  * 画面側はすぐ次の6射入力へ進める。
  */
-        enqueuePracticeRecord(
-            record
+        const savedRecordId =
+            enqueuePracticeRecord(
+                record
+            );
+
+        /*
+         * 端末内への登録は完了したが、
+         * クラウド保存はまだ完了していない。
+         */
+        updatePracticeCloudSaveStatus(
+            "pending"
         );
+
+        /*
+         * 点取り練習中の場合のみ、
+         * 保存した6射をセッション集計に反映する。
+         */
+        if (scoreSession) {
+            const updated =
+                window.BAS_SCORE_SESSION
+                    .recordSavedEnd(
+                        scoreSession.id,
+                        savedRecordId,
+                        arrows.length,
+                        record.total
+                    );
+
+            if (!updated) {
+                console.error(
+                    "点取り集計の更新に失敗しました。",
+                    savedRecordId
+                );
+
+                window.alert(
+                    "練習記録は保存キューに登録されましたが、" +
+                    "点取り集計を更新できませんでした。" +
+                    "続けて保存せず、管理者に確認してください。"
+                );
+
+                return false;
+            }
+        }
+
+        /*
+         * 通常練習・点取り練習ともに
+         * 保存キューからクラウド送信を開始する。
+         *
+         * 点取り練習の場合は、
+         * セッション集計の更新後に送信する。
+         */
+        /*
+         * 保存待ちの記録を確認し、
+         * 点取り集計への反映漏れを復旧する。
+         */
+        const pendingRecords =
+            checkPendingPracticeRecords();
+
+        if (pendingRecords === null) {
+            window.alert(
+                "保存待ちの記録を確認できませんでした。" +
+                "記録は端末内に保持されています。" +
+                "クラウド送信を開始せず、確認が必要です。"
+            );
+
+            return false;
+        }
+
+        /*
+         * 集計の確認が完了した後に
+         * クラウド送信を開始する。
+         */
+        processPracticeSaveQueue();
 
         /*
          * ホーム表示用の状態は

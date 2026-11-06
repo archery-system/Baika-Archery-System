@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="css/v4-step64-pin-adjust.css?v=640">
     <link rel="stylesheet" href="css/v4-step65-mobile-controls.css?v=671">
     <link rel="stylesheet" href="css/v4-theme-bridge.css?v=3">
+    <link rel="stylesheet" href="css/v4-practice-mode.css?v=2">
 
     <style>
         /*
@@ -137,7 +138,76 @@
                 </div>
             </section>
 
-            <section class="v4-card v4-card-full v4-condition-card">
+            <!-- 練習モード -->
+            <section class="v4-card v4-card-full" id="v4PracticeModeCard">
+                <div class="v4-card-title">
+                    🎯 練習モード
+                </div>
+
+                <p class="v4-card-subtitle">
+                    通常練習または点取り練習を選択してください。
+                </p>
+                                <div class="v4-setting-form">
+                                    <div class="v4-form-group">
+                                        <label for="v4PracticeMode">
+                                            練習の種類
+                                        </label>
+
+                                        <select id="v4PracticeMode" name="practiceMode">
+                                            <option value="normal">
+                                                通常練習
+                                            </option>
+                                            <option value="score">
+                                                点取り練習
+                                            </option>
+                                        </select>
+                                    </div>
+                                                                </div>
+
+                                <!-- 練習モードの大きな状態表示 -->
+                                <div
+                                    id="v4PracticeModeIndicator"
+                                    class="v4-practice-mode-indicator"
+                                    role="status"
+                                    aria-live="polite"
+                                >
+                                    <span id="v4PracticeModeIndicatorText">
+                                        通常練習
+                                    </span>
+                                </div>
+
+                                <div id="v4ScoreSessionPanel" hidden>
+                                    <p class="v4-card-subtitle">
+                                        点取り練習は、開始時に36射・72射を指定する必要はありません。
+                                    </p>
+
+                                    <p id="v4ScoreSessionStatus" role="status" aria-live="polite">
+                                        点取り開始前
+                                    </p>
+
+                                    <p>
+                                        記録射数：
+                                        <strong id="v4ScoreSessionArrowCount">0</strong>
+                                        射
+                                    </p>
+
+                                    <p>
+                                        累計得点：
+                                        <strong id="v4ScoreSessionTotal">0</strong>
+                                        点
+                                    </p>
+
+                                    <button type="button" id="v4StartScoreSession">
+                                        ▶ 点取りを開始
+                                    </button>
+
+                                    <button type="button" id="v4FinishScoreSession" disabled>
+                                        ■ 点取りを終了
+                                    </button>
+                                </div>
+                            </section>
+
+                                <section class="v4-card v4-card-full v4-condition-card">
                 <details id="v4PracticeCondition">
                     <summary class="v4-condition-summary">
                         <span>
@@ -585,6 +655,13 @@
                             disabled>
                             💾 6射を記録
                         </button>
+                    </div>
+
+                    <div id="v4PracticeCloudSaveStatus"
+                        class="v4-practice-cloud-save-status"
+                        role="status"
+                        aria-live="polite"
+                        hidden>
                     </div>
 
 
@@ -1096,13 +1173,14 @@
             );
         }
     </script>
-    <script src="js/v4-input.js?v=676"></script>
+    <script src="js/v4-input.js?v=677"></script>
     <script src="js/v4-photo-engine.js?v=630"></script>
     <script src="js/v4-layout.js?v=29b4"></script>
     <script src="js/v4-target-engine.js?v=670"></script>
     <script src="js/v4-arrow-detector.js?v=354a"></script>
     <script src="js/v4-photo-ui.js?v=630"></script>
     <script src="js/v4-camera.js?v=55"></script>
+    <script src="js/v4-practice-mode.js?v=3"></script>
 
 </body>
 
