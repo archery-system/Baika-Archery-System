@@ -252,6 +252,12 @@ const V4Auth = {
                     memberId
                 ).trim();
 
+            const loginDisplayName =
+                String(
+                    memberData.nickname ||
+                    displayName
+                ).trim() || displayName;
+
             if (!memberId || !displayName) {
                 return;
             }
@@ -260,7 +266,7 @@ const V4Auth = {
                 document.createElement("option");
 
             option.value = memberId;
-            option.textContent = displayName;
+            option.textContent = loginDisplayName;
 
             option.dataset.memberName =
                 String(

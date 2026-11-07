@@ -9,6 +9,76 @@
 
     let currentVisibleRecords = [];
 
+    let memberMaster = [];
+
+    /**
+     * GASから部員マスターを取得する
+     */
+    async function loadMatchMemberMaster() {
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const separator =
+            V4_GAS_API_URL.includes("?")
+                ? "&"
+                : "?";
+
+        const requestUrl =
+            `${V4_GAS_API_URL}${separator}action=getMembers`;
+
+        const controller =
+            new AbortController();
+
+        const timeoutId =
+            window.setTimeout(
+                function () {
+                    controller.abort();
+                },
+                15000
+            );
+
+        let response;
+
+        try {
+            response = await fetch(
+                requestUrl,
+                {
+                    method: "GET",
+                    cache: "no-store",
+                    signal: controller.signal
+                }
+            );
+        } finally {
+            window.clearTimeout(timeoutId);
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                `部員マスター取得失敗: HTTP ${response.status}`
+            );
+        }
+
+        const result = await response.json();
+
+        if (
+            !result ||
+            result.success !== true ||
+            !Array.isArray(result.members)
+        ) {
+            throw new Error(
+                "部員マスターの応答形式が正しくありません。"
+            );
+        }
+
+        return result.members;
+    }
+
     const MATCH_RECORDS_CACHE_KEY =
         "baika-match-records-cache";
 
@@ -17,6 +87,23 @@
 
     async function initialize() {
         initializeMatchRecordFilters();
+
+        loadMatchMemberMaster()
+            .then(function (members) {
+                memberMaster = members;
+
+                populateMemberFilter(
+                    currentVisibleRecords
+                );
+
+                updateMemberFilterState();
+            })
+            .catch(function (error) {
+                console.warn(
+                    "[大会記録一覧] 部員マスター取得失敗:",
+                    error
+                );
+            });
 
         let renderedCache = false;
 
@@ -182,26 +269,64 @@
         const members =
             new Map();
 
-        records.forEach(function (record) {
-            const memberId =
-                normalizeText(
-                    record.memberId
+        if (memberMaster.length > 0) {
+            memberMaster.forEach(function (member) {
+                if (
+                    !member ||
+                    typeof member !== "object" ||
+                    member.active === false
+                ) {
+                    return;
+                }
+
+                const memberId =
+                    normalizeText(
+                        member.memberId
+                    );
+
+                if (!memberId) {
+                    return;
+                }
+
+                const memberName =
+                    normalizeText(
+                        member.nickname
+                    ) ||
+                    normalizeText(
+                        member.displayName
+                    ) ||
+                    normalizeText(
+                        member.name
+                    ) ||
+                    memberId;
+
+                members.set(
+                    memberId,
+                    memberName
                 );
+            });
+        } else {
+            records.forEach(function (record) {
+                const memberId =
+                    normalizeText(
+                        record.memberId
+                    );
 
-            const memberName =
-                normalizeText(
-                    record.memberName
+                const memberName =
+                    normalizeText(
+                        record.memberName
+                    );
+
+                if (!memberId) {
+                    return;
+                }
+
+                members.set(
+                    memberId,
+                    memberName || memberId
                 );
-
-            if (!memberId) {
-                return;
-            }
-
-            members.set(
-                memberId,
-                memberName || memberId
-            );
-        });
+            });
+        }
 
         select.replaceChildren();
 
@@ -216,6 +341,52 @@
             members.entries()
         )
             .sort(function (a, b) {
+                if (memberMaster.length > 0) {
+                    const getSortOrder =
+                        function (memberId) {
+                            const member =
+                                memberMaster.find(
+                                    function (item) {
+                                        return (
+                                            normalizeText(
+                                                item && item.memberId
+                                            ) === memberId
+                                        );
+                                    }
+                                );
+
+                            const raw =
+                                member && member.sortOrder;
+
+                            if (
+                                raw === null ||
+                                raw === undefined ||
+                                String(raw).trim() === ""
+                            ) {
+                                return Infinity;
+                            }
+
+                            const order = Number(raw);
+
+                            return (
+                                Number.isInteger(order) &&
+                                order >= 1
+                            )
+                                ? order
+                                : Infinity;
+                        };
+
+                    const orderA =
+                        getSortOrder(a[0]);
+
+                    const orderB =
+                        getSortOrder(b[0]);
+
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                }
+
                 return a[1].localeCompare(
                     b[1],
                     "ja"
