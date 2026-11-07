@@ -740,6 +740,7 @@
 
                 const displayName =
                     String(
+                        member.nickname ||
                         member.displayName ||
                         member.name ||
                         memberId
@@ -759,6 +760,14 @@
 
                 option.textContent =
                     displayName;
+
+                // 旧記録の検索に使用する正式氏名を保持
+                option.dataset.memberName =
+                    String(
+                        member.name ||
+                        member.displayName ||
+                        memberId
+                    ).trim();
 
                 select.appendChild(
                     option
@@ -810,12 +819,20 @@
                         ? selectedOption.textContent.trim()
                         : "";
 
+                const selectedFormalName =
+                    selectedOption
+                        ? (
+                            selectedOption.dataset.memberName ||
+                            selectedMemberName
+                        ).trim()
+                        : "";
+
                 const targetMemberData = {
                     memberId:
                         selectedMemberId,
 
                     memberName:
-                        selectedMemberName
+                        selectedFormalName
                 };
 
                 showUserName(
