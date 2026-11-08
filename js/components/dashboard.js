@@ -168,6 +168,7 @@
 
             if (loginData) {
                 const memberName =
+                    loginData.nickname ||
                     loginData.displayName ||
                     loginData.memberName ||
                     loginData.member;

@@ -77,6 +77,24 @@
     function getLoggedInMember() {
         if (
             window.V4Session &&
+            typeof window.V4Session.getLoggedInMemberData === "function"
+        ) {
+            const memberData =
+                window.V4Session.getLoggedInMemberData();
+
+            if (memberData) {
+                return String(
+                    memberData.nickname ||
+                    memberData.displayName ||
+                    memberData.memberName ||
+                    memberData.member ||
+                    ""
+                ).trim();
+            }
+        }
+
+        if (
+            window.V4Session &&
             typeof window.V4Session.getLoggedInMember === "function"
         ) {
             return window.V4Session.getLoggedInMember();
@@ -91,12 +109,15 @@
 
             const loginData = JSON.parse(savedData);
 
-            return (
-                loginData &&
-                    typeof loginData.member === "string"
-                    ? loginData.member.trim()
-                    : ""
-            );
+            return loginData
+                ? String(
+                    loginData.nickname ||
+                    loginData.displayName ||
+                    loginData.memberName ||
+                    loginData.member ||
+                    ""
+                ).trim()
+                : "";
         } catch (error) {
             console.warn(
                 "[Baika Header] ログイン情報を取得できませんでした:",

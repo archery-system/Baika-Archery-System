@@ -59,11 +59,27 @@
 
     const organizationNameElement =
         document.getElementById("homeOrganizationName");
-    const loggedInMember =
+    const memberData =
         window.V4Session &&
-        typeof window.V4Session.getLoggedInMember === "function"
-            ? window.V4Session.getLoggedInMember()
-            : "";
+        typeof window.V4Session.getLoggedInMemberData === "function"
+            ? window.V4Session.getLoggedInMemberData()
+            : null;
+
+    const loggedInMember =
+        memberData
+            ? String(
+                memberData.nickname ||
+                memberData.displayName ||
+                memberData.memberName ||
+                memberData.member ||
+                ""
+            ).trim()
+            : (
+                window.V4Session &&
+                typeof window.V4Session.getLoggedInMember === "function"
+                    ? window.V4Session.getLoggedInMember()
+                    : ""
+            );
 
     const currentUser =
         typeof BAS_STATE !== "undefined"
