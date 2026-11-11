@@ -598,6 +598,104 @@
         return result;
     }
 
+    /**
+     * 大会記録1件をクラウドから削除する。
+     *
+     * @param {string} recordId
+     * @param {string} memberIdentifier
+     * @param {string} password
+     * @returns {Promise<Object>}
+     */
+    async function deleteMatchRecord(
+        recordId,
+        memberIdentifier,
+        password
+    ) {
+        const normalizedRecordId =
+            String(recordId || "").trim();
+
+        const normalizedMemberIdentifier =
+            String(
+                memberIdentifier || ""
+            ).trim();
+
+        if (!normalizedRecordId) {
+            throw new Error(
+                "削除する大会記録IDが指定されていません。"
+            );
+        }
+
+        if (!normalizedMemberIdentifier) {
+            throw new Error(
+                "ログイン中の部員を確認できません。"
+            );
+        }
+
+        if (!password) {
+            throw new Error(
+                "本人確認のためパスワードを入力してください。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response =
+            await fetch(
+                V4_GAS_API_URL,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "text/plain;charset=utf-8"
+                    },
+
+                    body: JSON.stringify({
+                        action:
+                            "deleteMatchRecord",
+
+                        recordId:
+                            normalizedRecordId,
+
+                        memberIdentifier:
+                            normalizedMemberIdentifier,
+
+                        password:
+                            password
+                    })
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "大会記録の削除通信に失敗しました。"
+            );
+        }
+
+        const result =
+            await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "大会記録を削除できませんでした。"
+            );
+        }
+
+        return result;
+    }
+
     window.BAS_CLOUD = {
         loadAllData:
             loadAllData,
@@ -624,6 +722,9 @@
             overwriteMatchRecords,
 
         saveMatchRecord:
-            saveMatchRecord
+            saveMatchRecord,
+
+        deleteMatchRecord:
+            deleteMatchRecord
     };
 })();

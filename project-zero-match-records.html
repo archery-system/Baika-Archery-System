@@ -274,6 +274,53 @@
             }
         );
     </script>
-</body>
+<!-- 大会記録削除確認ダイアログ -->
+<dialog id="matchDeleteDialog">
+    <form onsubmit="return false;">
+        <h2>大会記録の削除</h2>
 
+        <p id="matchDeleteRecordName"></p>
+
+        <p>
+            この大会記録を削除します。
+            削除すると元に戻せません。
+        </p>
+
+        <label for="matchDeletePassword">
+            本人確認用パスワード
+        </label>
+
+        <input
+            id="matchDeletePassword"
+            type="password"
+            autocomplete="current-password"
+            required
+        >
+
+        <p
+            id="matchDeleteError"
+            role="alert"
+            aria-live="polite"
+        ></p>
+
+        <div class="bas-match-record__actions">
+            <button
+                id="matchDeleteCancel"
+                type="button"
+                class="bas-button"
+            >
+                キャンセル
+            </button>
+
+            <button
+                id="matchDeleteConfirm"
+                type="button"
+                class="bas-button"
+            >
+                記録を削除する
+            </button>
+        </div>
+    </form>
+</dialog>
+</body>
 </html>

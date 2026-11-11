@@ -404,6 +404,209 @@ function upsertMatchRecord(record) {
 }
 
 /**
+ * 大会記録を1件削除する。
+ *
+ * 削除前にパスワード認証と
+ * 記録所有者の確認を行う。
+ *
+ * @param {string} recordId
+ * @param {string} memberIdentifier
+ * @param {string} password
+ * @returns {Object}
+ */
+function deleteMatchRecord(
+  recordId,
+  memberIdentifier,
+  password
+) {
+  const targetRecordId =
+    String(recordId || "").trim();
+
+  if (!targetRecordId) {
+    throw new Error(
+      "大会記録IDが指定されていません。"
+    );
+  }
+
+  const auth =
+    authenticateMember(
+      memberIdentifier,
+      password
+    );
+
+  if (
+    !auth.success ||
+    !auth.member
+  ) {
+    throw new Error(
+      "本人認証に失敗しました。"
+    );
+  }
+
+  const member =
+    auth.member;
+
+  const loginMemberId =
+    String(
+      member.memberId || ""
+    ).trim();
+
+  const isAdmin =
+    member.role ===
+    ROLE_NAMES.ADMIN;
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getSpreadsheet().getSheetByName(
+        SHEET_NAMES.MATCH
+      );
+
+    if (!sheet) {
+      throw new Error(
+        "大会記録シートが見つかりません。"
+      );
+    }
+
+    const lastRow =
+      sheet.getLastRow();
+
+    const lastColumn =
+      sheet.getLastColumn();
+
+    if (
+      lastRow < 2 ||
+      lastColumn < 1
+    ) {
+      throw new Error(
+        "削除対象の大会記録が見つかりません。"
+      );
+    }
+
+    const headers =
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          lastColumn
+        )
+        .getValues()[0]
+        .map(function(header) {
+          return String(
+            header || ""
+          ).trim();
+        });
+
+    const recordIdColumn =
+      headers.indexOf(
+        "recordId"
+      ) + 1;
+
+    const memberIdColumn =
+      headers.indexOf(
+        "memberId"
+      ) + 1;
+
+    if (
+      recordIdColumn < 1 ||
+      memberIdColumn < 1
+    ) {
+      throw new Error(
+        "大会記録の管理項目が不足しています。"
+      );
+    }
+
+    const records =
+      sheet
+        .getRange(
+          2,
+          1,
+          lastRow - 1,
+          lastColumn
+        )
+        .getValues();
+
+    const matchingRows = [];
+
+    records.forEach(
+      function(row, index) {
+        const currentRecordId =
+          String(
+            row[
+              recordIdColumn - 1
+            ] || ""
+          ).trim();
+
+        if (
+          currentRecordId ===
+          targetRecordId
+        ) {
+          matchingRows.push({
+            rowNumber: index + 2,
+            memberId: String(
+              row[
+                memberIdColumn - 1
+              ] || ""
+            ).trim()
+          });
+        }
+      }
+    );
+
+    if (
+      matchingRows.length !== 1
+    ) {
+      throw new Error(
+        matchingRows.length === 0
+          ? "削除対象の大会記録が見つかりません。"
+          : "同じ大会記録IDが複数存在するため、削除できません。"
+      );
+    }
+
+    const target =
+      matchingRows[0];
+
+    const isOwner =
+      loginMemberId !== "" &&
+      target.memberId !== "" &&
+      loginMemberId ===
+        target.memberId;
+
+    if (
+      !isAdmin &&
+      !(
+        member.role ===
+          ROLE_NAMES.MEMBER &&
+        isOwner
+      )
+    ) {
+      throw new Error(
+        "この大会記録を削除する権限がありません。"
+      );
+    }
+
+    sheet.deleteRow(
+      target.rowNumber
+    );
+
+    SpreadsheetApp.flush();
+
+    return {
+      success: true,
+      recordId: targetRecordId,
+      rowNumber: target.rowNumber
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * 弓具設定をequipmentシートへ保存する。
  *
  * memberIdごとに現在の設定を1件だけ保持し、

@@ -1536,6 +1536,57 @@ function handleSaveMatchRecordAction_(
   });
 }
 
+/**
+ * 大会記録1件の削除要求を処理する。
+ *
+ * GAS側で本人認証と削除権限を確認する。
+ */
+function handleDeleteMatchRecordAction_(
+  payload
+) {
+  const recordId =
+    String(
+      payload && payload.recordId || ""
+    ).trim();
+
+  const memberIdentifier =
+    String(
+      payload && payload.memberIdentifier || ""
+    ).trim();
+
+  const password =
+    String(
+      payload && payload.password || ""
+    );
+
+  if (
+    !recordId ||
+    !memberIdentifier ||
+    !password
+  ) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "大会記録ID、部員ID、パスワードを指定してください。"
+    });
+  }
+
+  const result =
+    deleteMatchRecord(
+      recordId,
+      memberIdentifier,
+      password
+    );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      "大会記録を削除しました。",
+    recordId:
+      result.recordId
+  });
+}
+
 if (action === "addMember") {
   return handleAddMemberAction_(payload);
 }
@@ -1585,6 +1636,15 @@ if (action === "analyzeFormVideoDetail") {
  */
 if (action === "saveMatchRecord") {
   return handleSaveMatchRecordAction_(
+    payload
+  );
+}
+
+/*
+ * 大会記録1件を削除する。
+ */
+if (action === "deleteMatchRecord") {
+  return handleDeleteMatchRecordAction_(
     payload
   );
 }

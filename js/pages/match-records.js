@@ -11,6 +11,12 @@
 
     let memberMaster = [];
 
+    // 現在、削除確認中の大会記録
+    let pendingDeleteMatchRecord = null;
+
+    // 大会記録の削除処理中かどうか
+    let isDeletingMatchRecord = false;
+
     /**
      * GASから部員マスターを取得する
      */
@@ -87,6 +93,172 @@
 
     async function initialize() {
         initializeMatchRecordFilters();
+
+        const deleteCancelButton =
+            document.getElementById(
+                "matchDeleteCancel"
+            );
+
+        if (deleteCancelButton) {
+            deleteCancelButton.addEventListener(
+                "click",
+                closeMatchDeleteDialog
+            );
+        }
+
+        const deleteDialog =
+            document.getElementById(
+                "matchDeleteDialog"
+            );
+
+        if (deleteDialog) {
+            deleteDialog.addEventListener(
+                "cancel",
+                function (event) {
+                    if (isDeletingMatchRecord) {
+                        event.preventDefault();
+                    }
+                }
+            );
+
+            deleteDialog.addEventListener(
+                "close",
+                function () {
+                    if (!isDeletingMatchRecord) {
+                        pendingDeleteMatchRecord = null;
+                    }
+                }
+            );
+        }
+        
+        const deleteConfirmButton =
+            document.getElementById(
+                "matchDeleteConfirm"
+            );
+
+        if (deleteConfirmButton) {
+            deleteConfirmButton.addEventListener(
+                "click",
+                async function () {
+                    const request =
+                        validateMatchDeleteRequest();
+
+                    if (!request) {
+                        return;
+                    }
+
+                    const errorMessage =
+                        document.getElementById(
+                            "matchDeleteError"
+                        );
+
+                    const cancelButton =
+                        document.getElementById(
+                            "matchDeleteCancel"
+                        );
+
+                    isDeletingMatchRecord = true;
+                    deleteConfirmButton.disabled = true;
+
+                    if (cancelButton) {
+                        cancelButton.disabled = true;
+                    }
+
+                    if (errorMessage) {
+                        errorMessage.textContent =
+                            "大会記録を削除しています...";
+                    }
+
+                    try {
+                        if (
+                            !window.BAS_CLOUD ||
+                            typeof window.BAS_CLOUD
+                                .deleteMatchRecord !== "function"
+                        ) {
+                            throw new Error(
+                                "大会記録の削除機能を利用できません。"
+                            );
+                        }
+
+                        const result =
+                            await window.BAS_CLOUD
+                                .deleteMatchRecord(
+                                    request.recordId,
+                                    request.memberIdentifier,
+                                    request.password
+                                );
+
+                        if (
+                            !result ||
+                            result.success !== true
+                        ) {
+                            throw new Error(
+                                "大会記録を削除できませんでした。"
+                            );
+                        }
+
+                        // GASでの削除は成功済み。
+                        // 以降の画面更新エラーとは区別する。
+                        isDeletingMatchRecord = false;
+
+                        closeMatchDeleteDialog();
+
+                        try {
+                            const updated =
+                                removeDeletedMatchRecord(
+                                    request.recordId
+                                );
+
+                            if (!updated) {
+                                await refreshMatchRecords();
+                            }
+                        } catch (refreshError) {
+                            console.error(
+                                "大会記録削除後の一覧更新に失敗しました。",
+                                refreshError
+                            );
+
+                            try {
+                                window.sessionStorage.removeItem(
+                                    MATCH_RECORDS_CACHE_KEY
+                                );
+                            } catch (cacheError) {
+                                console.error(
+                                    "大会記録キャッシュの削除に失敗しました。",
+                                    cacheError
+                                );
+                            }
+
+                            window.alert(
+                                "大会記録は削除されましたが、一覧の更新に失敗しました。画面を再読み込みしてください。"
+                            );
+                        }
+                    } catch (error) {
+                        if (errorMessage) {
+                            errorMessage.textContent =
+                                error.message ||
+                                "大会記録の削除に失敗しました。";
+                        }
+                    } finally {
+                        isDeletingMatchRecord = false;
+                        deleteConfirmButton.disabled = false;
+
+                        if (cancelButton) {
+                            cancelButton.disabled = false;
+                        }
+
+                        const passwordInput =
+                            document.getElementById(
+                                "matchDeletePassword"
+                            );
+
+                        if (passwordInput) {
+                            passwordInput.value = "";
+                        }
+                    }
+                }
+            );
+        }
 
         loadMatchMemberMaster()
             .then(function (members) {
@@ -401,16 +573,26 @@
                 );
             });
 
-        if (
-            Array.from(
-                select.options
-            ).some(function (option) {
-                return (
-                    option.value ===
-                    currentValue
+        if (currentValue) {
+            const exists =
+                Array.from(
+                    select.options
+                ).some(function (option) {
+                    return (
+                        option.value ===
+                        currentValue
+                    );
+                });
+
+            if (!exists) {
+                select.appendChild(
+                    createFilterOption(
+                        currentValue,
+                        currentValue
+                    )
                 );
-            })
-        ) {
+            }
+
             select.value =
                 currentValue;
         }
@@ -478,16 +660,26 @@
             );
         });
 
-        if (
-            Array.from(
-                select.options
-            ).some(function (option) {
-                return (
-                    option.value ===
-                    currentValue
+        if (currentValue) {
+            const exists =
+                Array.from(
+                    select.options
+                ).some(function (option) {
+                    return (
+                        option.value ===
+                        currentValue
+                    );
+                });
+
+            if (!exists) {
+                select.appendChild(
+                    createFilterOption(
+                        currentValue,
+                        currentValue
+                    )
                 );
-            })
-        ) {
+            }
+
             select.value =
                 currentValue;
         }
@@ -546,16 +738,26 @@
                 );
             });
 
-        if (
-            Array.from(
-                select.options
-            ).some(function (option) {
-                return (
-                    option.value ===
-                    currentValue
+        if (currentValue) {
+            const exists =
+                Array.from(
+                    select.options
+                ).some(function (option) {
+                    return (
+                        option.value ===
+                        currentValue
+                    );
+                });
+
+            if (!exists) {
+                select.appendChild(
+                    createFilterOption(
+                        currentValue,
+                        `${currentValue}年度`
+                    )
                 );
-            })
-        ) {
+            }
+
             select.value =
                 currentValue;
         }
@@ -945,6 +1147,81 @@
         applyMatchRecordFilters();
     }
 
+    /**
+     * GASから最新の大会記録を取得し、
+     * キャッシュと一覧を更新する。
+     */
+    async function refreshMatchRecords() {
+        if (
+            !window.BAS_CLOUD ||
+            typeof window.BAS_CLOUD
+                .loadMatchRecords !== "function"
+        ) {
+            throw new Error(
+                "大会記録の読込機能を確認できませんでした。"
+            );
+        }
+
+        const allRecords =
+            await window.BAS_CLOUD
+                .loadMatchRecords();
+
+        if (!Array.isArray(allRecords)) {
+            throw new Error(
+                "大会記録の取得結果が正しくありません。"
+            );
+        }
+
+        saveMatchRecordsCache(
+            allRecords
+        );
+
+        renderVisibleRecords(
+            allRecords
+        );
+    }
+
+    /**
+     * 大会記録の削除成功後に
+     * キャッシュと一覧を更新する。
+     */
+    function removeDeletedMatchRecord(
+        recordId
+    ) {
+        const cachedRecords =
+            loadMatchRecordsCache();
+
+        if (!Array.isArray(cachedRecords)) {
+            /*
+             * キャッシュがない場合は、
+             * GASから最新の記録を再取得する。
+             */
+            return false;
+        }
+
+        const remainingRecords =
+            cachedRecords.filter(
+                function (record) {
+                    return (
+                        String(
+                            record.recordId || ""
+                        ).trim() !==
+                        String(recordId || "").trim()
+                    );
+                }
+            );
+
+        saveMatchRecordsCache(
+            remainingRecords
+        );
+
+        renderVisibleRecords(
+            remainingRecords
+        );
+
+        return true;
+    }
+
     function saveMatchRecordsCache(
         records
     ) {
@@ -1232,6 +1509,206 @@
         status.hidden = true;
         empty.hidden = true;
         list.hidden = false;
+    }
+
+    /**
+     * 大会記録削除前の入力情報を確認する。
+     */
+    function validateMatchDeleteRequest() {
+        const passwordInput =
+            document.getElementById(
+                "matchDeletePassword"
+            );
+
+        const errorMessage =
+            document.getElementById(
+                "matchDeleteError"
+            );
+
+        if (errorMessage) {
+            errorMessage.textContent = "";
+        }
+
+        if (isDeletingMatchRecord) {
+            return null;
+        }
+
+        if (
+            !pendingDeleteMatchRecord ||
+            !pendingDeleteMatchRecord.recordId
+        ) {
+            if (errorMessage) {
+                errorMessage.textContent =
+                    "削除対象の大会記録を確認できません。";
+            }
+
+            return null;
+        }
+
+        if (
+            !window.V4Session ||
+            typeof window.V4Session
+                .getLoggedInMemberData !== "function"
+        ) {
+            if (errorMessage) {
+                errorMessage.textContent =
+                    "ログイン情報を確認できません。";
+            }
+
+            return null;
+        }
+
+        const loginData =
+            window.V4Session
+                .getLoggedInMemberData();
+
+        const memberIdentifier =
+            normalizeText(
+                loginData && loginData.memberId
+            );
+
+        if (!memberIdentifier) {
+            if (errorMessage) {
+                errorMessage.textContent =
+                    "ログイン中の部員IDを確認できません。";
+            }
+
+            return null;
+        }
+
+        const password =
+            passwordInput
+                ? passwordInput.value
+                : "";
+
+        if (!password) {
+            if (errorMessage) {
+                errorMessage.textContent =
+                    "パスワードを入力してください。";
+            }
+
+            if (passwordInput) {
+                passwordInput.focus();
+            }
+
+            return null;
+        }
+
+        return {
+            recordId:
+                pendingDeleteMatchRecord.recordId,
+
+            memberIdentifier:
+                memberIdentifier,
+
+            password:
+                password
+        };
+    }
+
+    /**
+     * 大会記録の削除確認画面を閉じる。
+     */
+    function closeMatchDeleteDialog() {
+        if (isDeletingMatchRecord) {
+            return;
+        }
+
+        pendingDeleteMatchRecord = null;
+
+        const dialog =
+            document.getElementById(
+                "matchDeleteDialog"
+            );
+
+        const passwordInput =
+            document.getElementById(
+                "matchDeletePassword"
+            );
+
+        const errorMessage =
+            document.getElementById(
+                "matchDeleteError"
+            );
+
+        if (passwordInput) {
+            passwordInput.value = "";
+        }
+
+        if (errorMessage) {
+            errorMessage.textContent = "";
+        }
+
+        if (
+            dialog &&
+            dialog.open
+        ) {
+            dialog.close();
+        }
+    }
+
+    /**
+     * 大会記録の削除確認画面を開く。
+     */
+    function openMatchDeleteDialog(record) {
+        if (
+            !record ||
+            !canEditRecord(record) ||
+            !normalizeText(record.recordId)
+        ) {
+            return;
+        }
+
+        const dialog =
+            document.getElementById(
+                "matchDeleteDialog"
+            );
+
+        const recordName =
+            document.getElementById(
+                "matchDeleteRecordName"
+            );
+
+        const passwordInput =
+            document.getElementById(
+                "matchDeletePassword"
+            );
+
+        const errorMessage =
+            document.getElementById(
+                "matchDeleteError"
+            );
+
+        if (
+            !dialog ||
+            !recordName ||
+            !passwordInput ||
+            !errorMessage
+        ) {
+            return;
+        }
+
+        recordName.textContent =
+            normalizeText(record.name) ||
+            normalizeText(record.matchName) ||
+            "大会名未設定";
+
+        pendingDeleteMatchRecord = {
+            recordId:
+                normalizeText(record.recordId),
+
+            memberId:
+                normalizeText(record.memberId)
+        };
+
+        passwordInput.value = "";
+
+        errorMessage.textContent = "";
+
+        if (typeof dialog.showModal === "function") {
+            dialog.showModal();
+            passwordInput.focus();
+        }
     }
 
     /**
@@ -1622,6 +2099,39 @@
 
                 actions.appendChild(
                     editLink
+                );
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.type =
+                    "button";
+
+                deleteButton.className =
+                    "bas-button";
+
+                deleteButton.textContent =
+                    "記録を削除する";
+
+                deleteButton.disabled =
+                    false;
+
+                deleteButton.title =
+                    "大会記録の削除確認画面を開きます。";
+
+                deleteButton.addEventListener(
+                    "click",
+                    function () {
+                        openMatchDeleteDialog(
+                            record
+                        );
+                    }
+                );
+
+                actions.appendChild(
+                    deleteButton
                 );
 
                 footerRow.appendChild(
