@@ -23,7 +23,8 @@
     margin: 0;
 }
 
-.v4-photo-interaction-area #v4TargetPhotoViewer {
+.v4-photo-interaction-area #v4TargetPhotoViewer,
+.v4-photo-interaction-area #v4IllustrationTargetViewer {
     grid-column: 1;
     grid-row: 1;
     min-width: 0;
@@ -31,6 +32,28 @@
     overscroll-behavior: contain;
     -webkit-user-select: none;
     user-select: none;
+}
+
+/* 写真とイラスト的は選択した方だけを表示する */
+.v4-photo-interaction-area #v4TargetPhotoViewer[hidden],
+.v4-photo-interaction-area #v4IllustrationTargetViewer[hidden] {
+    display: none !important;
+}
+
+/* イラスト的を写真表示領域内に収める */
+.v4-photo-interaction-area #v4IllustrationTargetViewer:not([hidden]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.v4-photo-interaction-area #v4IllustrationTargetSvg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
 }
 
 .v4-photo-interaction-area .v4-photo-control-button {
