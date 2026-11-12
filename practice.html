@@ -369,9 +369,22 @@
                 <div class="v4-target-layout">
 
                     <div class="v4-landscape-sticky-stage">
-                        <!-- 撮影した的の写真 -->
+                        <!-- 撮影した的の写真・イラスト的 -->
                         <div class="v4-target-panel v4-photo-panel">
-                            <div class="v4-target-panel-title">📷 撮影した的</div>
+                            <div class="v4-target-panel-title">
+                                🎯 着弾位置の入力元
+                            </div>
+                        
+                            <!-- 写真・イラスト的の切り替え -->
+                            <div class="v4-target-source-switch" role="group" aria-label="入力元の切り替え">
+                                <button type="button" id="v4SelectPhotoTarget" class="v4-target-source-button is-active" aria-pressed="true">
+                                    📷 写真
+                                </button>
+                        
+                                <button type="button" id="v4SelectIllustrationTarget" class="v4-target-source-button" aria-pressed="false">
+                                    🎯 イラスト的
+                                </button>
+                            </div>
 
                             <button type="button" id="v4PhotoFullscreenClose" class="v4-photo-fullscreen-close" hidden>✓
                                 入力的を確認</button>
@@ -401,8 +414,12 @@
                                         <span class="v4-photo-empty-icon">📷</span>
                                         <span>写真が選択されていません</span>
                                     </div>
-                                    <img id="v4TargetPhotoPreview" class="v4-photo-preview" alt="撮影したアーチェリーの的"
-                                        draggable="false" hidden>
+                                    <img id="v4TargetPhotoPreview" class="v4-photo-preview" alt="撮影したアーチェリーの的" draggable="false" hidden>
+                                </div>
+                            
+                                <!-- イラスト的：写真表示と切り替えて使用 -->
+                                <div id="v4IllustrationTargetViewer" class="v4-illustration-target-viewer" hidden>
+                                    <svg id="v4IllustrationTargetSvg" viewBox="0 0 300 300" role="img" aria-label="着弾位置入力用のイラスト的"></svg>
                                 </div>
                             </div>
 
@@ -1181,7 +1198,8 @@
     <script src="js/v4-photo-ui.js?v=630"></script>
     <script src="js/v4-camera.js?v=55"></script>
     <script src="js/v4-practice-mode.js?v=3"></script>
-
-</body>
+    <script src="js/v4-illustration-target.js?v=1"></script>
+    
+    </body>
 
 </html>
