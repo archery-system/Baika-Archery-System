@@ -1042,28 +1042,36 @@ function updateTargetPinPosition(
     x,
     y
 ) {
-    if (!photoGroupingArrows[index]) {
+    const activeArrows =
+        photoGroupingArrows.length > 0
+            ? photoGroupingArrows
+            : currentArrows;
+
+    if (!activeArrows[index]) {
         return false;
     }
 
-    photoGroupingArrows[index].x =
+    activeArrows[index].x =
         Math.max(0, Math.min(300, Number(x)));
 
-    photoGroupingArrows[index].y =
+    activeArrows[index].y =
         Math.max(0, Math.min(300, Number(y)));
 
     const adjustedArrow = calculateArrowScore(
-        photoGroupingArrows[index].x,
-        photoGroupingArrows[index].y
+        activeArrows[index].x,
+        activeArrows[index].y
     );
 
-    photoGroupingArrows[index].val =
+    activeArrows[index].val =
         adjustedArrow.val;
-    photoGroupingArrows[index].score =
+
+    activeArrows[index].score =
         adjustedArrow.score;
-    photoGroupingArrows[index].isMiss =
+
+    activeArrows[index].isMiss =
         adjustedArrow.val === "M";
-    photoGroupingArrows[index].targetAdjusted =
+
+    activeArrows[index].targetAdjusted =
         true;
 
     renderGroupingPins();
@@ -1075,7 +1083,7 @@ function updateTargetPinPosition(
             {
                 detail: {
                     index: index,
-                    arrows: photoGroupingArrows.map(
+                    arrows: activeArrows.map(
                         function (arrow) {
                             return { ...arrow };
                         }
@@ -1109,6 +1117,48 @@ function finishTargetPinPosition(
 
     return true;
 }
+
+/**
+ * イラスト的で指定した着弾位置を
+ * 現在の入力記録へ追加する
+ */
+function addIllustrationTargetArrow(x, y) {
+    const targetX = Number(x);
+    const targetY = Number(y);
+
+    if (
+        !Number.isFinite(targetX) ||
+        !Number.isFinite(targetY)
+    ) {
+        return false;
+    }
+
+    /*
+     * 写真由来の着弾データがある場合は、
+     * 既存の入力記録を消さず、
+     * 同じ入力配列へ追加する。
+     */
+    const activeArrows =
+        getActiveInputArrows();
+
+    const arrow = calculateArrowScore(
+        Math.max(0, Math.min(300, targetX)),
+        Math.max(0, Math.min(300, targetY))
+    );
+
+    activeArrows.push(arrow);
+
+    renderTargetPins();
+    renderGroupingPins();
+    updateCurrentEndDisplay();
+    updateScoreInputState();
+    syncCurrentPracticeInputToProjectZero();
+
+    return true;
+}
+
+window.baikaAddIllustrationTargetArrow =
+    addIllustrationTargetArrow;
 
 window.baikaTargetModel = {
     getArrows: getPhotoGroupingArrows,
