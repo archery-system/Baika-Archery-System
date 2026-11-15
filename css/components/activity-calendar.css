@@ -35,6 +35,18 @@
     border-radius: 8px;
     background: #fff;
     cursor: pointer;
+    flex-shrink: 0;
+}
+
+.bas-calendar__header .bas-calendar__today-button {
+    width: auto;
+    min-width: 52px;
+    padding: 0 10px;
+    border: 1px solid #d75b93;
+    background: #fff0f6;
+    color: #a83269;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .bas-calendar__grid {

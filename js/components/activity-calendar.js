@@ -47,6 +47,26 @@
         next.type = "button";
         next.textContent = "〉";
 
+        const todayButton = document.createElement("button");
+        todayButton.type = "button";
+        todayButton.textContent = "今日";
+        todayButton.className = "bas-calendar__today-button";
+
+        todayButton.addEventListener("click", function () {
+            const today = new Date();
+
+            currentMonth = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                1
+            );
+
+            selectedDate =
+                `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+            renderCalendar();
+        });
+
         previous.addEventListener("click", function () {
             currentMonth.setMonth(month - 1);
             renderCalendar();
@@ -57,7 +77,7 @@
             renderCalendar();
         });
 
-        header.append(previous, title, next);
+        header.append(previous, title, todayButton, next);
         container.appendChild(header);
 
         const grid = document.createElement("div");
