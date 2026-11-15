@@ -1,0 +1,96 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ * 部活動カレンダー
+ */
+
+.bas-home__calendar {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid var(--bas-color-border, #ddd);
+    border-radius: 12px;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.bas-calendar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.bas-calendar__header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+}
+
+.bas-calendar__header button {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.bas-calendar__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.bas-calendar__weekday {
+    padding: 10px 0;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #555;
+}
+
+.bas-calendar__day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 65px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background: #fafafa;
+    font-size: 15px;
+    color: #333;
+}
+
+.bas-calendar__today {
+    border: 2px solid #d75b93;
+    background: #fff0f6;
+    color: #a83269;
+    font-weight: 700;
+}
+
+@media (max-width: 600px) {
+    .bas-home__calendar {
+        padding: 10px;
+    }
+
+    .bas-calendar__grid {
+        gap: 3px;
+    }
+
+    .bas-calendar__day {
+        min-height: 45px;
+        font-size: 13px;
+    }
+
+    .bas-calendar__weekday {
+        font-size: 12px;
+        padding: 8px 0;
+    }
+
+    .bas-calendar__header h3 {
+        font-size: 17px;
+    }
+}

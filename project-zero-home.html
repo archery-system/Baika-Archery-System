@@ -42,6 +42,7 @@
     <link rel="stylesheet" href="css/components/card.css">
     <link rel="stylesheet" href="css/components/ai-dashboard.css">
     <link rel="stylesheet" href="css/components/ai-coach.css">
+    <link rel="stylesheet" href="css/components/activity-calendar.css?v=1">
     <link rel="stylesheet" href="css/pages/home.css">
 </head>
 
@@ -55,9 +56,21 @@
 
             <div id="page-header"></div>
 
-            <div class="bas-home">
-
-                <section class="bas-card">
+                        <div class="bas-home">
+                        
+                            <section class="bas-home__section">
+                        
+                                <h2 class="bas-home__section-title">
+                                    📅 部活動カレンダー
+                                </h2>
+                        
+                                <div id="homeActivityCalendar" class="bas-home__calendar">
+                                    <p>カレンダーを準備しています。</p>
+                                </div>
+                        
+                            </section>
+                        
+                            <section class="bas-card">
 
                     <div class="bas-home__welcome">
 
@@ -156,11 +169,11 @@
 
                         </div>
 
-                    </div>
-
-            </div>
-
-            <section class="bas-home__dashboard">
+                     </div>
+                                        
+                </section>
+                                        
+                <section class="bas-home__dashboard">
 
                 <div class="bas-home__dashboard-card">
 
@@ -203,22 +216,6 @@
 
             </section>
 
-            </section>
-
-            <section class="bas-home__section">
-
-                <h2 class="bas-home__section-title">
-
-                    メニュー
-
-                </h2>
-
-                <div id="homeFeatureCards" class="bas-home__grid">
-
-                </div>
-
-            </section>
-
     </div>
 
     </main>
@@ -246,7 +243,8 @@
     <script src="js/components/ai-dashboard.js"></script>
     <script src="js/core/ai-engine.js"></script>
     <script src="js/components/ai-coach.js"></script>
-
+    <script src="js/components/activity-calendar.js?v=1"></script>
+        
     <!-- Project Zero Pages -->
     <script src="js/pages/home.js"></script>
 
@@ -274,6 +272,13 @@
                 typeof window.BAS_HOME.initialize === "function"
             ) {
                 window.BAS_HOME.initialize();
+            }
+
+            if (
+                window.BAS_ACTIVITY_CALENDAR &&
+                typeof window.BAS_ACTIVITY_CALENDAR.initialize === "function"
+            ) {
+                window.BAS_ACTIVITY_CALENDAR.initialize();
             }
         });
     </script>

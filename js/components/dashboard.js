@@ -691,7 +691,6 @@
 
     async function initializeDashboard() {
         renderCurrentUser();
-        renderHomeCards();
 
         await renderLastPractice();
 
