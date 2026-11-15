@@ -76,9 +76,100 @@
                                     <div id="homeActivityScheduleList">
                                         <p>カレンダーの日付をタップすると予定を表示します。</p>
                                     </div>
-                                </div>
-                                
-                                </section>
+                                        </div>
+                                                                
+                                        <button type="button" id="homeActivityAddButton" class="bas-calendar__add-button">
+                                            ＋ 予定を登録
+                                        </button>
+                                        
+                                        <div id="homeActivityFormArea" class="bas-calendar__form-area" hidden>
+                                            <form id="homeActivityForm">
+                                        
+                                                <h3>予定の新規登録</h3>
+                                        
+                                                <label for="homeActivityTitle">
+                                                    予定名
+                                                </label>
+                                                <input type="text" id="homeActivityTitle" required>
+                                        
+                                                <label for="homeActivityType">
+                                                    予定の種類
+                                                </label>
+                                                <select id="homeActivityType">
+                                                    <option value="practice">通常練習</option>
+                                                    <option value="practice-match">練習試合</option>
+                                                    <option value="competition">大会</option>
+                                                    <option value="other">その他</option>
+                                                </select>
+                                        
+                                                <div class="bas-calendar__datetime-row">
+                                                
+                                                    <div class="bas-calendar__datetime-field">
+                                                        <label for="homeActivityDate">
+                                                            日付
+                                                        </label>
+                                                        <input type="date" id="homeActivityDate" required>
+                                                    </div>
+                                                
+                                                    <div class="bas-calendar__datetime-field">
+                                                        <label for="homeActivityStartTime">
+                                                            集合時刻
+                                                        </label>
+                                                        <input type="time" id="homeActivityStartTime">
+                                                    </div>
+                                                
+                                                    <div class="bas-calendar__datetime-field">
+                                                        <label for="homeActivityEndTime">
+                                                            終了時刻
+                                                        </label>
+                                                        <input type="time" id="homeActivityEndTime">
+                                                    </div>
+                                                
+                                                </div>
+                                        
+                                                <label for="homeActivityPlace">
+                                                    場所
+                                                </label>
+                                                <input type="text" id="homeActivityPlace">
+                                        
+                                                <label for="homeActivityMemo">
+                                                    メモ・連絡事項
+                                                </label>
+                                                <textarea id="homeActivityMemo" rows="3"></textarea>
+                                                
+                                                <label for="homeActivityUrl">
+                                                    関連URL（任意）
+                                                </label>
+                                                <input type="url" id="homeActivityUrl" placeholder="https://example.com/event.pdf">
+                                        
+                                                <fieldset>
+                                                    <legend>公開・編集権限</legend>
+                                        
+                                                    <label>
+                                                        <input type="radio" name="homeActivityScope" value="all" checked>
+                                                        全員
+                                                    </label>
+                                        
+                                                    <label>
+                                                        <input type="radio" name="homeActivityScope" value="owner">
+                                                        登録者のみ
+                                                    </label>
+                                                </fieldset>
+                                        
+                                                <div class="bas-calendar__form-actions">
+                                                    <button type="submit">
+                                                        登録する
+                                                    </button>
+                                        
+                                                    <button type="button" id="homeActivityCancelButton">
+                                                        キャンセル
+                                                    </button>
+                                                </div>
+                                        
+                                            </form>
+                                        </div>
+                                                                
+                                    </section>
                         
                             <section class="bas-card">
 

@@ -180,7 +180,80 @@
         renderSelectedSchedule();
     }
 
+    // 予定登録フォームの開閉
+    function initializeActivityForm() {
+        const addButton = document.getElementById(
+            "homeActivityAddButton"
+        );
+
+        const formArea = document.getElementById(
+            "homeActivityFormArea"
+        );
+
+        const form = document.getElementById(
+            "homeActivityForm"
+        );
+
+        const cancelButton = document.getElementById(
+            "homeActivityCancelButton"
+        );
+
+        const dateInput = document.getElementById(
+            "homeActivityDate"
+        );
+
+        if (
+            !addButton ||
+            !formArea ||
+            !form ||
+            !cancelButton ||
+            !dateInput
+        ) {
+            return;
+        }
+
+        addButton.addEventListener("click", function () {
+            form.reset();
+
+            if (selectedDate) {
+                dateInput.value = selectedDate;
+            } else {
+                const today = new Date();
+
+                dateInput.value =
+                    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+            }
+
+            formArea.hidden = false;
+            addButton.hidden = true;
+        });
+
+        cancelButton.addEventListener("click", function () {
+            formArea.hidden = true;
+            addButton.hidden = false;
+
+            const calendar = document.getElementById(
+                "homeActivityCalendar"
+            );
+
+            if (calendar) {
+                calendar.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+        });
+
+        // 保存機能の実装までは送信を停止する
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+        });
+    }
+
     window.BAS_ACTIVITY_CALENDAR = {
-        initialize: renderCalendar
+        initialize: function () {
+            renderCalendar();
+            initializeActivityForm();
+        }
     };
 })();
