@@ -1868,12 +1868,40 @@
             )
         );
 
+        const recordMemberId =
+            normalizeText(
+                record.memberId
+            );
+
+        const member =
+            memberMaster.find(
+                function (item) {
+                    return (
+                        normalizeText(
+                            item && item.memberId
+                        ) === recordMemberId
+                    );
+                }
+            );
+
+        const memberName =
+            normalizeText(
+                member && member.nickname
+            ) ||
+            normalizeText(
+                member && member.displayName
+            ) ||
+            normalizeText(
+                member && member.name
+            ) ||
+            normalizeText(
+                record.memberName
+            ) ||
+            "部員名未設定";
+
         meta.appendChild(
             createBadge(
-                normalizeText(
-                    record.memberName
-                ) ||
-                "部員名未設定"
+                memberName
             )
         );
 
