@@ -426,6 +426,28 @@ html.v4-illustration-focus-mode
 }
 
 /*
+ * スマートフォン横向き時の
+ * 入力元切り替えを1行に収める
+ */
+@media (orientation: landscape) and (max-height: 600px) {
+    .v4-photo-panel .v4-target-source-header {
+        flex-wrap: nowrap;
+        gap: 4px;
+    }
+
+    .v4-photo-panel .v4-target-source-header .v4-target-panel-title {
+        flex-shrink: 0;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .v4-photo-panel .v4-target-source-header .v4-target-source-switch {
+        flex-shrink: 0;
+        gap: 2px;
+    }
+}
+
+/*
  * 写真的・イラスト的の拡大中は
  * 見出しと切り替えボタンをまとめて非表示
  */
