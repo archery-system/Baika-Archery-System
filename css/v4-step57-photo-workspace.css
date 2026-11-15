@@ -208,3 +208,230 @@
         position: relative !important;
     }
 }
+
+/*
+ * イラスト的：写真入力と同じ拡大操作ボタン配置
+ */
+html.v4-illustration-focus-mode
+#v4IllustrationZoom800,
+html.v4-illustration-focus-mode
+#v4IllustrationZoom1000 {
+    display: block !important;
+    position: fixed !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    z-index: 10005 !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-weight: 700 !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    color: #4f2683 !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.v4-illustration-focus-mode
+#v4IllustrationZoom800 {
+    left: calc(
+        max(8px, env(safe-area-inset-left)) + 150px
+    ) !important;
+}
+
+html.v4-illustration-focus-mode
+#v4IllustrationZoom1000 {
+    left: calc(
+        max(8px, env(safe-area-inset-left)) + 225px
+    ) !important;
+}
+
+/*
+ * イラスト的：写真入力と同じ全画面レイアウト
+ */
+html.v4-illustration-focus-mode .v4-photo-panel {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    border-radius: 0 !important;
+    background: #111 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+html.v4-illustration-focus-mode
+.v4-photo-panel
+> :not(.v4-photo-interaction-area)
+:not(.v4-photo-fullscreen-close)
+:not(.v4-photo-back-to-overview)
+:not(.v4-photo-focus-zoom-button) {
+    display: none !important;
+}
+
+html.v4-illustration-focus-mode
+.v4-photo-interaction-area {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+}
+
+html.v4-illustration-focus-mode
+#v4IllustrationTargetViewer {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    border-radius: 8px !important;
+}
+
+/*
+ * イラスト的：写真入力と同じ全画面操作ボタン
+ */
+html.v4-illustration-focus-mode #v4IllustrationBackToOverview,
+html.v4-illustration-focus-mode #v4IllustrationFullscreenClose {
+    display: block !important;
+    position: fixed !important;
+    top: max(8px, env(safe-area-inset-top)) !important;
+    z-index: 10005 !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-weight: 700 !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    color: #4f2683 !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+html.v4-illustration-focus-mode #v4IllustrationBackToOverview {
+    left: max(8px, env(safe-area-inset-left)) !important;
+}
+
+html.v4-illustration-focus-mode #v4IllustrationFullscreenClose {
+    right: max(8px, env(safe-area-inset-right)) !important;
+}
+
+/*
+ * イラスト的：拡大中以外は操作ボタンを非表示
+ */
+#v4IllustrationBackToOverview[hidden],
+#v4IllustrationFullscreenClose[hidden],
+#v4IllustrationZoom800[hidden],
+#v4IllustrationZoom1000[hidden] {
+    display: none !important;
+}
+
+/*
+ * イラスト的の拡大中は写真用ボタンを非表示
+ */
+html.v4-illustration-focus-mode
+#v4PhotoFullscreenClose,
+html.v4-illustration-focus-mode
+#v4PhotoBackToOverview,
+html.v4-illustration-focus-mode
+#v4PhotoZoom800,
+html.v4-illustration-focus-mode
+#v4PhotoZoom1000 {
+    display: none !important;
+}
+
+/*
+ * イラスト的：最後のピンを戻すボタン
+ */
+html.v4-illustration-focus-mode
+#v4IllustrationUndoLastPin:not([hidden]) {
+    display: block !important;
+    position: fixed !important;
+    left: max(8px, env(safe-area-inset-left)) !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    z-index: 10005 !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    font-weight: 700 !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    color: #4f2683 !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+#v4IllustrationUndoLastPin[hidden] {
+    display: none !important;
+}
+
+#v4IllustrationUndoLastPin:disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+}
+
+/*
+ * イラスト的の拡大中は写真専用の操作領域を隠す
+ */
+html.v4-illustration-focus-mode
+#v4PhotoQuickActions,
+html.v4-illustration-focus-mode
+.v4-photo-panel .v4-camera-launch-area {
+    display: none !important;
+}
+
+/*
+ * 写真的・イラスト的共通：
+ * 拡大中は入力元の切り替えボタンを非表示
+ */
+html.v4-photo-focus-mode
+.v4-photo-panel .v4-target-source-switch,
+html.v4-illustration-focus-mode
+.v4-photo-panel .v4-target-source-switch {
+    display: none !important;
+}
+
+/*
+ * スマホ横向き：
+ * 通常表示のイラスト的を入力的と同じサイズにする
+ */
+@media (orientation: landscape)
+    and (min-width: 568px)
+    and (max-height: 600px) {
+
+    html.v4-is-landscape-layout:not(.v4-illustration-focus-mode) #v4IllustrationTargetSvg {
+        width: min(100%, 308px) !important;
+        max-width: 308px !important;
+        height: auto !important;
+        aspect-ratio: 1 / 1;
+        margin-inline: auto;
+    }
+}
+
+/*
+ * 入力元の見出しと切り替えボタンを横並びにする
+ */
+.v4-photo-panel .v4-target-source-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.v4-photo-panel .v4-target-source-header .v4-target-panel-title {
+    margin: 0;
+}
+
+.v4-photo-panel .v4-target-source-header .v4-target-source-switch {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+/*
+ * 写真的・イラスト的の拡大中は
+ * 見出しと切り替えボタンをまとめて非表示
+ */
+html.v4-photo-focus-mode
+.v4-photo-panel .v4-target-source-header,
+html.v4-illustration-focus-mode
+.v4-photo-panel .v4-target-source-header {
+    display: none !important;
+}

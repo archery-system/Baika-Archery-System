@@ -1160,6 +1160,27 @@ function addIllustrationTargetArrow(x, y) {
 window.baikaAddIllustrationTargetArrow =
     addIllustrationTargetArrow;
 
+/*
+ * イラスト的にも現在入力中の
+ * 着弾データを表示できるようにする。
+ *
+ * 右側の入力的と同じデータを参照し、
+ * 着弾データの二重管理を防ぐ。
+ */
+window.baikaGetIllustrationTargetArrows =
+    function () {
+        return getActiveInputArrows().map(
+            function (arrow) {
+                return {
+                    x: arrow.x,
+                    y: arrow.y,
+                    score: arrow.score,
+                    val: arrow.val
+                };
+            }
+        );
+    };
+
 window.baikaTargetModel = {
     getArrows: getPhotoGroupingArrows,
     updatePinPosition: updateTargetPinPosition,
@@ -3333,6 +3354,12 @@ function undoLastArrow() {
 
     return true;
 }
+
+/*
+ * イラスト的から最後の1射を取り消すための公開関数
+ */
+window.baikaUndoIllustrationTargetArrow =
+    undoLastArrow;
 
 /**
  * 現在入力とグルーピング追加済みの矢をすべて削除する

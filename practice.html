@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="css/v4-step63-photo-lock.css?v=630">
     <link rel="stylesheet" href="css/v4-step64-pin-adjust.css?v=640">
     <link rel="stylesheet" href="css/v4-step65-mobile-controls.css?v=671">
-    <link rel="stylesheet" href="css/v4-step57-photo-workspace.css?v=572">
+    <link rel="stylesheet" href="css/v4-step57-photo-workspace.css?v=573">
     <link rel="stylesheet" href="css/v4-theme-bridge.css?v=3">
     <link rel="stylesheet" href="css/v4-practice-mode.css?v=2">
 
@@ -372,19 +372,21 @@
                     <div class="v4-landscape-sticky-stage">
                         <!-- 撮影した的の写真・イラスト的 -->
                         <div class="v4-target-panel v4-photo-panel">
-                            <div class="v4-target-panel-title">
-                                🎯 着弾位置の入力元
-                            </div>
-                        
-                            <!-- 写真・イラスト的の切り替え -->
-                            <div class="v4-target-source-switch" role="group" aria-label="入力元の切り替え">
-                                <button type="button" id="v4SelectPhotoTarget" class="v4-target-source-button is-active" aria-pressed="true">
-                                    📷 写真
-                                </button>
-                        
-                                <button type="button" id="v4SelectIllustrationTarget" class="v4-target-source-button" aria-pressed="false">
-                                    🎯 イラスト的
-                                </button>
+                            <!-- 入力元の見出しと切り替えボタン -->
+                            <div class="v4-target-source-header">
+                                <div class="v4-target-panel-title">
+                                    🎯 着弾位置の入力元
+                                </div>
+                            
+                                <div class="v4-target-source-switch" role="group" aria-label="入力元の切り替え">
+                                    <button type="button" id="v4SelectPhotoTarget" class="v4-target-source-button is-active" aria-pressed="true">
+                                        📷 写真
+                                    </button>
+                            
+                                    <button type="button" id="v4SelectIllustrationTarget" class="v4-target-source-button" aria-pressed="false">
+                                        🎯 イラスト的
+                                    </button>
+                                </div>
                             </div>
 
                             <button type="button" id="v4PhotoFullscreenClose" class="v4-photo-fullscreen-close" hidden>✓
@@ -400,6 +402,27 @@
 
                             <button type="button" id="v4PhotoZoom1000" class="v4-photo-focus-zoom-button" hidden>
                                 1000%
+                            </button>
+
+                            <!-- イラスト的専用の拡大操作ボタン -->
+                            <button type="button" id="v4IllustrationFullscreenClose" class="v4-photo-fullscreen-close" hidden>
+                                ✓ 入力的を確認
+                            </button>
+                            
+                            <button type="button" id="v4IllustrationBackToOverview" class="v4-photo-back-to-overview" hidden>
+                                ↩ 全体表示へ戻る
+                            </button>
+                            
+                            <button type="button" id="v4IllustrationZoom800" class="v4-photo-focus-zoom-button" hidden>
+                                800%
+                            </button>
+                            
+                            <button type="button" id="v4IllustrationZoom1000" class="v4-photo-focus-zoom-button" hidden>
+                                1000%
+                            </button>
+                            
+                            <button type="button" id="v4IllustrationUndoLastPin" class="v4-photo-focus-undo-button" hidden disabled>
+                                ↩ 最後のピンを戻す
                             </button>
 
                             <p class="v4-photo-description">
