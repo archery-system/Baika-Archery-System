@@ -12,6 +12,48 @@
 
     let selectedDate = null;
 
+    function renderSelectedSchedule() {
+        const title = document.getElementById(
+            "homeActivityScheduleTitle"
+        );
+
+        const list = document.getElementById(
+            "homeActivityScheduleList"
+        );
+
+        if (!title || !list) {
+            return;
+        }
+
+        if (!selectedDate) {
+            title.textContent = "日付を選択してください";
+            list.textContent =
+                "カレンダーの日付をタップすると予定を表示します。";
+            return;
+        }
+
+        const [year, month, day] =
+            selectedDate.split("-").map(Number);
+
+        const date = new Date(
+            year,
+            month - 1,
+            day
+        );
+
+        const weekdays = [
+            "日", "月", "火", "水", "木", "金", "土"
+        ];
+
+        const weekday = weekdays[date.getDay()];
+
+        title.textContent =
+            `${year}年${month}月${day}日（${weekday}）の予定`;
+
+        list.textContent =
+            "この日の予定は登録されていません。";
+    }
+
     function renderCalendar() {
         const container =
             document.getElementById(
@@ -134,6 +176,8 @@
         }
 
         container.appendChild(grid);
+
+        renderSelectedSchedule();
     }
 
     window.BAS_ACTIVITY_CALENDAR = {

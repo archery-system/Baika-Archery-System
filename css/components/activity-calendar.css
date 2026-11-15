@@ -98,6 +98,30 @@
     font-weight: 700;
 }
 
+/* 選択した日付の予定表示 */
+.bas-calendar__schedule {
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid #f0d4e1;
+    border-radius: 10px;
+    background: #fff8fb;
+}
+
+.bas-calendar__schedule h3 {
+    margin: 0 0 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0d4e1;
+    color: #a83269;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+#homeActivityScheduleList {
+    color: #555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
 @media (max-width: 600px) {
     .bas-home__calendar {
         padding: 10px;
