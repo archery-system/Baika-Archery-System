@@ -71,6 +71,21 @@
     font-weight: 700;
 }
 
+.bas-calendar__day {
+    cursor: pointer;
+}
+
+.bas-calendar__day:hover {
+    background: #fce4ef;
+}
+
+.bas-calendar__day.bas-calendar__selected {
+    border: 2px solid #b82f70;
+    background: #d75b93;
+    color: #fff;
+    font-weight: 700;
+}
+
 @media (max-width: 600px) {
     .bas-home__calendar {
         padding: 10px;

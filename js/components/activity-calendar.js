@@ -10,6 +10,8 @@
     let currentMonth = new Date();
     currentMonth.setDate(1);
 
+    let selectedDate = null;
+
     function renderCalendar() {
         const container =
             document.getElementById(
@@ -93,6 +95,20 @@
                     "bas-calendar__today"
                 );
             }
+
+            const dateKey =
+                `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+            if (selectedDate === dateKey) {
+                cell.classList.add(
+                    "bas-calendar__selected"
+                );
+            }
+
+            cell.addEventListener("click", function () {
+                selectedDate = dateKey;
+                renderCalendar();
+            });
 
             grid.appendChild(cell);
         }
