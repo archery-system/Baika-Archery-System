@@ -696,6 +696,86 @@
         return result;
     }
 
+    /**
+     * 部活動カレンダーの予定を1件保存する
+     *
+     * @param {Object} record
+     * @param {string} memberIdentifier
+     * @param {string} password
+     * @returns {Promise<Object>}
+     */
+    async function saveActivityRecord(
+        record,
+        memberIdentifier,
+        password
+    ) {
+        if (
+            !record ||
+            typeof record !== "object" ||
+            Array.isArray(record)
+        ) {
+            throw new Error(
+                "保存する予定が指定されていません。"
+            );
+        }
+
+        if (!memberIdentifier || !password) {
+            throw new Error(
+                "予定の登録には本人認証が必要です。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response = await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify({
+                    action: "appendActivityRecord",
+                    record: record,
+                    memberIdentifier:
+                        memberIdentifier,
+                    password: password
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "予定をクラウドへ保存できませんでした。"
+            );
+        }
+
+        const result = await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "予定を登録できませんでした。"
+            );
+        }
+
+        return result;
+    }
+
+    window.BAS_CLOUD = {
+
     window.BAS_CLOUD = {
         loadAllData:
             loadAllData,
@@ -721,10 +801,13 @@
         overwriteMatchRecords:
             overwriteMatchRecords,
 
-        saveMatchRecord:
-            saveMatchRecord,
+            saveMatchRecord:
+                saveMatchRecord,
 
-        deleteMatchRecord:
-            deleteMatchRecord
-    };
-})();
+            deleteMatchRecord:
+                deleteMatchRecord,
+
+            saveActivityRecord:
+                saveActivityRecord
+        };
+    }) ();

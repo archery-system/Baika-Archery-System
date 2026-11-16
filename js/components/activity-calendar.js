@@ -244,9 +244,130 @@
             }
         });
 
-        // 保存機能の実装までは送信を停止する
-        form.addEventListener("submit", function (event) {
+        // 予定をクラウドへ保存する
+        form.addEventListener("submit", async function (event) {
             event.preventDefault();
+
+            const submitButton = form.querySelector(
+                'button[type="submit"]'
+            );
+
+            const passwordInput = document.getElementById(
+                "homeActivityPassword"
+            );
+
+            if (
+                !submitButton ||
+                !passwordInput
+            ) {
+                alert("予定登録フォームを確認できません。");
+                return;
+            }
+
+            if (submitButton.disabled) {
+                return;
+            }
+
+            const memberId =
+                window.V4Session &&
+                window.V4Session.getLoggedInMemberId();
+
+            if (!memberId) {
+                alert("ログイン情報を確認できません。");
+                return;
+            }
+
+            const password = passwordInput.value;
+
+            if (!password) {
+                alert("本人確認用パスワードを入力してください。");
+                return;
+            }
+
+            const getValue = function (id) {
+                const element = document.getElementById(id);
+
+                return element
+                    ? element.value.trim()
+                    : "";
+            };
+
+            const scopeInput = form.querySelector(
+                'input[name="homeActivityScope"]:checked'
+            );
+
+            const record = {
+                title: getValue("homeActivityTitle"),
+                type: getValue("homeActivityType"),
+                date: getValue("homeActivityDate"),
+                startTime: getValue("homeActivityStartTime"),
+                endTime: getValue("homeActivityEndTime"),
+                place: getValue("homeActivityPlace"),
+                memo: getValue("homeActivityMemo"),
+                url: getValue("homeActivityUrl"),
+                scope: scopeInput
+                    ? scopeInput.value
+                    : "all"
+            };
+
+            if (!record.title || !record.date) {
+                alert("予定名と日付を入力してください。");
+                return;
+            }
+
+            if (
+                !window.BAS_CLOUD ||
+                typeof window.BAS_CLOUD.saveActivityRecord !==
+                "function"
+            ) {
+                alert("クラウド保存機能を利用できません。");
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = "保存中...";
+
+            try {
+                await window.BAS_CLOUD.saveActivityRecord(
+                    record,
+                    memberId,
+                    password
+                );
+
+                alert("予定を登録しました。");
+
+                form.reset();
+                formArea.hidden = true;
+                addButton.hidden = false;
+
+                const calendar = document.getElementById(
+                    "homeActivityCalendar"
+                );
+
+                if (calendar) {
+                    calendar.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
+            } catch (error) {
+                console.error(
+                    "予定の保存に失敗しました。",
+                    error
+                );
+
+                alert(
+                    error && error.message
+                        ? error.message
+                        : "予定を登録できませんでした。"
+                );
+            } finally {
+                // パスワードは保存後・失敗後ともに消去する
+                passwordInput.value = "";
+
+                submitButton.disabled = false;
+                submitButton.textContent = "登録する";
+            }
         });
     }
 
