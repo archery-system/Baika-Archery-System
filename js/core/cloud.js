@@ -775,8 +775,6 @@
     }
 
     window.BAS_CLOUD = {
-
-    window.BAS_CLOUD = {
         loadAllData:
             loadAllData,
 
