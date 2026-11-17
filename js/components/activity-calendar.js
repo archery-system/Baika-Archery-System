@@ -32,10 +32,9 @@
                     : "";
 
             if (!sessionToken) {
-                console.warn(
+                throw new Error(
                     "カレンダーの認証セッションがありません。"
                 );
-                return;
             }
 
             if (
@@ -43,10 +42,9 @@
                 typeof window.BAS_CLOUD.loadActivityRecordsWithSession !==
                 "function"
             ) {
-                console.warn(
+                throw new Error(
                     "カレンダーのクラウド取得機能が利用できません。"
                 );
-                return;
             }
 
             const records =
@@ -214,6 +212,120 @@
 
                 actions.className =
                     "bas-calendar__activity-actions";
+
+                // 予定編集ボタン
+                const editButton =
+                    document.createElement("button");
+
+                editButton.type = "button";
+
+                editButton.className =
+                    "bas-calendar__activity-edit";
+
+                editButton.textContent = "編集";
+
+                // 編集権限のある予定のみ操作可能
+                editButton.disabled = false;
+
+                editButton.addEventListener(
+                    "click",
+                    function () {
+                        // 編集対象の予定IDを保持
+                        editingActivityId = record.id;
+
+                        // 既存の予定情報をフォームへ読み込む
+                        const fields = {
+                            homeActivityTitle: record.title,
+                            homeActivityType: record.type,
+                            homeActivityDate: record.date,
+                            homeActivityStartTime: record.startTime,
+                            homeActivityEndTime: record.endTime,
+                            homeActivityPlace: record.place,
+                            homeActivityMemo: record.memo,
+                            homeActivityUrl: record.url
+                        };
+
+                        Object.entries(fields).forEach(
+                            function ([id, value]) {
+                                const input =
+                                    document.getElementById(id);
+
+                                if (input) {
+                                    input.value = value ?? "";
+                                }
+                            }
+                        );
+
+                        // 既存の公開範囲をフォームに反映
+                        const scopeInput =
+                            document.querySelector(
+                                `input[name="homeActivityScope"][value="${record.scope}"]`
+                            );
+
+                        if (scopeInput) {
+                            scopeInput.checked = true;
+                        }
+
+                        // 他の部員の予定を編集する管理者は
+                        // 公開範囲を変更できない
+                        const ownerScopeInput =
+                            document.querySelector(
+                                'input[name="homeActivityScope"][value="owner"]'
+                            );
+
+                        if (ownerScopeInput) {
+                            ownerScopeInput.disabled = !isOwner;
+                        }
+
+                        // 編集モードに切り替える
+                        updateActivityPasswordMode(true);
+
+                        // 見出しを編集用に変更
+                        const heading =
+                            document.getElementById(
+                                "homeActivityFormHeading"
+                            );
+
+                        if (heading) {
+                            heading.textContent = "予定の編集";
+                        }
+
+                        // 保存ボタンを編集用に変更
+                        const submitButton =
+                            document.getElementById(
+                                "homeActivitySubmitButton"
+                            );
+
+                        if (submitButton) {
+                            submitButton.textContent = "変更を保存";
+                        }
+
+                        // 編集フォームを表示
+                        const formArea =
+                            document.getElementById(
+                                "homeActivityFormArea"
+                            );
+
+                        const addButton =
+                            document.getElementById(
+                                "homeActivityAddButton"
+                            );
+
+                        if (formArea) {
+                            formArea.hidden = false;
+                            formArea.scrollIntoView({
+                                behavior: "smooth",
+                                block: "start"
+                            });
+                        }
+
+                        if (addButton) {
+                            addButton.hidden = true;
+                        }
+                    }
+                );
+
+                actions.appendChild(editButton);
 
                 const deleteButton =
                     document.createElement("button");
@@ -466,7 +578,46 @@
         renderSelectedSchedule();
     }
 
-    // 予定登録フォームの開閉
+    // 現在編集中の予定ID
+    // null の場合は新規登録モード
+    let editingActivityId = null;
+
+    // 新規登録・編集に応じてパスワード欄を切り替える
+    function updateActivityPasswordMode(isEditing) {
+        const passwordArea = document.getElementById(
+            "homeActivityPasswordArea"
+        );
+
+        const passwordInput = document.getElementById(
+            "homeActivityPassword"
+        );
+
+        if (!passwordArea || !passwordInput) {
+            return;
+        }
+
+        // パスワードは切り替え時に必ず消去
+        passwordInput.value = "";
+
+        // 新規登録では表示・必須
+        // 編集では非表示・必須解除
+        passwordArea.hidden = isEditing;
+        passwordInput.required = !isEditing;
+
+        // 新規登録モードでは公開範囲の選択制限を解除
+        if (!isEditing) {
+            const ownerScopeInput =
+                document.querySelector(
+                    'input[name="homeActivityScope"][value="owner"]'
+                );
+
+            if (ownerScopeInput) {
+                ownerScopeInput.disabled = false;
+            }
+        }
+    }
+
+    // 予定登録・編集フォームの開閉
     function initializeActivityForm() {
         const addButton = document.getElementById(
             "homeActivityAddButton"
@@ -499,7 +650,29 @@
         }
 
         addButton.addEventListener("click", function () {
+            editingActivityId = null;
             form.reset();
+
+            // 新規登録モード：パスワードを表示・必須にする
+            updateActivityPasswordMode(false);
+
+            // フォームの見出しを新規登録用に戻す
+            const heading = document.getElementById(
+                "homeActivityFormHeading"
+            );
+
+            if (heading) {
+                heading.textContent = "予定の新規登録";
+            }
+
+            // 保存ボタンの表示を戻す
+            const submitButton = document.getElementById(
+                "homeActivitySubmitButton"
+            );
+
+            if (submitButton) {
+                submitButton.textContent = "登録する";
+            }
 
             if (selectedDate) {
                 dateInput.value = selectedDate;
@@ -515,6 +688,30 @@
         });
 
         cancelButton.addEventListener("click", function () {
+            editingActivityId = null;
+            form.reset();
+
+            // キャンセル時は新規登録モードへ戻す
+            updateActivityPasswordMode(false);
+
+            // 見出しを新規登録用に戻す
+            const heading = document.getElementById(
+                "homeActivityFormHeading"
+            );
+
+            if (heading) {
+                heading.textContent = "予定の新規登録";
+            }
+
+            // 保存ボタンの表示を戻す
+            const submitButton = document.getElementById(
+                "homeActivitySubmitButton"
+            );
+
+            if (submitButton) {
+                submitButton.textContent = "登録する";
+            }
+
             formArea.hidden = true;
             addButton.hidden = false;
 
@@ -565,7 +762,10 @@
 
             const password = passwordInput.value;
 
-            if (!password) {
+            // 新規登録時のみパスワードを必須にする
+            const isEditing = Boolean(editingActivityId);
+
+            if (!isEditing && !password) {
                 alert("本人確認用パスワードを入力してください。");
                 return;
             }
@@ -601,12 +801,20 @@
                 return;
             }
 
+            // 新規登録と編集で必要なクラウド機能を確認
+            const cloudMethod = isEditing
+                ? "updateActivityRecordWithSession"
+                : "saveActivityRecord";
+
             if (
                 !window.BAS_CLOUD ||
-                typeof window.BAS_CLOUD.saveActivityRecord !==
-                "function"
+                typeof window.BAS_CLOUD[cloudMethod] !== "function"
             ) {
-                alert("クラウド保存機能を利用できません。");
+                alert(
+                    isEditing
+                        ? "クラウド更新機能を利用できません。"
+                        : "クラウド保存機能を利用できません。"
+                );
                 return;
             }
 
@@ -614,13 +822,48 @@
             submitButton.textContent = "保存中...";
 
             try {
-                await window.BAS_CLOUD.saveActivityRecord(
-                    record,
-                    memberId,
-                    password
-                );
+                if (isEditing) {
+                    // 編集時はログインセッションで認証
+                    const sessionToken =
+                        window.V4Session &&
+                            typeof window.V4Session.getSessionToken === "function"
+                            ? window.V4Session.getSessionToken()
+                            : "";
 
-                alert("予定を登録しました。");
+                    if (!sessionToken) {
+                        throw new Error(
+                            "認証セッションがありません。再ログインしてください。"
+                        );
+                    }
+
+                    if (
+                        !window.BAS_CLOUD ||
+                        typeof window.BAS_CLOUD.updateActivityRecordWithSession !==
+                        "function"
+                    ) {
+                        throw new Error(
+                            "予定の更新機能を利用できません。"
+                        );
+                    }
+
+                    // 既存の予定IDを指定して更新
+                    await window.BAS_CLOUD.updateActivityRecordWithSession(
+                        editingActivityId,
+                        record,
+                        sessionToken
+                    );
+
+                    alert("予定を更新しました。");
+                } else {
+                    // 新規登録は従来どおり
+                    await window.BAS_CLOUD.saveActivityRecord(
+                        record,
+                        memberId,
+                        password
+                    );
+
+                    alert("予定を登録しました。");
+                }
 
                 // 保存した予定の日付を選択する
                 selectedDate = record.date;
@@ -636,9 +879,38 @@
                 );
 
                 // 保存成功後にクラウドから最新の予定を取得
-                await loadCalendarActivities();
+                try {
+                    await loadCalendarActivities();
+                } catch (reloadError) {
+                    console.error(
+                        "保存後の予定再取得に失敗しました:",
+                        reloadError
+                    );
+
+                    alert(
+                        "予定の保存は完了しましたが、" +
+                        "カレンダーの更新に失敗しました。\n" +
+                        "画面を再読み込みしてください。"
+                    );
+                }
+
+                // 保存成功後は編集モードを解除
+                editingActivityId = null;
 
                 form.reset();
+
+                // 新規登録モードに戻す
+                updateActivityPasswordMode(false);
+
+                const heading =
+                    document.getElementById(
+                        "homeActivityFormHeading"
+                    );
+
+                if (heading) {
+                    heading.textContent = "予定の新規登録";
+                }
+
                 formArea.hidden = true;
                 addButton.hidden = false;
 
@@ -654,21 +926,30 @@
                 }
             } catch (error) {
                 console.error(
-                    "予定の保存に失敗しました。",
+                    isEditing
+                        ? "予定の更新に失敗しました。"
+                        : "予定の登録に失敗しました。",
                     error
                 );
 
                 alert(
                     error && error.message
                         ? error.message
-                        : "予定を登録できませんでした。"
+                        : isEditing
+                            ? "予定を更新できませんでした。"
+                            : "予定を登録できませんでした。"
                 );
             } finally {
                 // パスワードは保存後・失敗後ともに消去する
                 passwordInput.value = "";
 
                 submitButton.disabled = false;
-                submitButton.textContent = "登録する";
+
+                // 編集中かどうかでボタン表示を切り替える
+                submitButton.textContent =
+                    editingActivityId
+                        ? "変更を保存"
+                        : "登録する";
             }
         });
     }
@@ -679,7 +960,12 @@
             initializeActivityForm();
 
             // ログイン中の部員が閲覧できる予定を取得
-            loadCalendarActivities();
+            loadCalendarActivities().catch(function (error) {
+                console.error(
+                    "カレンダーの初回読み込みに失敗しました:",
+                    error
+                );
+            });
         }
     };
 })();

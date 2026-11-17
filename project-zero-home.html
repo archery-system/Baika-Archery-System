@@ -85,7 +85,7 @@
                                         <div id="homeActivityFormArea" class="bas-calendar__form-area" hidden>
                                             <form id="homeActivityForm">
                                         
-                                                <h3>予定の新規登録</h3>
+                                                <h3 id="homeActivityFormHeading">予定の新規登録</h3>
                                         
                                                 <label for="homeActivityTitle">
                                                     予定名
@@ -156,17 +156,19 @@
                                                     </label>
                                                 </fieldset>
                                                 
-                                                <label for="homeActivityPassword">
-                                                    本人確認用パスワード
-                                                </label>
-                                                <input type="password" id="homeActivityPassword" autocomplete="off" required>
-                                                <p class="bas-calendar__password-note">
-                                                    予定の登録時に本人確認を行います。
-                                                    パスワードは保存されません。
-                                                </p>
+                                                <div id="homeActivityPasswordArea">
+                                                    <label for="homeActivityPassword">
+                                                        本人確認用パスワード
+                                                    </label>
+                                                    <input type="password" id="homeActivityPassword" autocomplete="off" required>
+                                                    <p class="bas-calendar__password-note">
+                                                        予定の登録時に本人確認を行います。
+                                                        パスワードは保存されません。
+                                                    </p>
+                                                </div>
                                                 
                                                 <div class="bas-calendar__form-actions">
-                                                    <button type="submit">
+                                                    <button type="submit" id="homeActivitySubmitButton">
                                                         登録する
                                                     </button>
                                         

@@ -1340,6 +1340,267 @@ function appendActivityRecord(
 }
 
 /**
+ * カレンダーの既存予定を1件更新する
+ *
+ * 登録者本人、または他の部員の公開予定を
+ * 管理者が編集する場合のみ許可する。
+ */
+function updateActivityRecordWithSession_(
+  recordId,
+  record,
+  sessionToken
+) {
+  const memberId =
+    verifyAuthSession_(sessionToken);
+
+  const member =
+    findMember(memberId);
+
+  if (!member) {
+    throw new Error(
+      "ログイン中の部員が見つかりません。"
+    );
+  }
+
+  const targetId =
+    String(recordId || "").trim();
+
+  if (!targetId) {
+    throw new Error(
+      "編集する予定が指定されていません。"
+    );
+  }
+
+  if (
+    !record ||
+    typeof record !== "object" ||
+    Array.isArray(record)
+  ) {
+    throw new Error(
+      "更新する予定が指定されていません。"
+    );
+  }
+
+  const title =
+    String(record.title || "").trim();
+
+  const date =
+    String(record.date || "").trim();
+
+  const type =
+    String(record.type || "").trim();
+
+  const scope =
+    String(record.scope || "").trim();
+
+  if (!title || !date) {
+    throw new Error(
+      "予定名と日付は必須です。"
+    );
+  }
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw new Error(
+      "日付の形式が正しくありません。"
+    );
+  }
+
+  if (
+    ![
+      "practice",
+      "practice-match",
+      "competition",
+      "other"
+    ].includes(type)
+  ) {
+    throw new Error(
+      "予定の種類が正しくありません。"
+    );
+  }
+
+  if (
+    scope !== "all" &&
+    scope !== "owner"
+  ) {
+    throw new Error(
+      "公開範囲が正しくありません。"
+    );
+  }
+
+  const isAdmin =
+    member.role === ROLE_NAMES.ADMIN;
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.ACTIVITIES
+      );
+
+    const values =
+      sheet.getDataRange().getValues();
+
+    if (values.length <= 1) {
+      throw new Error(
+        "編集する予定が見つかりません。"
+      );
+    }
+
+    const headers =
+      values[0].map(function(value) {
+        return String(value || "").trim();
+      });
+
+    const requiredHeaders = [
+      "id",
+      "date",
+      "title",
+      "type",
+      "startTime",
+      "endTime",
+      "place",
+      "memo",
+      "url",
+      "scope",
+      "createdBy",
+      "createdAt",
+      "updatedAt"
+    ];
+
+    if (
+      requiredHeaders.some(function(header) {
+        return headers.indexOf(header) < 0;
+      })
+    ) {
+      throw new Error(
+        "予定データの管理項目が不足しています。"
+      );
+    }
+
+    const idIndex =
+      headers.indexOf("id");
+
+    const createdByIndex =
+      headers.indexOf("createdBy");
+
+    const scopeIndex =
+      headers.indexOf("scope");
+
+    let targetRow = -1;
+    let originalRecord = null;
+
+    for (let i = 1; i < values.length; i++) {
+      const rowId =
+        String(values[i][idIndex] || "").trim();
+
+      if (rowId !== targetId) {
+        continue;
+      }
+
+      if (targetRow !== -1) {
+        throw new Error(
+          "同じIDの予定が複数存在するため編集できません。"
+        );
+      }
+
+      targetRow = i + 1;
+
+      originalRecord = {
+        createdBy: String(
+          values[i][createdByIndex] || ""
+        ).trim(),
+        scope: String(
+          values[i][scopeIndex] || ""
+        ).trim()
+      };
+    }
+
+    if (!originalRecord) {
+      throw new Error(
+        "編集する予定が見つかりません。"
+      );
+    }
+
+    const isOwner =
+      originalRecord.createdBy === memberId;
+
+    const canEdit =
+      isOwner ||
+      (
+        isAdmin &&
+        originalRecord.scope === "all"
+      );
+
+    if (!canEdit) {
+      throw new Error(
+        "この予定を編集する権限がありません。"
+      );
+    }
+
+    // 他の部員の予定を管理者が編集する場合、
+    // 非公開への変更は許可しない。
+    if (!isOwner && scope !== "all") {
+      throw new Error(
+        "他の部員の予定を非公開に変更できません。"
+      );
+    }
+
+    const changes = {
+      date: date,
+      title: title,
+      type: type,
+      startTime: String(record.startTime || ""),
+      endTime: String(record.endTime || ""),
+      place: String(record.place || ""),
+      memo: String(record.memo || ""),
+      url: String(record.url || ""),
+      scope: scope,
+      updatedAt: new Date().toISOString()
+    };
+
+    // 既存行の値を維持し、
+    // 編集可能な項目だけを書き換える。
+    const updatedRow =
+      values[targetRow - 1].slice();
+
+    Object.keys(changes).forEach(
+      function(header) {
+        const index =
+          headers.indexOf(header);
+
+        updatedRow[index] =
+          changes[header];
+      }
+    );
+
+    sheet
+      .getRange(
+        targetRow,
+        1,
+        1,
+        updatedRow.length
+      )
+      .setValues([updatedRow]);
+
+    SpreadsheetApp.flush();
+
+    return {
+      success: true,
+      operation: "update",
+      id: targetId,
+      rowNumber: targetRow
+    };
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * カレンダーの予定をID指定で削除する。
  *
  * 登録者本人は自分の予定を削除可能。

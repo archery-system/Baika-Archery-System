@@ -1734,6 +1734,60 @@ if (action === "getActivityRecordsWithSession") {
 }
 
 /**
+ * 部活動カレンダーの既存予定を更新する。
+ *
+ * セッション認証と編集権限の確認は
+ * updateActivityRecordWithSession_() で行う。
+ */
+if (action === "updateActivityRecordWithSession") {
+  const sessionToken =
+    String(payload.sessionToken || "").trim();
+
+  const recordId =
+    String(payload.recordId || "").trim();
+
+  const record =
+    payload.record;
+
+  if (!sessionToken) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "認証セッションがありません。再ログインしてください。"
+    });
+  }
+
+  if (!recordId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "編集する予定が指定されていません。"
+    });
+  }
+
+  if (
+    !record ||
+    typeof record !== "object" ||
+    Array.isArray(record)
+  ) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "更新する予定が指定されていません。"
+    });
+  }
+
+  const result =
+    updateActivityRecordWithSession_(
+      recordId,
+      record,
+      sessionToken
+    );
+
+  return createJsonResponse(result);
+}
+
+/**
  * 部活動カレンダーの予定を削除する。
  *
  * セッション認証と削除権限の確認は

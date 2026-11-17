@@ -922,6 +922,99 @@
 
     /**
      * 認証セッションを使用して
+     * 部活動カレンダーの既存予定を更新する
+     *
+     * @param {string} recordId
+     * @param {Object} record
+     * @param {string} sessionToken
+     * @returns {Promise<Object>}
+     */
+    async function updateActivityRecordWithSession(
+        recordId,
+        record,
+        sessionToken
+    ) {
+        const id = String(
+            recordId || ""
+        ).trim();
+
+        const token = String(
+            sessionToken || ""
+        ).trim();
+
+        if (!id) {
+            throw new Error(
+                "編集する予定が指定されていません。"
+            );
+        }
+
+        if (
+            !record ||
+            typeof record !== "object" ||
+            Array.isArray(record)
+        ) {
+            throw new Error(
+                "更新する予定が指定されていません。"
+            );
+        }
+
+        if (!token) {
+            throw new Error(
+                "認証セッションがありません。再ログインしてください。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response = await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify({
+                    action:
+                        "updateActivityRecordWithSession",
+                    recordId: id,
+                    record: record,
+                    sessionToken: token
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "予定をクラウドで更新できませんでした。"
+            );
+        }
+
+        const result = await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "予定を更新できませんでした。"
+            );
+        }
+
+        return result;
+    }
+
+    /**
+     * 認証セッションを使用して
      * 部活動カレンダーの予定を削除する
      *
      * @param {string} recordId
@@ -1039,6 +1132,9 @@
 
         loadActivityRecordsWithSession:
             loadActivityRecordsWithSession,
+
+        updateActivityRecordWithSession:
+            updateActivityRecordWithSession,
 
         deleteActivityRecordWithSession:
             deleteActivityRecordWithSession,
