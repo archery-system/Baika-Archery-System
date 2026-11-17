@@ -62,6 +62,12 @@
             role: String(
                 loginData.role || "member"
             ).trim(),
+            sessionToken: String(
+                loginData.sessionToken || ""
+            ).trim(),
+            sessionExpiresAt: String(
+                loginData.sessionExpiresAt || ""
+            ).trim(),
             savedAt: String(
                 loginData.savedAt || ""
             ).trim()
