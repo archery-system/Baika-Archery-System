@@ -1119,8 +1119,21 @@ function getActivityRecordsForMember_(memberId) {
       date: String(record.date || ""),
       title: String(record.title || ""),
       type: String(record.type || ""),
-      startTime: String(record.startTime || ""),
-      endTime: String(record.endTime || ""),
+      startTime: record.startTime instanceof Date
+        ? Utilities.formatDate(
+          record.startTime,
+          "Asia/Tokyo",
+          "HH:mm"
+        )
+        : String(record.startTime || ""),
+
+      endTime: record.endTime instanceof Date
+        ? Utilities.formatDate(
+          record.endTime,
+          "Asia/Tokyo",
+          "HH:mm"
+        )
+        : String(record.endTime || ""),
       place: String(record.place || ""),
       memo: String(record.memo || ""),
       url: String(record.url || ""),
@@ -1319,6 +1332,157 @@ function appendActivityRecord(
       operation: "append",
       id: activity.id,
       rowNumber: rowNumber
+    };
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * カレンダーの予定をID指定で削除する。
+ *
+ * 登録者本人は自分の予定を削除可能。
+ * 管理者は他人の全員公開予定のみ削除可能。
+ *
+ * @param {string} recordId
+ * @param {string} sessionToken
+ * @returns {Object}
+ */
+function deleteActivityRecordWithSession_(
+  recordId,
+  sessionToken
+) {
+  const memberId =
+    verifyAuthSession_(sessionToken);
+
+  const member =
+    findMember(memberId);
+
+  if (!member) {
+    throw new Error(
+      "ログイン中の部員が見つかりません。"
+    );
+  }
+
+  const targetId =
+    String(recordId || "").trim();
+
+  if (!targetId) {
+    throw new Error(
+      "削除する予定が指定されていません。"
+    );
+  }
+
+  const isAdmin =
+    member.role === ROLE_NAMES.ADMIN;
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.ACTIVITIES
+      );
+
+    const values =
+      sheet.getDataRange().getValues();
+
+    if (values.length <= 1) {
+      throw new Error(
+        "削除する予定が見つかりません。"
+      );
+    }
+
+    const headers =
+      values[0].map(function(value) {
+        return String(value || "").trim();
+      });
+
+    const idIndex =
+      headers.indexOf("id");
+
+    const createdByIndex =
+      headers.indexOf("createdBy");
+
+    const scopeIndex =
+      headers.indexOf("scope");
+
+    if (
+      idIndex < 0 ||
+      createdByIndex < 0 ||
+      scopeIndex < 0
+    ) {
+      throw new Error(
+        "予定データの管理項目が不足しています。"
+      );
+    }
+
+    let targetRow = -1;
+    let targetRecord = null;
+
+    for (let i = 1; i < values.length; i++) {
+      const rowId =
+        String(values[i][idIndex] || "").trim();
+
+      if (rowId !== targetId) {
+        continue;
+      }
+
+      if (targetRow !== -1) {
+        throw new Error(
+          "同じIDの予定が複数存在するため削除できません。"
+        );
+      }
+
+      targetRow = i + 1;
+
+      targetRecord = {
+        createdBy:
+          String(
+            values[i][createdByIndex] || ""
+          ).trim(),
+
+        scope:
+          String(
+            values[i][scopeIndex] || ""
+          ).trim()
+      };
+    }
+
+    if (!targetRecord) {
+      throw new Error(
+        "削除する予定が見つかりません。"
+      );
+    }
+
+    const isOwner =
+      targetRecord.createdBy === memberId;
+
+    const canDelete =
+      isOwner ||
+      (
+        isAdmin &&
+        targetRecord.scope === "all"
+      );
+
+    if (!canDelete) {
+      throw new Error(
+        "この予定を削除する権限がありません。"
+      );
+    }
+
+    sheet.deleteRow(targetRow);
+
+    SpreadsheetApp.flush();
+
+    return {
+      success: true,
+      operation: "delete",
+      id: targetId
     };
 
   } finally {

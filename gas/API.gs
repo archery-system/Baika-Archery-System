@@ -1733,6 +1733,44 @@ if (action === "getActivityRecordsWithSession") {
   });
 }
 
+/**
+ * 部活動カレンダーの予定を削除する。
+ *
+ * セッション認証と削除権限の確認は
+ * deleteActivityRecordWithSession_() で行う。
+ */
+if (action === "deleteActivityRecordWithSession") {
+  const sessionToken =
+    String(payload.sessionToken || "").trim();
+
+  const recordId =
+    String(payload.recordId || "").trim();
+
+  if (!sessionToken) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "認証セッションがありません。再ログインしてください。"
+    });
+  }
+
+  if (!recordId) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "削除する予定が指定されていません。"
+    });
+  }
+
+  const result =
+    deleteActivityRecordWithSession_(
+      recordId,
+      sessionToken
+    );
+
+  return createJsonResponse(result);
+}
+
 if (action === "getActivityRecords") {
   const memberIdentifier =
     String(

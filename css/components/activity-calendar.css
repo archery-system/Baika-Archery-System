@@ -227,6 +227,41 @@
     color: #b82f70;
 }
 
+/* 予定詳細の操作ボタン */
+.bas-calendar__activity-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
+/* 予定削除ボタン */
+.bas-calendar__activity-delete {
+    min-width: 88px;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 1px solid #c62828;
+    border-radius: 6px;
+    background: #fff;
+    color: #c62828;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.bas-calendar__activity-delete:hover {
+    background: #fff1f1;
+}
+
+.bas-calendar__activity-delete:focus-visible {
+    outline: 2px solid #c62828;
+    outline-offset: 2px;
+}
+
+.bas-calendar__activity-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* 予定登録ボタン */
 .bas-calendar__add-button {
     display: block;
@@ -429,6 +464,20 @@
     .bas-calendar__day {
         min-height: 45px;
         font-size: 13px;
+        padding: 4px 1px;
+        gap: 2px;
+    }
+
+    /* iPhone縦画面では予定名を小さく表示 */
+    .bas-calendar__activity-title {
+        font-size: 9px;
+        line-height: 1.2;
+        letter-spacing: -0.3px;
+    }
+
+    /* 2件以上の予定を示す記号 */
+    .bas-calendar__activity-more {
+        font-size: 10px;
     }
 
     .bas-calendar__weekday {

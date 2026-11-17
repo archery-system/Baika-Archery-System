@@ -920,6 +920,86 @@
         return result.records;
     }
 
+    /**
+     * 認証セッションを使用して
+     * 部活動カレンダーの予定を削除する
+     *
+     * @param {string} recordId
+     * @param {string} sessionToken
+     * @returns {Promise<Object>}
+     */
+    async function deleteActivityRecordWithSession(
+        recordId,
+        sessionToken
+    ) {
+        const id = String(
+            recordId || ""
+        ).trim();
+
+        const token = String(
+            sessionToken || ""
+        ).trim();
+
+        if (!id) {
+            throw new Error(
+                "削除する予定が指定されていません。"
+            );
+        }
+
+        if (!token) {
+            throw new Error(
+                "認証セッションがありません。再ログインしてください。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response = await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify({
+                    action:
+                        "deleteActivityRecordWithSession",
+                    recordId: id,
+                    sessionToken: token
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "予定をクラウドから削除できませんでした。"
+            );
+        }
+
+        const result = await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "予定を削除できませんでした。"
+            );
+        }
+
+        return result;
+    }
+    
     window.BAS_CLOUD = {
         loadAllData:
             loadAllData,
@@ -958,6 +1038,9 @@
             loadActivityRecords,
 
         loadActivityRecordsWithSession:
-            loadActivityRecordsWithSession
+            loadActivityRecordsWithSession,
+
+        deleteActivityRecordWithSession:
+            deleteActivityRecordWithSession,
         };
     }) ();

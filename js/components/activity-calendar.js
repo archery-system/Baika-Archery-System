@@ -66,6 +66,8 @@
                 "カレンダーの予定取得に失敗しました:",
                 error
             );
+
+            throw error;
         }
     }
 
@@ -183,6 +185,115 @@
 
                     card.appendChild(link);
                 }
+            }
+
+            // 予定の削除権限を確認
+            const memberId =
+                window.V4Session &&
+                    typeof window.V4Session.getLoggedInMemberId === "function"
+                    ? window.V4Session.getLoggedInMemberId()
+                    : "";
+
+            const isAdmin =
+                window.V4Session &&
+                typeof window.V4Session.isAdmin === "function" &&
+                window.V4Session.isAdmin();
+
+            const isOwner =
+                Boolean(memberId) &&
+                String(record.createdBy || "").trim() ===
+                String(memberId).trim();
+
+            const canDelete =
+                isOwner ||
+                (isAdmin && record.scope === "all");
+
+            if (record.id && canDelete) {
+                const actions =
+                    document.createElement("div");
+
+                actions.className =
+                    "bas-calendar__activity-actions";
+
+                const deleteButton =
+                    document.createElement("button");
+
+                deleteButton.type = "button";
+                deleteButton.className =
+                    "bas-calendar__activity-delete";
+
+                deleteButton.textContent = "削除";
+
+                deleteButton.addEventListener(
+                    "click",
+                    async function () {
+                        const confirmed = window.confirm(
+                            `「${record.title || "予定名なし"}」を削除しますか？\n\n削除した予定は元に戻せません。`
+                        );
+
+                        if (!confirmed) {
+                            return;
+                        }
+
+                        const sessionToken =
+                            window.V4Session &&
+                            typeof window.V4Session.getSessionToken === "function"
+                                ? window.V4Session.getSessionToken()
+                                : "";
+
+                        if (!sessionToken) {
+                            alert(
+                                "認証セッションがありません。再ログインしてください。"
+                            );
+                            return;
+                        }
+
+                        deleteButton.disabled = true;
+                        deleteButton.textContent = "削除中...";
+
+                        try {
+                            await window.BAS_CLOUD.deleteActivityRecordWithSession(
+                                record.id,
+                                sessionToken
+                            );
+
+                            // 削除成功後、最新の予定を取得
+                            try {
+                                await loadCalendarActivities();
+
+                                alert("予定を削除しました。");
+                            } catch (reloadError) {
+                                console.error(
+                                    "削除後の予定再取得に失敗しました:",
+                                    reloadError
+                                );
+
+                                alert(
+                                    "予定の削除は完了しましたが、" +
+                                    "カレンダーの更新に失敗しました。\n" +
+                                    "画面を再読み込みしてください。"
+                                );
+                            }
+                        } catch (error) {
+                            console.error(
+                                "予定の削除に失敗しました:",
+                                error
+                            );
+
+                            alert(
+                                error && error.message
+                                    ? error.message
+                                    : "予定を削除できませんでした。"
+                            );
+                        } finally {
+                            deleteButton.disabled = false;
+                            deleteButton.textContent = "削除";
+                        }
+                    }
+                );
+
+                actions.appendChild(deleteButton);
+                card.appendChild(actions);
             }
 
             list.appendChild(card);
