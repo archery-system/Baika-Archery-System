@@ -96,10 +96,42 @@
     }
 
 
+/**
+ * ログアウト時に認証セッションを失効させる。
+ */
+    async function revokeSession(sessionToken) {
+        const token = String(
+            sessionToken || ""
+        ).trim();
+
+        if (!token) {
+            return {
+                success: false,
+                message: "認証セッションがありません。"
+            };
+        }
+
+        const result = await postJson({
+            action: "revokeAuthSession",
+            sessionToken: token
+        });
+
+        if (!result.success) {
+            throw new Error(
+                result.message ||
+                "認証セッションの失効に失敗しました。"
+            );
+        }
+
+        return result;
+    }
+
+
     /**
      * 外部公開
      */
     window.V4AuthApi = {
-        login
+        login,
+        revokeSession
     };
 })();

@@ -774,6 +774,152 @@
         return result;
     }
 
+/**
+ * 部活動カレンダーの予定を取得する
+ *
+ * GAS側で本人認証と閲覧権限を確認する。
+ *
+ * @param {string} memberIdentifier
+ * @param {string} password
+ * @returns {Promise<Array>}
+ */
+    async function loadActivityRecords(
+        memberIdentifier,
+        password
+    ) {
+        if (!memberIdentifier || !password) {
+            throw new Error(
+                "予定の取得には本人認証が必要です。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response = await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify({
+                    action: "getActivityRecords",
+                    memberIdentifier:
+                        memberIdentifier,
+                    password: password
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "予定をクラウドから取得できませんでした。"
+            );
+        }
+
+        const result = await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "予定を取得できませんでした。"
+            );
+        }
+
+        if (!Array.isArray(result.records)) {
+            throw new Error(
+                "予定データの形式が正しくありません。"
+            );
+        }
+
+        return result.records;
+    }
+
+    /**
+     * 認証セッションを使用して
+     * 部活動カレンダーの予定を取得する
+     *
+     * @param {string} sessionToken
+     * @returns {Promise<Array>}
+     */
+    async function loadActivityRecordsWithSession(
+        sessionToken
+    ) {
+        const token = String(
+            sessionToken || ""
+        ).trim();
+
+        if (!token) {
+            throw new Error(
+                "認証セッションがありません。再ログインしてください。"
+            );
+        }
+
+        if (
+            typeof V4_GAS_API_URL !== "string" ||
+            V4_GAS_API_URL.trim() === ""
+        ) {
+            throw new Error(
+                "GAS API URLが設定されていません。"
+            );
+        }
+
+        const response = await fetch(
+            V4_GAS_API_URL,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "text/plain;charset=utf-8"
+                },
+                body: JSON.stringify({
+                    action:
+                        "getActivityRecordsWithSession",
+                    sessionToken: token
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "予定をクラウドから取得できませんでした。"
+            );
+        }
+
+        const result = await response.json();
+
+        if (
+            !result ||
+            result.success !== true
+        ) {
+            throw new Error(
+                result && result.message
+                    ? result.message
+                    : "予定を取得できませんでした。"
+            );
+        }
+
+        if (!Array.isArray(result.records)) {
+            throw new Error(
+                "予定データの形式が正しくありません。"
+            );
+        }
+
+        return result.records;
+    }
+
     window.BAS_CLOUD = {
         loadAllData:
             loadAllData,
@@ -805,7 +951,13 @@
             deleteMatchRecord:
                 deleteMatchRecord,
 
-            saveActivityRecord:
-                saveActivityRecord
+        saveActivityRecord:
+            saveActivityRecord,
+
+        loadActivityRecords:
+            loadActivityRecords,
+
+        loadActivityRecordsWithSession:
+            loadActivityRecordsWithSession
         };
     }) ();

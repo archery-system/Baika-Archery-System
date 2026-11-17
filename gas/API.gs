@@ -975,24 +975,14 @@ function requestFormVideoAnalysis_(
       responseText
     );
 
-    throw new Error(
-      "OpenAIによるフォーム画像確認に失敗しました。" +
-      " HTTP " +
-      statusCode
-    );
-  }
-    console.error(
-      "OpenAI form analysis error:",
-      statusCode,
-      responseText
-    );
-
         throw new Error(
       "OpenAIによるフォーム画像確認に失敗しました。" +
       " HTTP " +
-      statusCode
+      statusCode +
+      " / OpenAI: " +
+      responseText
     );
-  }
+    }
 
   const data =
     JSON.parse(
@@ -1688,6 +1678,151 @@ if (action === "appendGroupingRecord") {
 }
 
 /*
+ * ログアウト時に認証セッションを失効させる。
+ */
+if (action === "revokeAuthSession") {
+  const sessionToken = String(
+    payload.sessionToken || ""
+  ).trim();
+
+  if (!sessionToken) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "認証セッションが指定されていません。"
+    });
+  }
+
+  const revoked =
+    revokeAuthSession_(sessionToken);
+
+  return createJsonResponse({
+    success: true,
+    revoked: revoked
+  });
+}
+
+/**
+ * 部活動カレンダーの予定を取得する。
+ *
+ * 本人認証を行い、
+ * 閲覧権限のある予定だけを返す。
+ */
+if (action === "getActivityRecordsWithSession") {
+  const sessionToken = String(
+    payload.sessionToken || ""
+  ).trim();
+
+  if (!sessionToken) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "認証セッションがありません。再ログインしてください。"
+    });
+  }
+
+  const memberId =
+    verifyAuthSession_(sessionToken);
+
+  const records =
+    getActivityRecordsForMember_(memberId);
+
+  return createJsonResponse({
+    success: true,
+    records: records
+  });
+}
+
+if (action === "getActivityRecords") {
+  const memberIdentifier =
+    String(
+      payload.memberIdentifier || ""
+    ).trim();
+
+  const password =
+    String(
+      payload.password || ""
+    );
+
+  if (!memberIdentifier || !password) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "予定を取得するには本人認証が必要です。"
+    });
+  }
+
+  const records =
+    getActivityRecords(
+      memberIdentifier,
+      password
+    );
+
+  return createJsonResponse({
+    success: true,
+    records: records
+  });
+}
+
+/**
+ * 部活動カレンダーの予定を1件追加する。
+ *
+ * 本人認証を行い、
+ * 登録者の部員IDをGAS側で確定する。
+ */
+if (action === "appendActivityRecord") {
+  const record =
+    payload &&
+    payload.record &&
+    typeof payload.record === "object" &&
+    !Array.isArray(payload.record)
+      ? payload.record
+      : null;
+
+  const memberIdentifier =
+    String(
+      payload.memberIdentifier || ""
+    ).trim();
+
+  const password =
+    String(
+      payload.password || ""
+    );
+
+  if (!record) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "保存する予定が指定されていません。"
+    });
+  }
+
+  if (!memberIdentifier || !password) {
+    return createJsonResponse({
+      success: false,
+      message:
+        "予定を登録するには本人認証が必要です。"
+    });
+  }
+
+  const result =
+    appendActivityRecord(
+      record,
+      memberIdentifier,
+      password
+    );
+
+  return createJsonResponse({
+    success: true,
+    message:
+      "カレンダーの予定を登録しました。",
+    operation: result.operation,
+    id: result.id,
+    rowNumber: result.rowNumber
+  });
+}
+
+/*
  * 弓具設定を保存する。
  *
  * memberIdごとに現在の弓具設定を
@@ -2026,7 +2161,23 @@ function handleLoginAction_(payload) {
     password
   );
 
-  return createJsonResponse(result);
+  if (
+    !result.success ||
+    !result.member ||
+    !result.member.memberId
+  ) {
+    return createJsonResponse(result);
+  }
+
+  const session = createAuthSession_(
+    result.member.memberId
+  );
+
+  return createJsonResponse({
+    ...result,
+    sessionToken: session.token,
+    sessionExpiresAt: session.expiresAt
+  });
 }
 
 /**
@@ -2700,6 +2851,26 @@ function handleChangeMyPasswordAction_(
     members,
     passwords
   );
+
+/*
+ * パスワード変更後は、
+ * 以前発行した認証セッションを失効させる。
+ */
+  try {
+    revokeMemberAuthSessions_(memberId);
+  } catch (error) {
+    console.error(
+      "パスワード変更後のセッション失効に失敗しました:",
+      error
+    );
+
+    return createJsonResponse({
+      success: false,
+      passwordChanged: true,
+      message:
+        "パスワードは変更されましたが、以前のログイン状態を無効化できませんでした。管理者に連絡してください。"
+    });
+  }
 
   return createJsonResponse({
     success: true,

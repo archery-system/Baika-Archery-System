@@ -12,7 +12,8 @@ const SHEET_NAMES = {
   EQUIPMENT_HISTORY: "equipmentHistory",
   METADATA: "metadata",
   MEMBERS: "members",
-  PRACTICE_SESSIONS: "practiceSessions"
+  PRACTICE_SESSIONS: "practiceSessions",
+  ACTIVITIES: "activities"
 };
 
 const ROLE_NAMES = {

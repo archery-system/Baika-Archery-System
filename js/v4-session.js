@@ -170,6 +170,28 @@ function updateLoggedInMemberData(
         return readLoginData();
     }
 
+/**
+ * ログイン中の認証トークンを取得
+ */
+    function getSessionToken() {
+        const loginData = readLoginData();
+
+        return loginData
+            ? String(loginData.sessionToken || "")
+            : "";
+    }
+
+
+    /**
+     * 認証トークンの有効期限を取得
+     */
+    function getSessionExpiresAt() {
+        const loginData = readLoginData();
+
+        return loginData
+            ? String(loginData.sessionExpiresAt || "")
+            : "";
+    }
 
     /**
      * ログイン中の権限を取得
@@ -249,6 +271,8 @@ function requireAdmin() {
     getLoggedInMember,
     getLoggedInMemberId,
     getLoggedInMemberData,
+    getSessionToken,
+    getSessionExpiresAt,
     getLoggedInRole,
     isAdmin,
     isLoggedIn,

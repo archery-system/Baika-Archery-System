@@ -416,7 +416,11 @@ const V4Auth = {
                 authenticatedMember.memberName ||
                 memberIdentifier;
 
-            this.saveLogin(authenticatedMember);
+            this.saveLogin(
+                authenticatedMember,
+                result.sessionToken,
+                result.sessionExpiresAt
+            );
 
             passwordInput.value = "";
 
@@ -449,23 +453,67 @@ const V4Auth = {
      * ログアウト
      */
     logout() {
+        let sessionToken = "";
+
+        try {
+            const savedLogin = JSON.parse(
+                localStorage.getItem(V4_AUTH_STORAGE_KEY) || "null"
+            );
+
+            sessionToken = String(
+                savedLogin?.sessionToken || ""
+            );
+        } catch (error) {
+            console.warn(
+                "ログイン情報を読み取れませんでした:",
+                error
+            );
+        }
+
+        /*
+         * ブラウザ側のログイン情報は先に削除する。
+         * GASとの通信結果に依存させない。
+         */
         this.loggedInMember = "";
         localStorage.removeItem(V4_AUTH_STORAGE_KEY);
 
-        const passwordInput = document.getElementById("v4LoginPassword");
+        const passwordInput =
+            document.getElementById("v4LoginPassword");
 
         if (passwordInput) {
             passwordInput.value = "";
         }
 
-        this.showMessage("ログアウトしました。", "success");
+        this.showMessage(
+            "ログアウトしました。",
+            "success"
+        );
         this.updateScreen();
+
+        /*
+         * GAS側の認証セッションを失効させる。
+         * 通信に失敗しても画面のログアウトは維持する。
+         */
+        if (sessionToken) {
+            window.V4AuthApi.revokeSession(
+                sessionToken
+            ).catch(function (error) {
+                console.warn(
+                    "認証セッションの失効通知に失敗しました:",
+                    error
+                );
+            });
+        }
     },
 
-    /**
+/**
  * ログイン状態を保存
  */
-    saveLogin(memberData = {}) {
+    saveLogin(
+        memberData = {},
+        sessionToken = "",
+        sessionExpiresAt = ""
+    ) {
         const memberName =
             memberData.memberName ||
             memberData.displayName ||
@@ -483,6 +531,8 @@ const V4Auth = {
             displayName: displayName || "",
             nickname: memberData.nickname || "",
             role: memberData.role || "member",
+            sessionToken: String(sessionToken || ""),
+            sessionExpiresAt: String(sessionExpiresAt || ""),
             savedAt: new Date().toISOString()
         };
 

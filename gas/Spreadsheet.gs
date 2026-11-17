@@ -1035,6 +1035,298 @@ function appendGroupingRecord(record) {
 }
 
 /**
+ * 部活動カレンダーの予定を取得する。
+ *
+ * 本人認証後、閲覧権限のある予定のみ返す。
+ *
+ * scope = all:
+ *   認証済み部員全員が閲覧可能
+ *
+ * scope = owner:
+ *   登録者本人のみ閲覧可能
+ */
+function getActivityRecords(
+  memberIdentifier,
+  password
+) {
+  const auth = authenticateMember(
+    memberIdentifier,
+    password
+  );
+
+  if (
+    !auth.success ||
+    !auth.member
+  ) {
+    throw new Error(
+      "本人認証に失敗しました。"
+    );
+  }
+
+  return getActivityRecordsForMember_(
+    auth.member.memberId
+  );
+}
+
+/**
+ * 認証済み部員が閲覧できる予定を取得する。
+ *
+ * 呼び出し元で必ず本人認証を完了させること。
+ *
+ * @param {string} memberId
+ * @returns {Array}
+ */
+function getActivityRecordsForMember_(memberId) {
+  const authenticatedMemberId =
+    String(memberId || "").trim();
+
+  if (!authenticatedMemberId) {
+    throw new Error(
+      "部員IDを取得できませんでした。"
+    );
+  }
+
+  const records =
+    readSheetData(
+      SHEET_NAMES.ACTIVITIES
+    );
+
+  const visibleRecords =
+    records.filter(function (record) {
+      const scope =
+        String(record.scope || "").trim();
+
+      const createdBy =
+        String(record.createdBy || "").trim();
+
+      if (scope === "all") {
+        return true;
+      }
+
+      if (
+        scope === "owner" &&
+        createdBy === authenticatedMemberId
+      ) {
+        return true;
+      }
+
+      return false;
+    });
+
+  return visibleRecords.map(function (record) {
+    return {
+      id: String(record.id || ""),
+      date: String(record.date || ""),
+      title: String(record.title || ""),
+      type: String(record.type || ""),
+      startTime: String(record.startTime || ""),
+      endTime: String(record.endTime || ""),
+      place: String(record.place || ""),
+      memo: String(record.memo || ""),
+      url: String(record.url || ""),
+      scope: String(record.scope || ""),
+      createdBy: String(record.createdBy || ""),
+      createdAt: record.createdAt instanceof Date
+        ? record.createdAt.toISOString()
+        : String(record.createdAt || ""),
+      updatedAt: record.updatedAt instanceof Date
+        ? record.updatedAt.toISOString()
+        : String(record.updatedAt || "")
+    };
+  });
+}
+
+/**
+ * 部活動カレンダーの予定を1件保存する
+ *
+ * 本人認証を行い、登録者IDを確定する。
+ *
+ * @param {Object} record
+ * @param {string} memberIdentifier
+ * @param {string} password
+ * @returns {Object}
+ */
+function appendActivityRecord(
+  record,
+  memberIdentifier,
+  password
+) {
+  if (
+    !record ||
+    typeof record !== "object" ||
+    Array.isArray(record)
+  ) {
+    throw new Error(
+      "保存する予定が指定されていません。"
+    );
+  }
+
+  const auth = authenticateMember(
+    memberIdentifier,
+    password
+  );
+
+  if (
+    !auth.success ||
+    !auth.member
+  ) {
+    throw new Error(
+      "本人認証に失敗しました。"
+    );
+  }
+
+  const title =
+    String(record.title || "").trim();
+
+  const date =
+    String(record.date || "").trim();
+
+  const type =
+    String(record.type || "").trim();
+
+  const scope =
+    String(record.scope || "").trim();
+
+  if (!title || !date) {
+    throw new Error(
+      "予定名と日付は必須です。"
+    );
+  }
+
+  if (
+    !/^\d{4}-\d{2}-\d{2}$/.test(date)
+  ) {
+    throw new Error(
+      "日付の形式が正しくありません。"
+    );
+  }
+
+  if (
+    ![
+      "practice",
+      "practice-match",
+      "competition",
+      "other"
+    ].includes(type)
+  ) {
+    throw new Error(
+      "予定の種類が正しくありません。"
+    );
+  }
+
+  if (
+    scope !== "all" &&
+    scope !== "owner"
+  ) {
+    throw new Error(
+      "公開範囲が正しくありません。"
+    );
+  }
+
+  const now =
+    new Date().toISOString();
+
+  const activity = {
+    id: Utilities.getUuid(),
+    date: date,
+    title: title,
+    type: type,
+    startTime: String(
+      record.startTime || ""
+    ),
+    endTime: String(
+      record.endTime || ""
+    ),
+    place: String(
+      record.place || ""
+    ),
+    memo: String(
+      record.memo || ""
+    ),
+    url: String(
+      record.url || ""
+    ),
+    scope: scope,
+    createdBy: String(
+      auth.member.memberId
+    ),
+    createdAt: now,
+    updatedAt: now
+  };
+
+  const headers = [
+    "id",
+    "date",
+    "title",
+    "type",
+    "startTime",
+    "endTime",
+    "place",
+    "memo",
+    "url",
+    "scope",
+    "createdBy",
+    "createdAt",
+    "updatedAt"
+  ];
+
+  const lock =
+    LockService.getScriptLock();
+
+  lock.waitLock(30000);
+
+  try {
+    const sheet =
+      getOrCreateSheet(
+        SHEET_NAMES.ACTIVITIES
+      );
+
+    if (sheet.getLastRow() === 0) {
+      sheet
+        .getRange(
+          1,
+          1,
+          1,
+          headers.length
+        )
+        .setValues([headers]);
+    }
+
+    const row = headers.map(
+      function(header) {
+        const value = activity[header];
+
+        return value == null
+          ? ""
+          : value;
+      }
+    );
+
+    const rowNumber =
+      sheet.getLastRow() + 1;
+
+    sheet
+      .getRange(
+        rowNumber,
+        1,
+        1,
+        row.length
+      )
+      .setValues([row]);
+
+    return {
+      success: true,
+      operation: "append",
+      id: activity.id,
+      rowNumber: rowNumber
+    };
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
  * 練習記録をpracticeシートへ1件追加する
  *
  * 全件上書きせず、
