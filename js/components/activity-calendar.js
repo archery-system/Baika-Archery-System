@@ -12,6 +12,63 @@
 
     let selectedDate = null;
 
+    // クラウドから取得した部活動の予定
+    let activityRecords = [];
+
+    // 指定した日付の予定を取得する
+    function getActivitiesForDate(dateKey) {
+        return activityRecords.filter(function (record) {
+            return String(record.date || "").trim() === dateKey;
+        });
+    }
+
+    // 認証セッションを使用して予定を取得
+    async function loadCalendarActivities() {
+        try {
+            const sessionToken =
+                window.V4Session &&
+                    typeof window.V4Session.getSessionToken === "function"
+                    ? window.V4Session.getSessionToken()
+                    : "";
+
+            if (!sessionToken) {
+                console.warn(
+                    "カレンダーの認証セッションがありません。"
+                );
+                return;
+            }
+
+            if (
+                !window.BAS_CLOUD ||
+                typeof window.BAS_CLOUD.loadActivityRecordsWithSession !==
+                "function"
+            ) {
+                console.warn(
+                    "カレンダーのクラウド取得機能が利用できません。"
+                );
+                return;
+            }
+
+            const records =
+                await window.BAS_CLOUD.loadActivityRecordsWithSession(
+                    sessionToken
+                );
+
+            activityRecords = Array.isArray(records)
+                ? records
+                : [];
+
+            // カレンダーと選択中の日付の詳細を更新
+            renderCalendar();
+            renderSelectedSchedule();
+        } catch (error) {
+            console.error(
+                "カレンダーの予定取得に失敗しました:",
+                error
+            );
+        }
+    }
+
     function renderSelectedSchedule() {
         const title = document.getElementById(
             "homeActivityScheduleTitle"
@@ -50,8 +107,86 @@
         title.textContent =
             `${year}年${month}月${day}日（${weekday}）の予定`;
 
-        list.textContent =
-            "この日の予定は登録されていません。";
+        // 選択した日付の予定を取得
+        const dayActivities = getActivitiesForDate(selectedDate);
+
+        // 予定が登録されていない場合
+        if (dayActivities.length === 0) {
+            list.textContent =
+                "この日の予定は登録されていません。";
+            return;
+        }
+
+        // 予定がある場合は、すべての予定を表示
+        list.replaceChildren();
+
+        dayActivities.forEach(function (record) {
+            const card = document.createElement("div");
+            card.className = "bas-calendar__activity-detail";
+
+            // 予定名
+            const activityTitle = document.createElement("div");
+            activityTitle.className =
+                "bas-calendar__activity-detail-title";
+
+            activityTitle.textContent = record.title || "予定名なし";
+
+            // 全員公開は黒、個人予定は赤
+            activityTitle.style.color =
+                record.scope === "owner"
+                    ? "#c62828"
+                    : "#000000";
+
+            card.appendChild(activityTitle);
+
+            // 時間
+            const startTime = String(record.startTime || "").trim();
+            const endTime = String(record.endTime || "").trim();
+
+            if (startTime || endTime) {
+                const time = document.createElement("div");
+                time.className = "bas-calendar__activity-detail-info";
+
+                time.textContent =
+                    `時間：${startTime || "未設定"} ～ ${endTime || "未設定"}`;
+
+                card.appendChild(time);
+            }
+
+            // 場所
+            if (record.place) {
+                const place = document.createElement("div");
+                place.className = "bas-calendar__activity-detail-info";
+                place.textContent = `場所：${record.place}`;
+                card.appendChild(place);
+            }
+
+            // メモ
+            if (record.memo) {
+                const memo = document.createElement("div");
+                memo.className = "bas-calendar__activity-detail-memo";
+                memo.textContent = record.memo;
+                card.appendChild(memo);
+            }
+
+            // 関連URL
+            if (record.url) {
+                const url = String(record.url).trim();
+
+                if (/^https?:\/\//i.test(url)) {
+                    const link = document.createElement("a");
+                    link.className = "bas-calendar__activity-detail-link";
+                    link.href = url;
+                    link.target = "_blank";
+                    link.rel = "noopener noreferrer";
+                    link.textContent = "関連リンクを開く";
+
+                    card.appendChild(link);
+                }
+            }
+
+            list.appendChild(card);
+        });
     }
 
     function renderCalendar() {
@@ -146,7 +281,17 @@
         for (let day = 1; day <= lastDate; day++) {
             const cell = document.createElement("div");
             cell.className = "bas-calendar__day";
-            cell.textContent = day;
+
+            // 日付の数字
+            const dayNumber = document.createElement("span");
+            dayNumber.className = "bas-calendar__day-number";
+            dayNumber.textContent = day;
+
+            // 予定名の表示領域
+            const activityArea = document.createElement("div");
+            activityArea.className = "bas-calendar__activities";
+
+            cell.append(dayNumber, activityArea);
 
             if (
                 year === today.getFullYear() &&
@@ -160,6 +305,36 @@
 
             const dateKey =
                 `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+            // この日に登録された予定を取得
+            const dayActivities = getActivitiesForDate(dateKey);
+
+            if (dayActivities.length > 0) {
+                // 最初の予定名を表示
+                const firstActivity = dayActivities[0];
+
+                const activityTitle = document.createElement("span");
+                activityTitle.className = "bas-calendar__activity-title";
+
+                activityTitle.textContent = firstActivity.title || "";
+
+                // 全員公開は黒、個人予定は赤
+                activityTitle.style.color =
+                    firstActivity.scope === "owner"
+                        ? "#c62828"
+                        : "#000000";
+
+                activityArea.appendChild(activityTitle);
+
+                // 2件以上の場合は次の行に「…」を表示
+                if (dayActivities.length >= 2) {
+                    const more = document.createElement("span");
+                    more.className = "bas-calendar__activity-more";
+                    more.textContent = "…";
+
+                    activityArea.appendChild(more);
+                }
+            }                
 
             if (selectedDate === dateKey) {
                 cell.classList.add(
@@ -336,6 +511,22 @@
 
                 alert("予定を登録しました。");
 
+                // 保存した予定の日付を選択する
+                selectedDate = record.date;
+
+                // 保存した予定の月へカレンダーを移動する
+                const [savedYear, savedMonth] =
+                    record.date.split("-").map(Number);
+
+                currentMonth = new Date(
+                    savedYear,
+                    savedMonth - 1,
+                    1
+                );
+
+                // 保存成功後にクラウドから最新の予定を取得
+                await loadCalendarActivities();
+
                 form.reset();
                 formArea.hidden = true;
                 addButton.hidden = false;
@@ -375,6 +566,9 @@
         initialize: function () {
             renderCalendar();
             initializeActivityForm();
+
+            // ログイン中の部員が閲覧できる予定を取得
+            loadCalendarActivities();
         }
     };
 })();
