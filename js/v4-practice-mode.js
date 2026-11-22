@@ -264,6 +264,49 @@
             modeSelect.disabled =
                 Boolean(isActive);
 
+            /*
+             * 点取り中は的の種類を固定する。
+             * 終了後は再び変更できるようにする。
+             */
+            const targetTypeSelect =
+                document.getElementById(
+                    "v4TargetTypeSelect"
+                );
+
+            if (targetTypeSelect) {
+                /*
+                 * 点取り中は、開始時に保存した
+                 * 的の種類を画面へ復元する。
+                 */
+                if (
+                    isActive &&
+                    (
+                        session.targetType === "normal" ||
+                        session.targetType === "indoor-triple"
+                    )
+                ) {
+                    if (
+                        targetTypeSelect.value !== session.targetType
+                    ) {
+                        targetTypeSelect.value =
+                            session.targetType;
+
+                        /*
+                         * 的の描画処理にも変更を通知する。
+                         */
+                        targetTypeSelect.dispatchEvent(
+                            new Event("change")
+                        );
+                    }
+                }
+
+                /*
+                 * 点取り中は的の種類を固定する。
+                 */
+                targetTypeSelect.disabled =
+                    Boolean(isActive);
+            }
+
             if (isActive) {
                 modeSelect.value = "score";
                 scorePanel.hidden = false;
@@ -324,11 +367,31 @@
                     }
                 }
 
+                const targetTypeSelect =
+                    document.getElementById(
+                        "v4TargetTypeSelect"
+                    );
+
+                const targetType =
+                    targetTypeSelect?.value === "indoor-triple"
+                        ? "indoor-triple"
+                        : "normal";
+
+                const isIndoorTriple =
+                    targetType === "indoor-triple";
+
                 const session = {
                     id:
                         crypto.randomUUID(),
                     memberId: memberId,
                     status: "active",
+
+                    targetType: targetType,
+                    arrowsPerEnd: isIndoorTriple ? 3 : 6,
+                    plannedEnds: isIndoorTriple ? 20 : 12,
+                    plannedArrows: isIndoorTriple ? 60 : 72,
+                    maximumScore: isIndoorTriple ? 600 : 720,
+
                     arrowCount: 0,
                     total: 0,
                     endNumber: 0,

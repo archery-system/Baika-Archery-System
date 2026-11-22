@@ -48,7 +48,47 @@
             return;
         }
 
-        drawIllustrationTarget(svg);
+        /*
+         * 的の種類に応じてイラスト的を描画する
+         */
+        function updateIllustrationTargetType() {
+            const isIndoorTriple =
+                document.documentElement.classList.contains(
+                    "v4-is-indoor-triple"
+                );
+
+            if (isIndoorTriple) {
+                drawIndoorTripleIllustration(svg);
+            } else {
+                svg.setAttribute(
+                    "viewBox",
+                    "0 0 300 300"
+                );
+
+                drawIllustrationTarget(svg);
+            }
+
+            renderIllustrationPins(svg);
+        }
+
+        updateIllustrationTargetType();
+
+        /*
+         * 的の種類が変更されたら再描画する
+         */
+        const targetTypeSelect =
+            document.getElementById(
+                "v4TargetTypeSelect"
+            );
+
+        if (targetTypeSelect) {
+            targetTypeSelect.addEventListener(
+                "change",
+                function () {
+                    updateIllustrationTargetType();
+                }
+            );
+        }
 
     /*
      * 右側の入力的でピン位置が変更されたら、
@@ -334,9 +374,16 @@
         function resetIllustrationZoom() {
             isZoomed = false;
 
+            const isIndoorTriple =
+                document.documentElement.classList.contains(
+                    "v4-is-indoor-triple"
+                );
+
             svg.setAttribute(
                 "viewBox",
-                "0 0 300 300"
+                isIndoorTriple
+                    ? "0 0 300 900"
+                    : "0 0 300 300"
             );
 
             crosshair.style.display = "none";
@@ -386,6 +433,14 @@
                 matrix.inverse()
             );
 
+            const isIndoorTriple =
+                document.documentElement.classList.contains(
+                    "v4-is-indoor-triple"
+                );
+
+            const targetHeight =
+                isIndoorTriple ? 900 : 300;
+
             return {
                 x: Math.max(
                     0,
@@ -393,7 +448,7 @@
                 ),
                 y: Math.max(
                     0,
-                    Math.min(300, result.y)
+                    Math.min(targetHeight, result.y)
                 )
             };
         }
@@ -468,12 +523,20 @@
                     )
                 );
 
+                const isIndoorTriple =
+                    document.documentElement.classList.contains(
+                        "v4-is-indoor-triple"
+                    );
+
+                const targetHeight =
+                    isIndoorTriple ? 900 : 300;
+
                 const y = Math.max(
                     0,
                     Math.min(
-                        300 - dragStart.height,
+                        targetHeight - dragStart.height,
                         dragStart.y -
-                            dy * dragStart.height / rect.height
+                        dy * dragStart.height / rect.height
                     )
                 );
 
@@ -540,10 +603,18 @@
                         )
                     );
 
+                    const isIndoorTriple =
+                        document.documentElement.classList.contains(
+                            "v4-is-indoor-triple"
+                        );
+
+                    const targetHeight =
+                        isIndoorTriple ? 900 : 300;
+
                     const zoomY = Math.max(
                         0,
                         Math.min(
-                            300 - zoomSize,
+                            targetHeight - zoomSize,
                             point.y - zoomSize / 2
                         )
                     );
@@ -782,5 +853,118 @@
         svg.appendChild(xRing);
     }
 
+    /**
+     * インドア縦3連的を描画する
+     * 上段・中段・下段の6～10点帯
+     */
+    function drawIndoorTripleIllustration(svg) {
+        svg.innerHTML = "";
+        svg.setAttribute("viewBox", "0 0 300 900");
+
+        const SVG_NS =
+            "http://www.w3.org/2000/svg";
+
+        const faces = [
+            { cy: 150, label: "上段" },
+            { cy: 450, label: "中段" },
+            { cy: 750, label: "下段" }
+        ];
+
+        const rings = [
+            { radius: 150, fill: "#38bdf8" },
+            { radius: 120, fill: "#ef4444" },
+            { radius: 90, fill: "#ef4444" },
+            { radius: 60, fill: "#facc15" },
+            { radius: 30, fill: "#facc15" }
+        ];
+
+        faces.forEach(function (face) {
+            rings.forEach(function (ring) {
+                const circle = document.createElementNS(
+                    SVG_NS,
+                    "circle"
+                );
+
+                circle.setAttribute("cx", "150");
+                circle.setAttribute(
+                    "cy",
+                    String(face.cy)
+                );
+                circle.setAttribute(
+                    "r",
+                    String(ring.radius)
+                );
+                circle.setAttribute(
+                    "fill",
+                    ring.fill
+                );
+                circle.setAttribute(
+                    "stroke",
+                    "#374151"
+                );
+                circle.setAttribute(
+                    "stroke-width",
+                    "0.6"
+                );
+
+                svg.appendChild(circle);
+            });
+
+            const xRing = document.createElementNS(
+                SVG_NS,
+                "circle"
+            );
+
+            xRing.setAttribute("cx", "150");
+            xRing.setAttribute(
+                "cy",
+                String(face.cy)
+            );
+            xRing.setAttribute("r", "15");
+            xRing.setAttribute("fill", "none");
+            xRing.setAttribute("stroke", "#374151");
+            xRing.setAttribute(
+                "stroke-width",
+                "0.6"
+            );
+
+            svg.appendChild(xRing);
+
+            const label = document.createElementNS(
+                SVG_NS,
+                "text"
+            );
+
+            label.setAttribute("x", "150");
+            label.setAttribute(
+                "y",
+                String(face.cy - 135)
+            );
+            label.setAttribute(
+                "text-anchor",
+                "middle"
+            );
+            label.setAttribute(
+                "font-size",
+                "12"
+            );
+            label.setAttribute(
+                "font-weight",
+                "700"
+            );
+            label.setAttribute(
+                "fill",
+                "#ffffff"
+            );
+            label.setAttribute(
+                "pointer-events",
+                "none"
+            );
+
+            label.textContent = face.label;
+
+            svg.appendChild(label);
+        });
+    }
     
 })();

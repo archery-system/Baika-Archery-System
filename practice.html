@@ -32,6 +32,7 @@
     <link rel="stylesheet" href="css/v4-step57-photo-workspace.css?v=573">
     <link rel="stylesheet" href="css/v4-theme-bridge.css?v=3">
     <link rel="stylesheet" href="css/v4-practice-mode.css?v=2">
+    <link rel="stylesheet" href="css/v4-indoor-triple.css?v=1">
 
     <style>
         /*
@@ -133,13 +134,44 @@
                             <option value="50m">50m</option>
                             <option value="60m">60m</option>
                             <option value="70m">70m</option>
-                        </select>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- 練習モード -->
+                                                </select>
+                                                </div>
+                                                
+                                                <div class="v4-form-group">
+                                                    <label for="v4TargetTypeSelect">
+                                                        的の種類
+                                                    </label>
+                                                
+                                                    <select id="v4TargetTypeSelect" name="targetType">
+                                                        <option value="normal">
+                                                            通常的
+                                                        </option>
+                                                        <option value="indoor-triple">
+                                                            インドア縦3連的
+                                                        </option>
+                                                                                                        </select>
+                                                                                                        </div>
+                                                                                                        
+                                                                                                        <!-- インドア用：弓の種類 -->
+                                                                                                        <div class="v4-form-group" id="v4BowTypeGroup" hidden>
+                                                                                                            <label for="v4BowTypeSelect">
+                                                                                                                弓の種類
+                                                                                                            </label>
+                                                                                                        
+                                                                                                            <select id="v4BowTypeSelect" name="bowType">
+                                                                                                                <option value="recurve">
+                                                                                                                    リカーブ
+                                                                                                                </option>
+                                                                                                                <option value="compound">
+                                                                                                                    コンパウンド
+                                                                                                                </option>
+                                                                                                            </select>
+                                                                                                        </div>
+                                                                                                        
+                                                                                                        </div>
+                                                                                                        </section>
+                                                
+                                                <!-- 練習モード -->
             <section class="v4-card v4-card-full" id="v4PracticeModeCard">
                 <div class="v4-card-title">
                     🎯 練習モード
@@ -692,9 +724,8 @@
                             📍 グルーピングに追加
                         </button>
 
-                        <button type="button" id="v4SaveCurrentEnd" class="v4-end-action v4-end-action-register"
-                            disabled>
-                            💾 6射を記録
+                        <button type="button" id="v4SaveCurrentEnd" class="v4-end-action v4-end-action-register" disabled>
+                            💾 練習記録を保存
                         </button>
                     </div>
 

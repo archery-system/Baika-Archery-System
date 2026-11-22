@@ -1,0 +1,49 @@
+/**
+ * Baika Archery System
+ * Project Zero
+ *
+ * インドア縦3連的 専用スタイル
+ *
+ * 通常的の表示には影響させない。
+ */
+
+ /* ========================================
+   インドア縦3連的
+   入力用的の表示
+======================================== */
+
+html.v4-is-indoor-triple
+.v4-input-target-panel
+.v4-target-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/*
+ * 外枠は既存サイズを維持し、
+ * SVGを縦3連的の比率で表示する。
+ */
+html.v4-is-indoor-triple
+.v4-input-target-panel
+#targetSvg {
+    width: 33.333% !important;
+    height: 100% !important;
+    flex: none;
+    aspect-ratio: 1 / 3;
+}
+
+/*
+ * インドア縦3連的
+ * 左側のイラスト入力用的を全体表示
+ */
+html.v4-is-indoor-triple
+    .v4-photo-interaction-area
+    #v4IllustrationTargetSvg {
+    width: auto !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: 1 / 3 !important;
+    flex: none;
+}

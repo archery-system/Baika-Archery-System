@@ -389,6 +389,62 @@ document.addEventListener(
         updateCurrentEndDisplay();
         updateScoreInputState();
 
+        const targetTypeSelect =
+            document.getElementById(
+                "v4TargetTypeSelect"
+            );
+
+        if (targetTypeSelect) {
+            function applyTargetType() {
+                const targetType =
+                    targetTypeSelect.value;
+
+                const isIndoorTriple =
+                    targetType === "indoor-triple";
+
+                document.documentElement.classList.toggle(
+                    "v4-is-indoor-triple",
+                    isIndoorTriple
+                );
+
+                /*
+                 * 弓の種類は的の種類に関係なく
+                 * 常に選択できるようにする。
+                 */
+                const bowTypeGroup =
+                    document.getElementById(
+                        "v4BowTypeGroup"
+                    );
+
+                if (bowTypeGroup) {
+                    bowTypeGroup.hidden = false;
+                }
+
+                const svg = document.getElementById("targetSvg");
+
+                if (svg) {
+                    if (targetType === "indoor-triple") {
+                        drawIndoorTripleTargetSvg();
+                    } else {
+                        svg.setAttribute("viewBox", "0 0 300 300");
+                        drawTargetSvg();
+                    }
+                }
+
+                console.log(
+                    "的の種類:",
+                    targetType
+                );
+            }
+
+            targetTypeSelect.addEventListener(
+                "change",
+                applyTargetType
+            );
+
+            applyTargetType();
+        }
+
         const applyPhotoScoresButton =
             document.getElementById(
                 "v4ApplyPhotoScoresButton"
@@ -542,6 +598,97 @@ function drawTargetSvg() {
     svg.appendChild(pinsGroup);
 
     renderTargetPins();
+}
+
+/**
+ * インドア縦3連的を描画する
+ * 6～10点帯、上段・中段・下段
+ */
+function drawIndoorTripleTargetSvg() {
+    const svg = document.getElementById("targetSvg");
+
+    if (!svg) {
+        return;
+    }
+
+    svg.innerHTML = "";
+    svg.setAttribute("viewBox", "0 0 300 900");
+
+    const ns = "http://www.w3.org/2000/svg";
+
+    const faces = [
+        { cy: 150, label: "上段" },
+        { cy: 450, label: "中段" },
+        { cy: 750, label: "下段" }
+    ];
+
+    const rings = [
+        { radius: 150, fill: "#1996d3" }, // 6
+        { radius: 120, fill: "#e53935" }, // 7
+        { radius: 90, fill: "#e53935" },  // 8
+        { radius: 60, fill: "#f6c915" },  // 9
+        { radius: 30, fill: "#f6c915" }   // 10
+    ];
+
+    faces.forEach(function (face) {
+        rings.forEach(function (ring) {
+            const circle = document.createElementNS(
+                ns,
+                "circle"
+            );
+
+            circle.setAttribute("cx", "150");
+            circle.setAttribute("cy", String(face.cy));
+            circle.setAttribute("r", String(ring.radius));
+            circle.setAttribute("fill", ring.fill);
+            circle.setAttribute("stroke", "#111827");
+            circle.setAttribute("stroke-width", "0.7");
+            circle.setAttribute(
+                "vector-effect",
+                "non-scaling-stroke"
+            );
+
+            svg.appendChild(circle);
+        });
+
+        const xRing = document.createElementNS(
+            ns,
+            "circle"
+        );
+
+        xRing.setAttribute("cx", "150");
+        xRing.setAttribute("cy", String(face.cy));
+        xRing.setAttribute("r", "15");
+        xRing.setAttribute("fill", "none");
+        xRing.setAttribute("stroke", "#111827");
+        xRing.setAttribute("stroke-width", "0.7");
+
+        svg.appendChild(xRing);
+
+        const label = document.createElementNS(
+            ns,
+            "text"
+        );
+
+        label.setAttribute("x", "150");
+        label.setAttribute("y", String(face.cy - 135));
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", "700");
+        label.setAttribute("fill", "#ffffff");
+        label.setAttribute("pointer-events", "none");
+        label.textContent = face.label;
+
+        svg.appendChild(label);
+    });
+
+    const pinsGroup = document.createElementNS(
+        ns,
+        "g"
+    );
+
+    pinsGroup.id = "pinsGroup";
+    svg.appendChild(pinsGroup);
 }
 
 /**
@@ -733,6 +880,43 @@ function handleTargetClick(event) {
     const tappedX = tappedPoint.x;
     const tappedY = tappedPoint.y;
 
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    if (isIndoorTriple) {
+        if (!isZoomed) {
+            isZoomed = true;
+
+            zoomCenter = {
+                x: tappedX,
+                y: tappedY
+            };
+
+            const zoomX = Math.max(
+                0,
+                Math.min(250, tappedX - 25)
+            );
+
+            const zoomY = Math.max(
+                0,
+                Math.min(850, tappedY - 25)
+            );
+
+            svg.setAttribute(
+                "viewBox",
+                `${zoomX} ${zoomY} 50 50`
+            );
+
+            return;
+        }
+
+        // インドアの得点計算・着弾登録は次のSTEPで実装する。
+        resetTargetZoom();
+        return;
+    }
+
     if (!isZoomed) {
         isZoomed = true;
 
@@ -843,6 +1027,95 @@ function calculateArrowScore(x, y) {
 }
 
 /**
+ * インドア縦3連的専用の得点計算
+ *
+ * リカーブ：外側の10点リングまで10点
+ * コンパウンド：内側の10点リングのみ10点
+ */
+function calculateIndoorTripleArrowScore(x, y) {
+    const targetX = Number(x);
+    const targetY = Number(y);
+
+    if (
+        !Number.isFinite(targetX) ||
+        !Number.isFinite(targetY)
+    ) {
+        return null;
+    }
+
+    const bowTypeSelect =
+        document.getElementById("v4BowTypeSelect");
+
+    const isCompound =
+        bowTypeSelect &&
+        bowTypeSelect.value === "compound";
+
+    /*
+     * 上段・中段・下段の中心座標
+     */
+    const faceCenters = [150, 450, 750];
+
+    const faceIndex = Math.max(
+        0,
+        Math.min(
+            2,
+            Math.floor(targetY / 300)
+        )
+    );
+
+    const centerY = faceCenters[faceIndex];
+
+    /*
+     * 通常的と同じピン半径補正を使用
+     */
+    const PIN_RADIUS = 6.5;
+
+    const distance = Math.hypot(
+        targetX - 150,
+        targetY - centerY
+    );
+
+    const scoringDistance = Math.max(
+        0,
+        distance - PIN_RADIUS
+    );
+
+    const arrow = {
+        val: "M",
+        score: 0,
+        x: targetX,
+        y: targetY,
+        faceIndex: faceIndex
+    };
+
+    if (scoringDistance > 150) {
+        return arrow;
+    }
+
+    if (scoringDistance <= 15) {
+        arrow.val = "10";
+        arrow.score = 10;
+    } else if (scoringDistance <= 30) {
+        arrow.val = isCompound ? "9" : "10";
+        arrow.score = isCompound ? 9 : 10;
+    } else if (scoringDistance <= 60) {
+        arrow.val = "9";
+        arrow.score = 9;
+    } else if (scoringDistance <= 90) {
+        arrow.val = "8";
+        arrow.score = 8;
+    } else if (scoringDistance <= 120) {
+        arrow.val = "7";
+        arrow.score = 7;
+    } else {
+        arrow.val = "6";
+        arrow.score = 6;
+    }
+
+    return arrow;
+}
+
+/**
  * ズームを初期状態へ戻す
  */
 function resetTargetZoom() {
@@ -858,7 +1131,17 @@ function resetTargetZoom() {
         return;
     }
 
-    svg.setAttribute("viewBox", "0 0 300 300");
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    svg.setAttribute(
+        "viewBox",
+        isIndoorTriple
+            ? "0 0 300 900"
+            : "0 0 300 300"
+    );
 
     if (
         window.baikaTargetGesture &&
@@ -1027,9 +1310,16 @@ function getTargetSvgPoint(event) {
     const svgPoint =
         point.matrixTransform(matrix.inverse());
 
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    const maxY = isIndoorTriple ? 900 : 300;
+
     return {
         x: Math.max(0, Math.min(300, svgPoint.x)),
-        y: Math.max(0, Math.min(300, svgPoint.y))
+        y: Math.max(0, Math.min(maxY, svgPoint.y))
     };
 }
 
@@ -1141,10 +1431,50 @@ function addIllustrationTargetArrow(x, y) {
     const activeArrows =
         getActiveInputArrows();
 
-    const arrow = calculateArrowScore(
-        Math.max(0, Math.min(300, targetX)),
-        Math.max(0, Math.min(300, targetY))
-    );
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    /*
+     * インドア縦3連的の点取り練習では、
+     * 1エンド最大3射までとする。
+     *
+     * 通常練習では3射を超える入力を許可する。
+     */
+    const practiceModeSelect =
+        document.getElementById(
+            "v4PracticeMode"
+        );
+
+    const isScoreMode =
+        practiceModeSelect &&
+        practiceModeSelect.value === "score";
+
+    if (
+        isIndoorTriple &&
+        isScoreMode &&
+        activeArrows.length >= 3
+    ) {
+        window.alert(
+            "インドア縦3連的の点取り練習は1エンド3射までです。"
+        );
+        return false;
+    }
+
+    const arrow = isIndoorTriple
+        ? calculateIndoorTripleArrowScore(
+            Math.max(0, Math.min(300, targetX)),
+            Math.max(0, Math.min(900, targetY))
+        )
+        : calculateArrowScore(
+            Math.max(0, Math.min(300, targetX)),
+            Math.max(0, Math.min(300, targetY))
+        );
+
+    if (!arrow) {
+        return false;
+    }
 
     activeArrows.push(arrow);
 
@@ -2941,6 +3271,13 @@ async function registerPhotoPracticeEnd(photoPins) {
                     ? Number(pin.y)
                     : null,
 
+                faceIndex:
+                    pin &&
+                        pin.faceIndex != null &&
+                        Number.isInteger(Number(pin.faceIndex))
+                        ? Number(pin.faceIndex)
+                        : null,
+
                 inputType:
                     pin &&
                         typeof pin.inputType === "string"
@@ -2972,6 +3309,18 @@ async function registerPhotoPracticeEnd(photoPins) {
         memberName: memberName,
         distance: distance,
         equipmentHistoryId: equipmentHistoryId,
+
+        targetType:
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            )
+                ? "indoor-triple"
+                : "normal",
+
+        bowType:
+            document.getElementById("v4BowTypeSelect")?.value || "recurve",
+
+        arrowCount: arrows.length,
         a1: arrows[0] ? arrows[0].val : "",
         a2: arrows[1] ? arrows[1].val : "",
         a3: arrows[2] ? arrows[2].val : "",
@@ -3180,9 +3529,38 @@ async function registerCurrentPracticeEnd() {
         return false;
     }
 
-    if (arrows.length !== 6) {
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    const practiceModeSelect =
+        document.getElementById(
+            "v4PracticeMode"
+        );
+
+    const isScoreMode =
+        practiceModeSelect?.value === "score";
+
+    const requiredArrowCount =
+        isIndoorTriple ? 3 : 6;
+
+    if (
+        isIndoorTriple &&
+        !isScoreMode
+    ) {
+        if (arrows.length < 1) {
+            window.alert(
+                "1射以上入力してから保存してください。"
+            );
+
+            return false;
+        }
+    } else if (
+        arrows.length !== requiredArrowCount
+    ) {
         window.alert(
-            `点取り記録は6射で保存してください。現在は${arrows.length}射です。`
+            `${requiredArrowCount}射で保存してください。現在は${arrows.length}射です。`
         );
 
         return false;
@@ -3211,7 +3589,7 @@ async function registerCurrentPracticeEnd() {
 
         if (saved) {
             window.alert(
-                "6射の練習記録を保存しました。"
+                `${arrows.length}射の練習記録を保存しました。`
             );
         }
 
@@ -3219,7 +3597,7 @@ async function registerCurrentPracticeEnd() {
     } finally {
         if (saveButton) {
             saveButton.textContent =
-                "💾 6射を記録";
+                "💾 練習記録を保存";
         }
 
         updateScoreInputState();
@@ -3465,8 +3843,29 @@ function updateScoreInputState() {
         );
 
     if (saveButton) {
-        saveButton.disabled =
-            arrows.length !== 6;
+        const isIndoorTriple =
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            );
+
+        const practiceModeSelect =
+            document.getElementById(
+                "v4PracticeMode"
+            );
+
+        const isScoreMode =
+            practiceModeSelect?.value === "score";
+
+        const requiredArrowCount =
+            isIndoorTriple ? 3 : 6;
+
+        if (isIndoorTriple && !isScoreMode) {
+            saveButton.disabled =
+                arrows.length < 1;
+        } else {
+            saveButton.disabled =
+                arrows.length !== requiredArrowCount;
+        }
     }
 
     const undoButton =

@@ -1123,8 +1123,20 @@
                         record.distance || ""
                     ).trim();
 
+                const scoreSessionId =
+                    String(
+                        record.scoreSessionId || ""
+                    ).trim();
+
+                const targetType =
+                    String(
+                        record.targetType || "normal"
+                    ).trim();
+
                 const key =
-                    `${date}__${distance}`;
+                    scoreSessionId
+                        ? `session__${scoreSessionId}`
+                        : `${date}__${distance}__${targetType}`;
 
                 if (!groups.has(key)) {
                     groups.set(
@@ -1150,10 +1162,42 @@
     }
 
 
-    /**
-     * 1エンドの6射を配列で取得する
-     */
+/**
+ * 1エンドの得点を実際の射数で取得する。
+ *
+ * 新形式：pinsから全射を取得
+ * 旧形式：a1〜a6から取得
+ */
     function getEndScoreLabels(record) {
+        if (!record || typeof record !== "object") {
+            return [];
+        }
+
+        let pins = record.pins;
+
+        if (typeof pins === "string" && pins.trim()) {
+            try {
+                pins = JSON.parse(pins);
+            } catch (error) {
+                pins = null;
+            }
+        }
+
+        if (Array.isArray(pins) && pins.length > 0) {
+            return pins.map(function (pin) {
+                const value =
+                    pin && pin.val != null
+                        ? pin.val
+                        : pin && pin.score != null
+                            ? pin.score
+                            : "M";
+
+                return String(value)
+                    .trim()
+                    .toUpperCase();
+            });
+        }
+
         return [
             record.a1,
             record.a2,
@@ -1161,13 +1205,17 @@
             record.a4,
             record.a5,
             record.a6
-        ].map(function (value) {
-            return String(
-                value == null ? "" : value
-            )
-                .trim()
-                .toUpperCase();
-        });
+        ]
+            .map(function (value) {
+                return String(
+                    value == null ? "" : value
+                )
+                    .trim()
+                    .toUpperCase();
+            })
+            .filter(function (value) {
+                return value !== "";
+            });
     }
 
 
@@ -1244,11 +1292,28 @@
      * 点取り1件の前半・後半・総計を集計する
      */
     function buildPracticeSessionSummary(group) {
+        const isIndoorTriple =
+            group.ends.some(function (record) {
+                return (
+                    record.targetType ===
+                    "indoor-triple"
+                );
+            });
+
+        const halfEndCount =
+            isIndoorTriple ? 10 : 6;
+
         const firstHalfEnds =
-            group.ends.slice(0, 6);
+            group.ends.slice(
+                0,
+                halfEndCount
+            );
 
         const secondHalfEnds =
-            group.ends.slice(6, 12);
+            group.ends.slice(
+                halfEndCount,
+                halfEndCount * 2
+            );
 
         return {
             date: group.date,
@@ -1403,6 +1468,30 @@
             `${session.total.arrowCount}射`;
 
         meta.appendChild(arrowBadge);
+
+        /*
+         * 的の種類を表示する
+         */
+        const isIndoorTriple =
+            session.ends.some(function (record) {
+                return (
+                    record.targetType ===
+                    "indoor-triple"
+                );
+            });
+
+        const targetBadge =
+            document.createElement("span");
+
+        targetBadge.className =
+            "bas-match-record__badge";
+
+        targetBadge.textContent =
+            isIndoorTriple
+                ? "インドア縦3連的"
+                : "通常的";
+
+        meta.appendChild(targetBadge);
 
         /*
          * 総合計・総10数・総X数
@@ -1878,7 +1967,7 @@
 
         arrows.setAttribute(
             "aria-label",
-            "6射の得点"
+            `${getArrowValues(record).length}射の得点`
         );
 
         getArrowValues(record).forEach(
@@ -1941,7 +2030,7 @@
                             "",
                             `日付：${formatDisplayDate(record.date)}`,
                             `距離：${formatDistance(record.distance)}`,
-                            `6射：${getArrowValues(record).join("・")}`,
+                            `${getArrowValues(record).length}射：${getArrowValues(record).join("・")}`,
                             "",
                             "この操作は元に戻せません。"
                         ].join("\n")
@@ -2171,23 +2260,20 @@
     }
 
 
-    /**
-     * 6射を配列として取得する
-     */
+/**
+ * 1エンドの得点を実際の射数で取得する。
+ *
+ * pinsがある場合は全射を取得する。
+ * pinsがない旧記録はa1〜a6を使用する。
+ */
     function getArrowValues(record) {
-        return [
-            record.a1,
-            record.a2,
-            record.a3,
-            record.a4,
-            record.a5,
-            record.a6
-        ].map(function (value) {
-            const normalized =
-                normalizeScoreLabel(value);
+        return getEndScoreLabels(record)
+            .map(function (value) {
+                const normalized =
+                    normalizeScoreLabel(value);
 
-            return normalized || "－";
-        });
+                return normalized || "－";
+            });
     }
 
 
@@ -2267,26 +2353,25 @@
      * 記録の合計点を取得する
      */
     function getRecordTotal(record) {
-        const savedTotal =
-            Number(record.total);
+        if (
+            record.total != null &&
+            String(record.total).trim() !== ""
+        ) {
+            const savedTotal =
+                Number(record.total);
 
-        if (Number.isFinite(savedTotal)) {
-            return savedTotal;
+            if (Number.isFinite(savedTotal)) {
+                return savedTotal;
+            }
         }
 
-        return [
-            record.a1,
-            record.a2,
-            record.a3,
-            record.a4,
-            record.a5,
-            record.a6
-        ].reduce(function (sum, value) {
-            return (
-                sum +
-                convertScoreToNumber(value)
-            );
-        }, 0);
+        return getEndScoreLabels(record)
+            .reduce(function (sum, value) {
+                return (
+                    sum +
+                    convertScoreToNumber(value)
+                );
+            }, 0);
     }
 
 
