@@ -103,17 +103,42 @@
 
     function findPinParts(index) {
         const svg = getSvg();
-        const matches = svg
-            ? svg.querySelectorAll(`[data-target-pin-index="${index}"]`)
-            : [];
+
+        if (!svg) {
+            return {
+                hitArea: null,
+                outer: null,
+                center: null
+            };
+        }
+
+        const selector =
+            `[data-target-pin-index="${index}"]`;
+
+        const matches = svg.querySelectorAll(selector);
+
         let hitArea = null;
-        let visiblePin = null;
+        let outer = null;
+        let center = null;
+
         matches.forEach(function (element) {
-            const radius = Number(element.getAttribute("r"));
-            if (radius >= 10) hitArea = element;
-            else visiblePin = element;
+            const part =
+                element.getAttribute("data-pin-part");
+
+            if (part === "hit-area") {
+                hitArea = element;
+            } else if (part === "outer") {
+                outer = element;
+            } else if (part === "center") {
+                center = element;
+            }
         });
-        return { hitArea, visiblePin };
+
+        return {
+            hitArea,
+            outer,
+            center
+        };
     }
 
     function findLabel(index) {
@@ -125,12 +150,22 @@
 
     function movePinVisual(index, point) {
         const parts = findPinParts(index);
-        [parts.hitArea, parts.visiblePin].forEach(function (element) {
-            if (!element) return;
+
+        [
+            parts.hitArea,
+            parts.outer,
+            parts.center
+        ].forEach(function (element) {
+            if (!element) {
+                return;
+            }
+
             element.setAttribute("cx", String(point.x));
             element.setAttribute("cy", String(point.y));
         });
+
         const label = findLabel(index);
+
         if (label) {
             label.setAttribute("x", String(point.x + 5));
             label.setAttribute("y", String(point.y + 3));
@@ -145,17 +180,55 @@
 
     function applyPinSelection() {
         const svg = getSvg();
-        if (!svg) return;
 
-        svg.querySelectorAll("[data-target-pin-index]").forEach(function (element) {
-            const index = Number(element.getAttribute("data-target-pin-index"));
-            const radius = Number(element.getAttribute("r"));
-            const isSelected = index === selectedPinIndex;
+        if (!svg) {
+            return;
+        }
 
-            if (radius < 10) {
-                element.setAttribute("stroke", isSelected ? "#111827" : "#ffffff");
-                element.setAttribute("stroke-width", isSelected ? "2.5" : "1");
-                element.setAttribute("r", isSelected ? "6.5" : "5");
+        const isIndoorTriple =
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            );
+
+        svg.querySelectorAll(
+            "[data-target-pin-index]"
+        ).forEach(function (element) {
+            const index = Number(
+                element.getAttribute("data-target-pin-index")
+            );
+
+            const part =
+                element.getAttribute("data-pin-part");
+
+            const isSelected =
+                index === selectedPinIndex;
+
+            if (part === "outer") {
+                element.setAttribute(
+                    "stroke",
+                    isSelected ? "#111827" : "#374151"
+                );
+
+                element.setAttribute(
+                    "stroke-width",
+                    isSelected ? "3" : "0.6"
+                );
+
+                const radius = isIndoorTriple
+                    ? (isSelected ? 14 : 12)
+                    : (isSelected ? 6.5 : 5);
+
+                element.setAttribute(
+                    "r",
+                    String(radius)
+                );
+            }
+
+            if (part === "center") {
+                element.setAttribute(
+                    "fill",
+                    "#ec4899"
+                );
             }
         });
     }
@@ -208,8 +281,13 @@
     function nudgeSelectedPin(dx, dy) {
         if (!Number.isInteger(selectedPinIndex)) return false;
         const parts = findPinParts(selectedPinIndex);
-        const visiblePin = parts.visiblePin;
-        if (!visiblePin) return false;
+
+        // 着弾位置の中心を基準に移動する
+        const visiblePin = parts.center;
+
+        if (!visiblePin) {
+            return false;
+        }
 
         const step = getNudgeStep();
 

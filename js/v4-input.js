@@ -1169,6 +1169,11 @@ function renderTargetPins() {
 
     pinsGroup.innerHTML = "";
 
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
     const targetSource =
         photoGroupingArrows.length > 0
             ? photoGroupingArrows
@@ -1193,7 +1198,11 @@ function renderTargetPins() {
 
         pinOuter.setAttribute("cx", String(arrow.x));
         pinOuter.setAttribute("cy", String(arrow.y));
-        pinOuter.setAttribute("r", "5");
+        pinOuter.setAttribute(
+            "r",
+            isIndoorTriple ? "12" : "5"
+        );
+        pinOuter.setAttribute("data-pin-part", "outer");
         pinOuter.setAttribute("fill", "#ffffff");
         pinOuter.setAttribute("stroke", "#374151");
         pinOuter.setAttribute("stroke-width", "0.6");
@@ -1215,7 +1224,11 @@ function renderTargetPins() {
 
         pin.setAttribute("cx", String(arrow.x));
         pin.setAttribute("cy", String(arrow.y));
-        pin.setAttribute("r", "3");
+        pin.setAttribute(
+            "r",
+            isIndoorTriple ? "7" : "3"
+        );
+        pin.setAttribute("data-pin-part", "center");
         pin.setAttribute("fill", "#ec4899");
         pin.setAttribute(
             "data-target-pin-index",
@@ -1250,7 +1263,11 @@ function renderTargetPins() {
             "cy",
             String(arrow.y)
         );
-        pinHitArea.setAttribute("r", "12");
+        pinHitArea.setAttribute(
+            "r",
+            isIndoorTriple ? "32" : "12"
+        );
+        pinHitArea.setAttribute("data-pin-part", "hit-area");
         pinHitArea.setAttribute(
             "fill",
             "transparent"
@@ -1263,9 +1280,13 @@ function renderTargetPins() {
         pinHitArea.style.pointerEvents = "all";
         pinHitArea.style.touchAction = "none";
 
-        pinsGroup.appendChild(pinHitArea);
+        // 白い外周とピンクの中心を描画
         pinsGroup.appendChild(pinOuter);
         pinsGroup.appendChild(pin);
+
+        // 透明の選択範囲を最前面に配置
+        // 見た目は変えず、タップ操作を受け取る
+        pinsGroup.appendChild(pinHitArea);
 
         const pinNumber = document.createElementNS(
             "http://www.w3.org/2000/svg",
