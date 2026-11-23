@@ -212,9 +212,25 @@
         if (!visiblePin) return false;
 
         const step = getNudgeStep();
+
+        const isIndoorTriple =
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            );
+
+        const maxY = isIndoorTriple ? 900 : SVG_SIZE;
+
         const point = {
-            x: clamp(Number(visiblePin.getAttribute("cx")) + dx * step, 0, SVG_SIZE),
-            y: clamp(Number(visiblePin.getAttribute("cy")) + dy * step, 0, SVG_SIZE)
+            x: clamp(
+                Number(visiblePin.getAttribute("cx")) + dx * step,
+                0,
+                SVG_SIZE
+            ),
+            y: clamp(
+                Number(visiblePin.getAttribute("cy")) + dy * step,
+                0,
+                maxY
+            )
         };
 
         movePinVisual(selectedPinIndex, point);
@@ -383,9 +399,17 @@
         );
         if (movement >= 2) gesture.moved = true;
         const raw = clientToSvg(svg, event.clientX, event.clientY);
+
+        const isIndoorTriple =
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            );
+
+        const maxY = isIndoorTriple ? 900 : SVG_SIZE;
+
         const point = {
             x: clamp(raw.x, 0, SVG_SIZE),
-            y: clamp(raw.y, 0, SVG_SIZE)
+            y: clamp(raw.y, 0, maxY)
         };
         gesture.lastPoint = point;
         if (renderFrame) return;

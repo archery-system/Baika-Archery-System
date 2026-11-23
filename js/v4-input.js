@@ -1344,13 +1344,25 @@ function updateTargetPinPosition(
     activeArrows[index].x =
         Math.max(0, Math.min(300, Number(x)));
 
-    activeArrows[index].y =
-        Math.max(0, Math.min(300, Number(y)));
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
 
-    const adjustedArrow = calculateArrowScore(
-        activeArrows[index].x,
-        activeArrows[index].y
-    );
+    const maxY = isIndoorTriple ? 900 : 300;
+
+    activeArrows[index].y =
+        Math.max(0, Math.min(maxY, Number(y)));
+
+    const adjustedArrow = isIndoorTriple
+        ? calculateIndoorTripleArrowScore(
+            activeArrows[index].x,
+            activeArrows[index].y
+        )
+        : calculateArrowScore(
+            activeArrows[index].x,
+            activeArrows[index].y
+        );
 
     activeArrows[index].val =
         adjustedArrow.val;
