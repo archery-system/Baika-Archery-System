@@ -457,3 +457,97 @@ html.v4-illustration-focus-mode
 .v4-photo-panel .v4-target-source-header {
     display: none !important;
 }
+
+/*
+ * STEP 36-171-4
+ * PC版のイラスト的入力時は
+ * 入力エリアの固定表示を解除する。
+ *
+ * 通常的・縦3連的の両方に対応する。
+ * 的の大きさや横並び表示は変更しない。
+ */
+@media (min-width: 1051px) {
+
+    html.v4-is-landscape-layout
+    .v4-landscape-sticky-stage:has(
+        #v4IllustrationTargetViewer:not([hidden])
+    ) {
+        position: relative !important;
+        top: auto !important;
+    }
+
+}
+
+/*
+ * STEP 36-172-3
+ * PC版の通常的・イラスト的入力時に
+ * 左右の的の大きさを統一する。
+ *
+ * グルーピング確認用的の大きさは変更しない。
+ */
+@media (min-width: 1051px) {
+
+    /* 左側のイラスト的 */
+    html.v4-is-landscape-layout:not(.v4-is-indoor-triple)
+    #v4IllustrationTargetViewer:not([hidden]) {
+        width: min(100%, var(--v4-step66-target-size)) !important;
+        height: var(--v4-step66-target-size) !important;
+        min-height: 0 !important;
+        max-height: var(--v4-step66-target-size) !important;
+        margin-inline: auto !important;
+        aspect-ratio: 1 / 1 !important;
+        box-sizing: border-box !important;
+    }
+
+    /* 左側のイラスト的SVG */
+    html.v4-is-landscape-layout:not(.v4-is-indoor-triple)
+    #v4IllustrationTargetSvg {
+        display: block !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        aspect-ratio: 1 / 1 !important;
+    }
+
+}
+
+/*
+ * STEP 36-172-5
+ * PC版の通常的のグルーピング確認用的を
+ * 最大1142pxまで拡大する。
+ *
+ * 縦3連的・スマートフォンには適用しない。
+ */
+@media (min-width: 1051px) {
+
+    html:not(.v4-is-indoor-triple)
+    .v4-grouping-panel
+    .v4-grouping-container {
+        width: min(100%, 1142px) !important;
+        max-width: 1142px !important;
+
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+
+        aspect-ratio: 1 / 1 !important;
+        margin-inline: auto !important;
+        box-sizing: border-box !important;
+    }
+
+    html:not(.v4-is-indoor-triple)
+    .v4-grouping-panel
+    #groupingTargetSvg {
+        display: block !important;
+
+        width: 100% !important;
+        height: auto !important;
+
+        max-width: 100% !important;
+        max-height: none !important;
+
+        aspect-ratio: 1 / 1 !important;
+    }
+
+}
