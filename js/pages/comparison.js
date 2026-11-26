@@ -168,11 +168,35 @@ function renderComparisonTarget(records) {
             : [];
 
     /*
-     * まずピンなしの的だけを描画する。
+     * 比較する2件の的の種類を確認する。
+     * 過去の記録は通常的として扱う。
+     */
+    const targetTypeA =
+        recordA.targetType === "indoor-triple"
+            ? "indoor-triple"
+            : "normal";
+
+    const targetTypeB =
+        recordB.targetType === "indoor-triple"
+            ? "indoor-triple"
+            : "normal";
+
+    if (targetTypeA !== targetTypeB) {
+        showError(
+            "通常的と縦3連的を重ねて比較することはできません。"
+        );
+
+        return;
+    }
+
+    /*
+     * 的の種類に応じて
+     * ピンなしの的を描画する。
      */
     window.BAS_GROUPING_TARGET.draw(
         target,
-        []
+        [],
+        targetTypeA
     );
 
     /*
@@ -655,6 +679,11 @@ const averageScore =
         )}
     </span>
 
+    ${record.targetType === "indoor-triple"
+                ? "<span>縦3連的</span>"
+                : ""
+            }
+
     <span>
         ${arrows.length}射
     </span>
@@ -669,8 +698,9 @@ const averageScore =
 
     <span>
         ${escapeHtml(
-            record.savedAt ||
-            "保存日時なし"
+            window.BAS_DATE_UTILS.formatDateTimeJST(
+                record.savedAt
+            )
         )}
     </span>
 </div>

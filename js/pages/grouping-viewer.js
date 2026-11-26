@@ -204,7 +204,10 @@ function open(record) {
     ) {
         window.BAS_GROUPING_TARGET.draw(
             targetSvg,
-            arrows
+            arrows,
+            record.targetType === "indoor-triple"
+                ? "indoor-triple"
+                : "normal"
         );
     } else if (targetSvg) {
         targetSvg.innerHTML = "";

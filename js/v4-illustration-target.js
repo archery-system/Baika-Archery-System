@@ -86,6 +86,21 @@
                 "change",
                 function () {
                     updateIllustrationTargetType();
+
+                    /*
+                     * インドア縦3連的を選択した場合は、
+                     * イラスト的へ自動的に切り替える。
+                     */
+                    const isIndoorTriple =
+                        document.documentElement.classList.contains(
+                            "v4-is-indoor-triple"
+                        );
+
+                    if (isIndoorTriple) {
+                        switchTargetSource("illustration");
+                    } else {
+                        resetIllustrationZoom();
+                    }
                 }
             );
         }
@@ -236,19 +251,41 @@
 
             const zoomSize = 300 / scale;
 
+            /*
+             * 的の種類に応じた
+             * 全体の座標範囲を取得する。
+             */
+            const isIndoorTriple =
+                document.documentElement.classList.contains(
+                    "v4-is-indoor-triple"
+                );
+
+            const targetHeight =
+                isIndoorTriple ? 900 : 300;
+
+            const halfSize =
+                zoomSize / 2;
+
+            /*
+             * 拡大率を変更しても、
+             * 十字カーソルの位置を維持する。
+             *
+             * 的の外周付近でも
+             * 着弾位置が内側へ移動しないようにする。
+             */
             const zoomX = Math.max(
-                0,
+                -halfSize,
                 Math.min(
-                    300 - zoomSize,
-                    centerX - zoomSize / 2
+                    300 - halfSize,
+                    centerX - halfSize
                 )
             );
 
             const zoomY = Math.max(
-                0,
+                -halfSize,
                 Math.min(
-                    300 - zoomSize,
-                    centerY - zoomSize / 2
+                    targetHeight - halfSize,
+                    centerY - halfSize
                 )
             );
 
@@ -514,15 +551,10 @@
                     dragStart.moved = true;
                 }
 
-                const x = Math.max(
-                    0,
-                    Math.min(
-                        300 - dragStart.width,
-                        dragStart.x -
-                            dx * dragStart.width / rect.width
-                    )
-                );
-
+                /*
+                 * 的の種類に応じた
+                 * 全体の座標範囲を取得する。
+                 */
                 const isIndoorTriple =
                     document.documentElement.classList.contains(
                         "v4-is-indoor-triple"
@@ -531,12 +563,31 @@
                 const targetHeight =
                     isIndoorTriple ? 900 : 300;
 
-                const y = Math.max(
-                    0,
+                /*
+                 * 十字カーソルが的の外周まで
+                 * 移動できるようにする。
+                 */
+                const halfWidth =
+                    dragStart.width / 2;
+
+                const halfHeight =
+                    dragStart.height / 2;
+
+                const x = Math.max(
+                    -halfWidth,
                     Math.min(
-                        targetHeight - dragStart.height,
+                        300 - halfWidth,
+                        dragStart.x -
+                            dx * dragStart.width / rect.width
+                    )
+                );
+
+                const y = Math.max(
+                    -halfHeight,
+                    Math.min(
+                        targetHeight - halfHeight,
                         dragStart.y -
-                        dy * dragStart.height / rect.height
+                            dy * dragStart.height / rect.height
                     )
                 );
 
@@ -595,29 +646,18 @@
 
                     const zoomSize = 50;
 
-                    const zoomX = Math.max(
-                        0,
-                        Math.min(
-                            300 - zoomSize,
-                            point.x - zoomSize / 2
-                        )
-                    );
+                    /*
+                     * 的の外周付近でも着弾入力できるように、
+                     * タップした位置を拡大表示の中心にする。
+                     *
+                     * 拡大表示範囲が的の外側に
+                     * はみ出すことを許可する。
+                     */
+                    const zoomX =
+                        point.x - zoomSize / 2;
 
-                    const isIndoorTriple =
-                        document.documentElement.classList.contains(
-                            "v4-is-indoor-triple"
-                        );
-
-                    const targetHeight =
-                        isIndoorTriple ? 900 : 300;
-
-                    const zoomY = Math.max(
-                        0,
-                        Math.min(
-                            targetHeight - zoomSize,
-                            point.y - zoomSize / 2
-                        )
-                    );
+                    const zoomY =
+                        point.y - zoomSize / 2;
 
                     svg.setAttribute(
                         "viewBox",
@@ -676,7 +716,17 @@
         );
 
         function switchTargetSource(mode) {
+            /*
+             * インドア縦3連的では
+             * イラスト的による入力のみを使用する。
+             */
+            const isIndoorTriple =
+                document.documentElement.classList.contains(
+                    "v4-is-indoor-triple"
+                );
+
             const isIllustration =
+                isIndoorTriple ||
                 mode === "illustration";
 
             resetIllustrationZoom();

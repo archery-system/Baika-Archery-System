@@ -16,8 +16,13 @@
      *
      * @param {SVGElement|string} svgReference
      * @param {Array} arrows
+     * @param {string} targetType
      */
-    function draw(svgReference, arrows) {
+    function draw(
+        svgReference,
+        arrows,
+        targetType = "normal"
+    ) {
         const svg = resolveSvg(svgReference);
 
         if (!svg) {
@@ -28,12 +33,32 @@
             return false;
         }
 
-        svg.setAttribute("viewBox", "0 0 300 300");
+        const isIndoorTriple =
+            targetType === "indoor-triple";
+
+        svg.setAttribute(
+            "data-target-type",
+            isIndoorTriple
+                ? "indoor-triple"
+                : "normal"
+        );
+
+        svg.setAttribute(
+            "viewBox",
+            isIndoorTriple
+                ? "0 0 300 900"
+                : "0 0 300 300"
+        );
+
         svg.innerHTML = "";
 
-        drawRings(svg);
-        drawScoreLabels(svg);
-        drawXLabel(svg);
+        if (isIndoorTriple) {
+            drawIndoorTripleRings(svg);
+        } else {
+            drawRings(svg);
+            drawScoreLabels(svg);
+            drawXLabel(svg);
+        }
 
         const pinsGroup =
             createSvgElement("g");
@@ -48,6 +73,96 @@
         renderPins(svg, arrows);
 
         return true;
+    }
+
+    /**
+     * インドア縦3連的のリングを描画する
+     *
+     * @param {SVGElement} svg
+     */
+    function drawIndoorTripleRings(svg) {
+        const faces = [
+            { cy: 150, label: "上段" },
+            { cy: 450, label: "中段" },
+            { cy: 750, label: "下段" }
+        ];
+
+        const rings = [
+            { radius: 150, fill: "#1996d3" },
+            { radius: 120, fill: "#e53935" },
+            { radius: 90, fill: "#e53935" },
+            { radius: 60, fill: "#f6c915" },
+            { radius: 30, fill: "#f6c915" },
+            { radius: 15, fill: "none" }
+        ];
+
+        faces.forEach(function (face) {
+            rings.forEach(function (ring) {
+                const circle =
+                    createSvgElement("circle");
+
+                circle.setAttribute("cx", "150");
+                circle.setAttribute(
+                    "cy",
+                    String(face.cy)
+                );
+                circle.setAttribute(
+                    "r",
+                    String(ring.radius)
+                );
+                circle.setAttribute(
+                    "fill",
+                    ring.fill
+                );
+                circle.setAttribute(
+                    "stroke",
+                    "#111827"
+                );
+                circle.setAttribute(
+                    "stroke-width",
+                    "0.7"
+                );
+                circle.setAttribute(
+                    "vector-effect",
+                    "non-scaling-stroke"
+                );
+
+                svg.appendChild(circle);
+            });
+
+            const label =
+                createSvgElement("text");
+
+            label.setAttribute("x", "150");
+            label.setAttribute(
+                "y",
+                String(face.cy - 135)
+            );
+            label.setAttribute(
+                "text-anchor",
+                "middle"
+            );
+            label.setAttribute(
+                "font-size",
+                "12"
+            );
+            label.setAttribute(
+                "font-weight",
+                "700"
+            );
+            label.setAttribute(
+                "fill",
+                "#ffffff"
+            );
+            label.setAttribute(
+                "pointer-events",
+                "none"
+            );
+
+            label.textContent = face.label;
+
+            svg.appendChild(label);
+        });
     }
 
     /**
@@ -356,9 +471,17 @@ function renderPins(
 
     pinsGroup.appendChild(seriesGroup);
 
+    const isIndoorTriple =
+        svg.getAttribute(
+            "data-target-type"
+        ) === "indoor-triple";
+
+    const targetHeight =
+        isIndoorTriple ? 900 : 300;
+
     groupingSource.forEach(
         function (arrow, index) {
-            if (!isValidArrow(arrow)) {
+            if (!isValidArrow(arrow, targetHeight)) {
                 return;
             }
 
@@ -371,11 +494,66 @@ function renderPins(
         }
     );
 
-    renderGroupingCenter(
-        seriesGroup,
-        groupingSource,
-        renderOptions
-    );
+    /*
+     * 的の種類に応じて
+     * グルーピング中心を描画する。
+     */
+    if (isIndoorTriple) {
+        const faceRanges = [
+            { minY: 0, maxY: 300 },
+            { minY: 300, maxY: 600 },
+            { minY: 600, maxY: 900 }
+        ];
+
+        faceRanges.forEach(
+            function (range, faceIndex) {
+                const faceArrows =
+                    groupingSource.filter(
+                        function (arrow) {
+                            if (!isValidArrow(arrow, targetHeight)) {
+                                return false;
+                            }
+
+                            const y =
+                                Number(arrow.y);
+
+                            return (
+                                y >= range.minY &&
+                                (
+                                    faceIndex === 2
+                                        ? y <= range.maxY
+                                        : y < range.maxY
+                                )
+                            );
+                        }
+                    );
+
+                if (faceArrows.length > 0) {
+                    renderGroupingCenter(
+                        seriesGroup,
+                        faceArrows,
+                        renderOptions
+                    );
+                }
+            }
+        );
+    } else {
+        const validGroupingArrows =
+            groupingSource.filter(
+                function (arrow) {
+                    return isValidArrow(
+                        arrow,
+                        targetHeight
+                    );
+                }
+            );
+
+        renderGroupingCenter(
+            seriesGroup,
+            validGroupingArrows,
+            renderOptions
+        );
+    }
 
     return true;
 }
@@ -469,20 +647,24 @@ function drawPin(
     pinsGroup.appendChild(pinNumber);
 }
 
-    /**
+/**
  * グルーピングの平均着弾位置を描画する
  */
-function renderGroupingCenter(
-    pinsGroup,
-    arrows,
-    options
-) {
-    const validArrows =
-        arrows.filter(isValidArrow);
+    function renderGroupingCenter(
+        pinsGroup,
+        arrows,
+        options
+    ) {
+        const validArrows =
+            arrows.filter(
+                function (arrow) {
+                    return isValidArrow(arrow);
+                }
+            );
 
-    if (validArrows.length === 0) {
-        return;
-    }
+        if (validArrows.length === 0) {
+            return;
+        }
 
     const centerX =
         validArrows.reduce(
@@ -615,6 +797,48 @@ function renderGroupingCenter(
 
     markerGroup.appendChild(verticalLine);
 
+    /*
+     * グルーピング中心に白色の縁取りを追加する。
+     * 的と中心マーカーが同系色でも
+     * 着弾中心を識別できるようにする。
+     */
+    const outlineGroup =
+        createSvgElement("g");
+
+    [
+        outerCircle,
+        horizontalLine,
+        verticalLine
+    ].forEach(function (element) {
+        const outline =
+            element.cloneNode(true);
+
+        outline.setAttribute(
+            "stroke",
+            "#ffffff"
+        );
+
+        outline.setAttribute(
+            "stroke-width",
+            String(
+                Number(
+                    element.getAttribute(
+                        "stroke-width"
+                    )
+                ) + 2.5
+            )
+        );
+
+        outlineGroup.appendChild(
+            outline
+        );
+    });
+
+    markerGroup.insertBefore(
+        outlineGroup,
+        markerGroup.firstChild
+    );
+
     const label =
         createSvgElement("text");
 
@@ -734,32 +958,52 @@ function createRenderOptions(options) {
     /**
      * 描画できる有効な矢か確認する
      */
-    function isValidArrow(arrow) {
-        if (!arrow) {
-            return false;
+    function isValidArrow(
+            arrow,
+            targetHeight = 900
+    ) {
+            if (!arrow) {
+                return false;
+            }
+
+            const scoreLabel =
+                String(
+                    arrow.val != null
+                        ? arrow.val
+                        : arrow.score ?? ""
+                )
+                    .trim()
+                    .toUpperCase();
+
+            const isMiss =
+                arrow.isMiss === true ||
+                scoreLabel === "M";
+
+            if (
+                isMiss ||
+                arrow.x == null ||
+                arrow.y == null
+            ) {
+                return false;
+            }
+
+            const x = Number(arrow.x);
+            const y = Number(arrow.y);
+
+            /*
+             * 入力用的の座標範囲を確認する。
+             * 写真上の座標など、範囲外のデータは
+             * 描画と中心計算の対象から除外する。
+             */
+            return (
+                Number.isFinite(x) &&
+                Number.isFinite(y) &&
+                x >= 0 &&
+                x <= 300 &&
+                y >= 0 &&
+                y <= targetHeight
+            );
         }
-
-        const scoreLabel =
-            String(
-                arrow.val != null
-                    ? arrow.val
-                    : ""
-            )
-                .trim()
-                .toUpperCase();
-
-        const isMiss =
-            arrow.isMiss === true ||
-            scoreLabel === "M";
-
-        return (
-            !isMiss &&
-            arrow.x != null &&
-            arrow.y != null &&
-            Number.isFinite(Number(arrow.x)) &&
-            Number.isFinite(Number(arrow.y))
-        );
-    }
 
     /**
      * IDまたはSVG要素から対象SVGを取得する

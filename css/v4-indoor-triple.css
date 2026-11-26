@@ -120,3 +120,92 @@ html.v4-is-indoor-triple
         aspect-ratio: auto !important;
     }
 }
+
+/*
+ * インドア縦3連的
+ * グルーピング確認用の表示サイズ
+ *
+ * スマートフォン縦画面の入力用的と
+ * 同程度の大きさで表示する。
+ */
+html.v4-is-indoor-triple
+.v4-grouping-panel
+.v4-grouping-container {
+    width: min(100%, 180px) !important;
+    max-width: 180px !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    aspect-ratio: 1 / 3 !important;
+    margin-inline: auto !important;
+
+    box-sizing: border-box !important;
+}
+
+/*
+ * グルーピング用SVG
+ */
+html.v4-is-indoor-triple
+.v4-grouping-panel
+#groupingTargetSvg {
+    display: block !important;
+
+    width: 100% !important;
+    height: auto !important;
+
+    max-width: 100% !important;
+    max-height: none !important;
+
+    aspect-ratio: 1 / 3 !important;
+}
+
+/*
+ * STEP 36-84
+ * インドア縦3連的はイラスト的入力専用とする。
+ *
+ * 写真関連の操作欄を非表示にする。
+ * 通常的に戻した場合は従来の表示に戻る。
+ */
+
+html.v4-is-indoor-triple
+.v4-target-source-switch {
+    display: none !important;
+}
+
+html.v4-is-indoor-triple
+.v4-photo-description {
+    display: none !important;
+}
+
+html.v4-is-indoor-triple
+.v4-camera-launch-area {
+    display: none !important;
+}
+
+/*
+ * STEP 36-88
+ * 縦3連的では写真専用の見出し・説明文・
+ * 写真登録および写真を閉じる操作を非表示にする。
+ */
+
+html.v4-is-indoor-triple
+.v4-photo-workspace-card > .v4-card-title {
+    display: none !important;
+}
+
+html.v4-is-indoor-triple
+.v4-photo-workspace-card > .v4-card-subtitle {
+    display: none !important;
+}
+
+html.v4-is-indoor-triple
+#v4PhotoQuickActions {
+    display: none !important;
+}
+
+html.v4-is-indoor-triple
+.v4-photo-file-input {
+    display: none !important;
+}

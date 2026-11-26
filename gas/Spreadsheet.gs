@@ -33,7 +33,11 @@ function readSheetData(sheetName) {
       }
 
       if (
-        (header === "date" || header === "matchDate") &&
+        (
+          header === "date" ||
+          header === "matchDate" ||
+          header === "practiceDate"
+        ) &&
         value instanceof Date
       ) {
         value = Utilities.formatDate(
@@ -976,9 +980,13 @@ function appendGroupingRecord(record) {
       "conditionWindDirection",
       "conditionTheme",
       "conditionMemo",
-      "arrows"
+      "arrows",
+      "targetType"
     ];
 
+    /*
+     * 新規シートと既存シートの両方に対応する。
+     */
     if (sheet.getLastRow() === 0) {
       sheet
         .getRange(
@@ -990,6 +998,77 @@ function appendGroupingRecord(record) {
         .setValues([
           headers
         ]);
+    } else {
+      /*
+       * 既存のヘッダー構成を確認する。
+       * 列構成が異なる場合は上書きせず、
+       * 保存処理を中止する。
+       */
+      const existingHeaders =
+        sheet
+          .getRange(
+            1,
+            1,
+            1,
+            headers.length - 1
+          )
+          .getValues()[0];
+
+      const headersMatch =
+        existingHeaders.every(
+          function (header, index) {
+            return (
+              String(header || "").trim() ===
+              headers[index]
+            );
+          }
+        );
+
+      if (!headersMatch) {
+        throw new Error(
+          "GROUPINGシートの列構成が一致しません。"
+        );
+      }
+
+      /*
+       * 既存シートのN列に
+       * targetTypeヘッダーを追加する。
+       */
+      const targetTypeHeaderCell =
+        sheet.getRange(
+          1,
+          headers.length
+        );
+
+      const targetTypeHeader =
+        String(
+          targetTypeHeaderCell.getValue() || ""
+        ).trim();
+
+      if (targetTypeHeader === "") {
+        /*
+         * N列に既存データがある場合は
+         * 上書きせず保存を中止する。
+         */
+        if (
+          sheet.getLastColumn() >=
+          headers.length
+        ) {
+          throw new Error(
+            "GROUPINGシートのN列が使用されています。"
+          );
+        }
+
+        targetTypeHeaderCell.setValue(
+          "targetType"
+        );
+      } else if (
+        targetTypeHeader !== "targetType"
+      ) {
+        throw new Error(
+          "GROUPINGシートのN列の項目名が一致しません。"
+        );
+      }
     }
 
     const row = headers.map(

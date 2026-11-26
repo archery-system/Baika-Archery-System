@@ -3069,10 +3069,15 @@
     <div class="bas-records__grouping-meta">
 
     <span>${record.distance}</span>
-
+    ${record.targetType === "indoor-triple"
+                    ? "<span>縦3連的</span>"
+                    : ""
+                }
     <span>${record.arrows.length}射</span>
-
-    <span>${record.savedAt}</span>
+    <span>${window.BAS_DATE_UTILS.formatDateTimeJST(
+            record.savedAt
+        )
+    }</span>
 
 </div>
 
@@ -3200,7 +3205,34 @@ ${deleteButtonHtml}
                                 return;
                             }
 
-                            selectedGroupingRecords.push(record);
+/*
+ * 異なる種類の的を重ねて比較することはできない。
+ * targetTypeが未設定の過去の記録は
+ * 通常的として扱う。
+ */
+if (selectedGroupingRecords.length > 0) {
+    const firstTargetType =
+        selectedGroupingRecords[0].targetType ===
+            "indoor-triple"
+            ? "indoor-triple"
+            : "normal";
+
+    const currentTargetType =
+        record.targetType === "indoor-triple"
+            ? "indoor-triple"
+            : "normal";
+
+    if (firstTargetType !== currentTargetType) {
+        alert(
+            "通常的と縦3連的を重ねて比較することはできません。\n" +
+            "同じ種類の的の記録を選択してください。"
+        );
+
+        return;
+    }
+}
+
+selectedGroupingRecords.push(record);
 
                             compareButton.textContent =
                                 `選択中（${selectedGroupingRecords.length}/2）`;

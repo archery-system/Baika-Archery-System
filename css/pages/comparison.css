@@ -167,6 +167,17 @@
     aspect-ratio: 1;
 }
 
+/*
+ * インドア縦3連的の比較表示サイズ
+ */
+.bas-comparison__target[data-target-type="indoor-triple"] {
+    width: min(100%, 180px);
+    max-width: 180px;
+    height: auto;
+    max-height: none;
+    aspect-ratio: 1 / 3;
+}
+
 .bas-comparison__display-controls {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

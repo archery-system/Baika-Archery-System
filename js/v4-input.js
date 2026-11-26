@@ -15,6 +15,19 @@ let currentArrows = [];
 let photoGroupingArrows = [];
 let registeredGroupingArrows = [];
 let isGroupingSaved = false;
+
+/*
+ * グルーピングのクラウド保存中であることを管理する。
+ * 保存中の的の切り替えや二重保存を防止する。
+ */
+let isGroupingSaving = false;
+
+/*
+ * 練習記録の登録処理中であることを管理する。
+ * グルーピング保存との競合を防止する。
+ */
+let isPracticeRegistering = false;
+
 let isZoomed = false;
 let zoomCenter = {
     x: 150,
@@ -65,10 +78,29 @@ function getGroupingDraftMemberKey() {
  * 部員別のグルーピング一時保存キーを作成する
  */
 function getGroupingDraftStorageKey() {
-    return [
+    const baseKey = [
         GROUPING_DRAFT_STORAGE_PREFIX,
         getGroupingDraftMemberKey()
     ].join(":");
+
+    /*
+     * インドア縦3連的の場合は
+     * 通常的とは別の保存キーを使用する。
+     */
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    if (isIndoorTriple) {
+        return baseKey + ":indoor-triple";
+    }
+
+    /*
+     * 通常的は従来の保存キーを維持し、
+     * 既存の一時保存データを引き継ぐ。
+     */
+    return baseKey;
 }
 
 /**
@@ -106,6 +138,16 @@ function saveGroupingDraft() {
  * 端末に残っているグルーピングを復元する
  */
 function restoreGroupingDraft() {
+    /*
+     * 的の種類を切り替えた際に、
+     * 切り替え前の登録済み着弾データが
+     * 残らないように初期化する。
+     *
+     * localStorageの保存データは削除しない。
+     */
+    registeredGroupingArrows = [];
+    isGroupingSaved = false;
+
     try {
         const savedValue =
             window.localStorage.getItem(
@@ -382,19 +424,44 @@ function syncCurrentPracticeInputToProjectZero() {
 document.addEventListener(
     "DOMContentLoaded",
     function () {
-        restoreGroupingDraft();
-
-        drawTargetSvg();
-        drawGroupingTargetSvg();
-        updateCurrentEndDisplay();
-        updateScoreInputState();
-
         const targetTypeSelect =
             document.getElementById(
                 "v4TargetTypeSelect"
             );
 
+        /*
+         * 初期表示時の的の種類を確定する。
+         * グルーピングの復元より先に実行する。
+         */
+        const initialIsIndoorTriple =
+            targetTypeSelect &&
+            targetTypeSelect.value === "indoor-triple";
+
+        document.documentElement.classList.toggle(
+            "v4-is-indoor-triple",
+            Boolean(initialIsIndoorTriple)
+        );
+
+        /*
+         * 選択されている的の種類に対応した
+         * グルーピングを復元する。
+         */
+        restoreGroupingDraft();
+
+        if (initialIsIndoorTriple) {
+            drawIndoorTripleTargetSvg();
+        } else {
+            drawTargetSvg();
+        }
+
+        drawGroupingTargetSvg();
+        updateCurrentEndDisplay();
+        updateScoreInputState();
+
         if (targetTypeSelect) {
+            let previousTargetType =
+                targetTypeSelect.value;
+
             function applyTargetType() {
                 const targetType =
                     targetTypeSelect.value;
@@ -402,10 +469,76 @@ document.addEventListener(
                 const isIndoorTriple =
                     targetType === "indoor-triple";
 
+                const wasIndoorTriple =
+                    document.documentElement.classList.contains(
+                        "v4-is-indoor-triple"
+                    );
+
+                const targetTypeChanged =
+                    wasIndoorTriple !== isIndoorTriple;
+
+                /*
+                 * クラウド保存中は、
+                 * 的の種類の切り替えを禁止する。
+                 */
+                if (
+                    targetTypeChanged &&
+                    (
+                        isGroupingSaving ||
+                        isPracticeRegistering
+                    )
+                ) {
+                    targetTypeSelect.value =
+                        previousTargetType;
+
+                    window.alert(
+                        "記録を保存中です。\n" +
+                        "保存が完了してから、的の種類を変更してください。"
+                    );
+
+                    return;
+                }
+
+                /*
+                 * 登録前の着弾データがある場合は、
+                 * データ混在や消失を防ぐため
+                 * 的の切り替えを中止する。
+                 */
+                if (
+                    targetTypeChanged &&
+                    (
+                        currentArrows.length > 0 ||
+                        photoGroupingArrows.length > 0
+                    )
+                ) {
+                    targetTypeSelect.value =
+                        previousTargetType;
+
+                    window.alert(
+                        "入力中の着弾データがあります。\n" +
+                        "登録または消去してから、的の種類を変更してください。"
+                    );
+
+                    return;
+                }
+
+                /*
+                 * 的の種類を切り替える。
+                 */
                 document.documentElement.classList.toggle(
                     "v4-is-indoor-triple",
                     isIndoorTriple
                 );
+
+                /*
+                 * 切り替え先の的に対応する
+                 * グルーピングを復元する。
+                 */
+                if (targetTypeChanged) {
+                    restoreGroupingDraft();
+                }
+
+                previousTargetType = targetType;
 
                 /*
                  * 弓の種類は的の種類に関係なく
@@ -430,6 +563,43 @@ document.addEventListener(
                         drawTargetSvg();
                     }
                 }
+
+                /*
+                 * グルーピング的も選択した的の種類に
+                 * 合わせて再描画する。
+                 */
+                drawGroupingTargetSvg();
+
+                /*
+                 * 復元したグルーピングに合わせて
+                 * 保存メッセージを更新する。
+                 */
+                const groupingSaveMessage =
+                    document.getElementById(
+                        "v4GroupingSaveMessage"
+                    );
+
+                if (groupingSaveMessage) {
+                    if (isGroupingSaved) {
+                        groupingSaveMessage.textContent =
+                            "✅ 保存済み";
+                    } else if (
+                        registeredGroupingArrows.length > 0
+                    ) {
+                        groupingSaveMessage.textContent =
+                            "未保存";
+                    } else {
+                        groupingSaveMessage.textContent =
+                            "グルーピングがありません";
+                    }
+                }
+
+                /*
+                 * 現在の入力状態と
+                 * 保存ボタンの有効・無効を更新する。
+                 */
+                updateCurrentEndDisplay();
+                updateScoreInputState();
 
                 console.log(
                     "的の種類:",
@@ -692,6 +862,133 @@ function drawIndoorTripleTargetSvg() {
 }
 
 /**
+ * グルーピング確認用のインドア縦3連的を描画する
+ * 上段・中段・下段の着弾位置を個別に表示する
+ */
+function drawIndoorTripleGroupingTargetSvg() {
+    const svg =
+        document.getElementById("groupingTargetSvg");
+
+    if (!svg) {
+        return;
+    }
+
+    svg.innerHTML = "";
+    svg.setAttribute("viewBox", "0 0 300 900");
+
+    const ns = "http://www.w3.org/2000/svg";
+
+    const faces = [
+        { cy: 150, label: "上段" },
+        { cy: 450, label: "中段" },
+        { cy: 750, label: "下段" }
+    ];
+
+    const rings = [
+        { radius: 150, fill: "#1996d3" },
+        { radius: 120, fill: "#e53935" },
+        { radius: 90, fill: "#e53935" },
+        { radius: 60, fill: "#f6c915" },
+        { radius: 30, fill: "#f6c915" }
+    ];
+
+    faces.forEach(function (face) {
+        rings.forEach(function (ring) {
+            const circle =
+                document.createElementNS(
+                    ns,
+                    "circle"
+                );
+
+            circle.setAttribute("cx", "150");
+            circle.setAttribute(
+                "cy",
+                String(face.cy)
+            );
+            circle.setAttribute(
+                "r",
+                String(ring.radius)
+            );
+            circle.setAttribute("fill", ring.fill);
+            circle.setAttribute("stroke", "#111827");
+            circle.setAttribute("stroke-width", "0.7");
+            circle.setAttribute(
+                "vector-effect",
+                "non-scaling-stroke"
+            );
+
+            svg.appendChild(circle);
+        });
+
+        /*
+         * 中央のXリング
+         */
+        const xRing =
+            document.createElementNS(
+                ns,
+                "circle"
+            );
+
+        xRing.setAttribute("cx", "150");
+        xRing.setAttribute(
+            "cy",
+            String(face.cy)
+        );
+        xRing.setAttribute("r", "15");
+        xRing.setAttribute("fill", "none");
+        xRing.setAttribute("stroke", "#111827");
+        xRing.setAttribute("stroke-width", "0.7");
+
+        svg.appendChild(xRing);
+
+        /*
+         * 上段・中段・下段の表示
+         */
+        const label =
+            document.createElementNS(
+                ns,
+                "text"
+            );
+
+        label.setAttribute("x", "150");
+        label.setAttribute(
+            "y",
+            String(face.cy - 135)
+        );
+        label.setAttribute(
+            "text-anchor",
+            "middle"
+        );
+        label.setAttribute("font-size", "12");
+        label.setAttribute("font-weight", "700");
+        label.setAttribute("fill", "#ffffff");
+        label.setAttribute(
+            "pointer-events",
+            "none"
+        );
+
+        label.textContent = face.label;
+
+        svg.appendChild(label);
+    });
+
+    /*
+     * グルーピングピンの描画領域
+     */
+    const groupingPinsGroup =
+        document.createElementNS(
+            ns,
+            "g"
+        );
+
+    groupingPinsGroup.id = "groupingPinsGroup";
+
+    svg.appendChild(groupingPinsGroup);
+
+    renderGroupingPins();
+}
+
+/**
  * グルーピング確認用の的を描画する
  */
 function drawGroupingTargetSvg() {
@@ -701,6 +998,26 @@ function drawGroupingTargetSvg() {
     if (!svg) {
         return;
     }
+
+    /*
+     * インドア縦3連的の場合は
+     * グルーピング的も縦3連的で描画する。
+     */
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    if (isIndoorTriple) {
+        drawIndoorTripleGroupingTargetSvg();
+        return;
+    }
+
+    /*
+     * 通常的へ戻した場合は
+     * SVGの座標範囲も通常サイズへ戻す。
+     */
+    svg.setAttribute("viewBox", "0 0 300 300");
 
     svg.innerHTML = "";
 
@@ -854,6 +1171,14 @@ function handleTargetClick(event) {
         window.baikaTargetGesture
             .consumeSuppressedClick()
     ) {
+        return;
+    }
+
+    /*
+     * クラウド保存中は、
+     * 入力用的のズームと着弾追加を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
         return;
     }
 
@@ -1353,6 +1678,14 @@ function updateTargetPinPosition(
     x,
     y
 ) {
+    /*
+     * クラウド保存中は、
+     * 着弾位置の変更を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        return false;
+    }
+
     const activeArrows =
         photoGroupingArrows.length > 0
             ? photoGroupingArrows
@@ -1446,6 +1779,19 @@ function finishTargetPinPosition(
  * 現在の入力記録へ追加する
  */
 function addIllustrationTargetArrow(x, y) {
+    /*
+     * クラウド保存中は、
+     * イラスト的からの着弾追加を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、着弾位置を入力してください。"
+        );
+
+        return false;
+    }
+
     const targetX = Number(x);
     const targetY = Number(y);
 
@@ -1560,13 +1906,16 @@ function renderGroupingPins() {
 
     pinsGroup.innerHTML = "";
 
-    const activeArrows =
-        photoGroupingArrows.length > 0
-            ? photoGroupingArrows
-            : currentArrows;
-
+    /*
+     * グルーピング確認用的には、
+     * 登録済みの着弾データのみを表示する。
+     *
+     * 入力中の着弾データは、
+     * 「グルーピングに追加」ボタンを
+     * 押した時点で表示対象となる。
+     */
     const groupingSource =
-        registeredGroupingArrows.concat(activeArrows);
+        registeredGroupingArrows;
 
     groupingSource.forEach(function (arrow, index) {
         if (
@@ -1630,10 +1979,56 @@ function renderGroupingPins() {
 
     });
 
-    renderGroupingCenter(
-        pinsGroup,
-        groupingSource
-    );
+    /*
+     * インドア縦3連的では、
+     * 上段・中段・下段ごとに
+     * グルーピング中心を計算する。
+     */
+    const isIndoorTriple =
+        document.documentElement.classList.contains(
+            "v4-is-indoor-triple"
+        );
+
+    if (isIndoorTriple) {
+        const faces = [
+            { minY: 0, maxY: 300 },
+            { minY: 300, maxY: 600 },
+            { minY: 600, maxY: 900 }
+        ];
+
+        faces.forEach(function (face, index) {
+            const faceArrows =
+                groupingSource.filter(function (arrow) {
+                    if (!arrow || arrow.y == null) {
+                        return false;
+                    }
+
+                    const y = Number(arrow.y);
+
+                    if (!Number.isFinite(y)) {
+                        return false;
+                    }
+
+                    return (
+                        y >= face.minY &&
+                        (
+                            y < face.maxY ||
+                            (index === 2 && y === 900)
+                        )
+                    );
+                });
+
+            renderGroupingCenter(
+                pinsGroup,
+                faceArrows
+            );
+        });
+    } else {
+        renderGroupingCenter(
+            pinsGroup,
+            groupingSource
+        );
+    }
 }
 
 /**
@@ -1793,6 +2188,14 @@ function syncPhotoPinsToGrouping(
     calibration,
     convertedTargetPoints
 ) {
+    /*
+     * クラウド保存中は、
+     * 写真からの着弾データ反映を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        return;
+    }
+
     if (
         !Array.isArray(photoPins) ||
         !naturalWidth ||
@@ -1970,6 +2373,14 @@ function syncPhotoPinsToGrouping(
 }
 
 function applyPhotoScoresToTarget() {
+    /*
+     * クラウド保存中は、
+     * 写真からの得点反映を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        return false;
+    }
+
     const photoPins =
         Array.isArray(window.baikaPhotoPins)
             ? window.baikaPhotoPins
@@ -2151,6 +2562,19 @@ function updateCurrentEndDisplay() {
  * キーパッドから得点を入力する
  */
 function handleScoreKeypadInput(value, score) {
+    /*
+     * クラウド保存中は、
+     * キーパッドからの得点入力を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、得点を入力してください。"
+        );
+
+        return;
+    }
+
     currentArrows.push({
         val: value,
         score: score,
@@ -3174,6 +3598,60 @@ window.BAS_RETRY_PENDING_PRACTICE_RECORDS =
     processPracticeSaveQueue;
 
 async function registerPhotoPracticeEnd(photoPins) {
+    /*
+     * グルーピング保存中や
+     * 練習記録の登録処理中は、
+     * 新しい練習記録の登録を禁止する。
+     */
+    if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存処理が完了してから、もう一度操作してください。"
+        );
+
+        return false;
+    }
+
+    isPracticeRegistering = true;
+
+    try {
+        /*
+         * 登録開始と同時に
+         * 保存ボタンの有効・無効を更新する。
+         */
+        updateScoreInputState();
+
+        return await executePhotoPracticeEndRegistration(
+            photoPins
+        );
+    } finally {
+        /*
+         * 登録の成功・失敗・中止に関係なく
+         * 登録中の状態を解除する。
+         */
+        isPracticeRegistering = false;
+
+        updateScoreInputState();
+    }
+}
+
+/*
+ * 練習記録の実際の登録処理
+ */
+async function executePhotoPracticeEndRegistration(photoPins) {
+    /*
+     * グルーピングのクラウド保存中は、
+     * 練習記録の保存を禁止する。
+     */
+    if (isGroupingSaving) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、練習記録を保存してください。"
+        );
+
+        return false;
+    }
+
     if (!Array.isArray(photoPins)) {
         return false;
     }
@@ -3555,6 +4033,19 @@ window.registerPhotoPracticeEnd =
 * @returns {Promise<boolean>}
 */
 async function registerCurrentPracticeEnd() {
+    /*
+     * グルーピングのクラウド保存中は、
+     * 現在の練習記録の保存を禁止する。
+     */
+    if (isGroupingSaving) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、練習記録を保存してください。"
+        );
+
+        return false;
+    }
+
     const arrows =
         getActiveInputArrows();
 
@@ -3645,6 +4136,19 @@ window.registerCurrentPracticeEnd =
  * 確認ダイアログは表示しない
  */
 function replaceCurrentEndFromPhoto(photoPins) {
+    /*
+     * クラウド保存中は、
+     * 写真からの着弾データの置き換えを禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、写真の着弾データを反映してください。"
+        );
+
+        return false;
+    }
+
     if (!Array.isArray(photoPins)) {
         return false;
     }
@@ -3701,6 +4205,19 @@ window.replaceCurrentEndFromPhoto =
  * 現在エンドをすべてクリアする
  */
 function clearCurrentEnd() {
+    /*
+     * クラウド保存中は、
+     * 現在入力中の着弾データの消去を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、現在の入力をクリアしてください。"
+        );
+
+        return;
+    }
+
     const arrows = getActiveInputArrows();
 
     if (arrows.length === 0) {
@@ -3736,6 +4253,19 @@ function clearCurrentEnd() {
  * 現在入力中の最後の1射だけを削除する
  */
 function undoLastArrow() {
+    /*
+     * クラウド保存中は、
+     * 最後の1射の取り消しを禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、取り消しを実行してください。"
+        );
+
+        return false;
+    }
+
     const arrows =
         getActiveInputArrows();
 
@@ -3776,6 +4306,19 @@ window.baikaUndoIllustrationTargetArrow =
  * 現在入力とグルーピング追加済みの矢をすべて削除する
  */
 function clearAllArrows() {
+    /*
+     * クラウド保存中は、
+     * 着弾データの全クリアを禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、全クリアを実行してください。"
+        );
+
+        return false;
+    }
+
     const activeArrows =
         getActiveInputArrows();
 
@@ -3937,13 +4480,49 @@ function updateScoreInputState() {
         );
 
     if (saveGroupingButton) {
+        /*
+         * 保存対象がない場合、
+         * 保存済みの場合、
+         * クラウド保存中の場合は
+         * 保存ボタンを無効にする。
+         */
         saveGroupingButton.disabled =
             registeredGroupingArrows.length === 0 ||
-            isGroupingSaved;
+            isGroupingSaved ||
+            isGroupingSaving ||
+            isPracticeRegistering;
+
+        /*
+         * 現在の保存状態に合わせて
+         * グルーピング保存ボタンの文字を更新する。
+         */
+        if (isGroupingSaving) {
+            saveGroupingButton.textContent =
+                "保存中…";
+        } else if (isGroupingSaved) {
+            saveGroupingButton.textContent =
+                "✅ 保存済み";
+        } else {
+            saveGroupingButton.textContent =
+                "💾 グルーピングを保存";
+        }
     }
 }
 
 function registerCurrentGrouping() {
+    /*
+     * クラウド保存中は、
+     * 新しい着弾データの登録を禁止する。
+     */
+        if (isGroupingSaving || isPracticeRegistering) {
+        window.alert(
+            "記録を保存中です。\n" +
+            "保存が完了してから、着弾データを登録してください。"
+        );
+
+        return false;
+    }
+
     const arrows = getActiveInputArrows();
     if (arrows.length === 0) return false;
 
@@ -4102,9 +4681,45 @@ function bindGroupingSaveButton() {
         "click",
         async function () {
 
+            /*
+             * 保存中の再実行や
+             * 保存対象がない場合の実行を防止する。
+             */
             if (
+                isGroupingSaving ||
+                isGroupingSaved ||
                 registeredGroupingArrows.length === 0
             ) {
+                return;
+            }
+
+            /*
+             * 練習記録の登録処理中は、
+             * グルーピングの保存を禁止する。
+             */
+            if (isPracticeRegistering) {
+                window.alert(
+                    "練習記録を登録中です。\n" +
+                    "登録が完了してから、グルーピングを保存してください。"
+                );
+
+                return;
+            }
+
+            /*
+             * 未登録の着弾データがある場合は、
+             * データ消失を防ぐため保存を中止する。
+             */
+            if (
+                currentArrows.length > 0 ||
+                photoGroupingArrows.length > 0
+            ) {
+                window.alert(
+                    "未登録の着弾データがあります。\n" +
+                    "着弾データを登録または消去してから、" +
+                    "グルーピングを保存してください。"
+                );
+
                 return;
             }
 
@@ -4234,6 +4849,13 @@ function bindGroupingSaveButton() {
                 distance:
                     distance,
 
+                targetType:
+                    document.documentElement.classList.contains(
+                        "v4-is-indoor-triple"
+                    )
+                        ? "indoor-triple"
+                        : "normal",
+
                 conditionFeeling:
                     conditionFeeling,
 
@@ -4262,6 +4884,17 @@ function bindGroupingSaveButton() {
                     )
             };
 
+            /*
+             * クラウド保存を開始する。
+             */
+            isGroupingSaving = true;
+
+            const originalButtonText =
+                button.textContent;
+
+            button.disabled = true;
+            button.textContent = "保存中…";
+
             try {
                 await appendGroupingRecordToCloud(
                     record
@@ -4272,12 +4905,23 @@ function bindGroupingSaveButton() {
                     error
                 );
 
+                button.textContent =
+                    originalButtonText;
+
                 window.alert(
                     "グルーピング記録を保存できませんでした。\n"
                     + "通信状態を確認して、もう一度保存してください。"
                 );
 
                 return;
+            } finally {
+                /*
+                 * 保存の成功・失敗に関係なく
+                 * 保存中の状態を解除する。
+                 */
+                isGroupingSaving = false;
+
+                updateScoreInputState();
             }
 
             isGroupingSaved = true;

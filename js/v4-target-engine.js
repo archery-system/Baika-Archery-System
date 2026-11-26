@@ -59,20 +59,82 @@
     }
 
     function setViewBox(svg, box) {
-        const width = clamp(box.width, MIN_VIEW_SIZE, MAX_VIEW_SIZE);
-        const height = width;
-        const maxX = SVG_SIZE - width;
-        const maxY = SVG_SIZE - height;
-        const x = clamp(box.x, 0, Math.max(0, maxX));
-        const y = clamp(box.y, 0, Math.max(0, maxY));
-        svg.setAttribute("viewBox", `${x} ${y} ${width} ${height}`);
-        window.isZoomed = width < MAX_VIEW_SIZE - 0.5;
+        /*
+         * 的の種類に応じた
+         * SVG全体の座標範囲を取得する。
+         */
+        const isIndoorTriple =
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            );
+
+        const targetWidth = SVG_SIZE;
+        const targetHeight =
+            isIndoorTriple ? 900 : SVG_SIZE;
+
+        const width = clamp(
+            box.width,
+            MIN_VIEW_SIZE,
+            targetWidth
+        );
+
+        /*
+         * 縦3連的では指定された高さを使用する。
+         * 通常的では従来どおり正方形とする。
+         */
+        const height = isIndoorTriple
+            ? clamp(
+                Number.isFinite(box.height)
+                    ? box.height
+                    : width,
+                MIN_VIEW_SIZE,
+                targetHeight
+            )
+            : width;
+
+        const maxX = targetWidth - width;
+        const maxY = targetHeight - height;
+
+        const x = clamp(
+            box.x,
+            0,
+            Math.max(0, maxX)
+        );
+
+        const y = clamp(
+            box.y,
+            0,
+            Math.max(0, maxY)
+        );
+
+        svg.setAttribute(
+            "viewBox",
+            `${x} ${y} ${width} ${height}`
+        );
+
+        window.isZoomed =
+            width < targetWidth - 0.5 ||
+            height < targetHeight - 0.5;
     }
 
     function resetView() {
         const svg = getSvg();
         if (!svg) return;
-        setViewBox(svg, { x: 0, y: 0, width: 300, height: 300 });
+        /*
+         * 的の種類に合わせて
+         * 全体表示の座標範囲を設定する。
+         */
+        const isIndoorTriple =
+            document.documentElement.classList.contains(
+                "v4-is-indoor-triple"
+            );
+
+        setViewBox(svg, {
+            x: 0,
+            y: 0,
+            width: 300,
+            height: isIndoorTriple ? 900 : 300
+        });
         if (typeof window.resetTargetZoom === "function") {
             // resetTargetZoomはピン再描画も行う。再帰を避けるためviewBox設定後に呼ぶ。
             window.isZoomed = false;
